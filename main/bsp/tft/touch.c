@@ -3,7 +3,7 @@
 #include <esp_lcd_panel_vendor.h>
 #include <esp_lcd_panel_ops.h>
 #include <esp_lcd_ili9488.h>
-#include <esp_lcd_touch_gt911.h>
+#include <esp_lcd_touch_gt1151.h>
 #include <driver/i2c.h>
 #include "touch.h"
 #include "bsp/hardwareprofile.h"
@@ -23,10 +23,10 @@ void bsp_tft_touch_init(void) {
     };
     ESP_ERROR_CHECK(gpio_config(&config));
 
-    esp_lcd_panel_io_i2c_config_t io_config = ESP_LCD_TOUCH_IO_I2C_GT911_CONFIG();
+    esp_lcd_panel_io_i2c_config_t io_config = ESP_LCD_TOUCH_IO_I2C_GT1151_CONFIG();
 
     esp_lcd_touch_config_t tp_cfg = {
-        .x_max        = 480,
+        .x_max        = 320,
         .y_max        = 320,
         .rst_gpio_num = -1,
         .int_gpio_num = -1,
@@ -54,7 +54,7 @@ void bsp_tft_touch_init(void) {
         gpio_set_level(BSP_HAP_RESET_T, 1);
         vTaskDelay(pdMS_TO_TICKS(100));
 
-        esp_err_t res = esp_lcd_touch_new_i2c_gt911(io_handle, &tp_cfg, &tp);
+        esp_err_t res = esp_lcd_touch_new_i2c_gt1151(io_handle, &tp_cfg, &tp);
         if (res != ESP_OK) {
             ESP_LOGW(TAG, "Error in inizializing touch, retrying...");
             vTaskDelay(pdMS_TO_TICKS(200));
@@ -65,6 +65,8 @@ void bsp_tft_touch_init(void) {
     if (counter >= 5) {
         ESP_LOGE(TAG, "Unable to inizialize touch!");
     }
+
+    ESP_LOGI(TAG, "Initialized");
 }
 
 
@@ -72,23 +74,28 @@ void bsp_tft_touch_read(lv_indev_t *indev, lv_indev_data_t *data) {
     static int16_t last_x = 0;
     static int16_t last_y = 0;
 
-    esp_lcd_touch_read_data(tp);
-    uint16_t touch_x[1];
-    uint16_t touch_y[1];
-    uint16_t touch_strength[1];
-    uint8_t  touch_cnt = 0;
+    esp_err_t res = esp_lcd_touch_read_data(tp);
+    if (res == ESP_OK) {
+        uint16_t touch_x[1];
+        uint16_t touch_y[1];
+        uint16_t touch_strength[1];
+        uint8_t  touch_cnt = 0;
 
-    bool touchpad_pressed = esp_lcd_touch_get_coordinates(tp, touch_x, touch_y, touch_strength, &touch_cnt, 1);
+        bool touchpad_pressed = esp_lcd_touch_get_coordinates(tp, touch_x, touch_y, touch_strength, &touch_cnt, 1);
 
-    if (touchpad_pressed) {
-        last_x = BUILD_CONFIG_DISPLAY_HORIZONTAL_RESOLUTION - touch_y[0];
-        last_y = touch_x[0];
+        if (touchpad_pressed) {
+            last_x = touch_x[0];
+            last_y = touch_y[0];
 
-        data->point.x = last_x;
-        data->point.y = last_y;
+            data->point.x = last_x;
+            data->point.y = last_y;
 
-        data->state = LV_INDEV_STATE_PRESSED;
+            data->state = LV_INDEV_STATE_PRESSED;
+        } else {
+            data->state = LV_INDEV_STATE_RELEASED;
+        }
     } else {
+        ESP_LOGW(TAG, "Read error: %i", res);
         data->state = LV_INDEV_STATE_RELEASED;
     }
 }

@@ -23,7 +23,7 @@ static const char *TAG = "TftDisplay";
 static const int          DISPLAY_COMMAND_BITS   = 8;
 static const int          DISPLAY_PARAMETER_BITS = 8;
 static const unsigned int DISPLAY_REFRESH_HZ     = 40000000;
-static const int          DISPLAY_SPI_QUEUE_LEN  = 10;
+static const int          DISPLAY_SPI_QUEUE_LEN  = 16;
 
 // Default to 25 lines of color data
 
@@ -58,6 +58,7 @@ void bsp_tft_display_lvgl_flush_cb(lv_display_t *display, const lv_area_t *area,
     int offsetx2 = area->x2;
     int offsety1 = area->y1;
     int offsety2 = area->y2;
+
     esp_lcd_panel_draw_bitmap(lcd_handle, offsetx1, offsety1, offsetx2 + 1, offsety2 + 1, px_map);
 }
 
@@ -107,7 +108,7 @@ void bsp_tft_display_init(void (*display_flush_ready_cb)(void), size_t buffer_si
 
     const esp_lcd_panel_dev_config_t lcd_config = {
         .reset_gpio_num = BSP_HAP_RESET_D,
-        .color_space    = LCD_RGB_ELEMENT_ORDER_RGB,
+        .color_space    = LCD_RGB_ELEMENT_ORDER_BGR,
         .bits_per_pixel = 18,
         .flags          = {.reset_active_high = 0},
         .vendor_config  = NULL,
@@ -120,8 +121,8 @@ void bsp_tft_display_init(void (*display_flush_ready_cb)(void), size_t buffer_si
     ESP_ERROR_CHECK(esp_lcd_panel_reset(lcd_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_init(lcd_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_invert_color(lcd_handle, true));
-    ESP_ERROR_CHECK(esp_lcd_panel_swap_xy(lcd_handle, true));
-    ESP_ERROR_CHECK(esp_lcd_panel_mirror(lcd_handle, false, true));
+    ESP_ERROR_CHECK(esp_lcd_panel_swap_xy(lcd_handle, false));
+    ESP_ERROR_CHECK(esp_lcd_panel_mirror(lcd_handle, false, false));
     ESP_ERROR_CHECK(esp_lcd_panel_set_gap(lcd_handle, 0, 0));
 #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
     ESP_ERROR_CHECK(esp_lcd_panel_disp_off(lcd_handle, false));

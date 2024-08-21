@@ -9,11 +9,15 @@
 #include "controller/gui.h"
 #include "bsp/system.h"
 #include "bsp/tft/display.h"
+#include "services/timestamp.h"
 #include "bsp/tft/touch.h"
+
 
 static const char *TAG = "Main";
 
+
 void app_main(void) {
+    vTaskDelay(pdMS_TO_TICKS(500));
     ESP_LOGI(TAG, "Main");
 
     mut_model_t model = {0};
