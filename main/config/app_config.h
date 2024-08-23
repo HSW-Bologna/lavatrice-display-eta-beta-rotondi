@@ -11,4 +11,6 @@
 
 #define APP_CONFIG_TASK_SIZE 512
 
+#define VER_DATI 3
+
 #endif
