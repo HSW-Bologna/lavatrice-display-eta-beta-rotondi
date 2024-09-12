@@ -115,7 +115,7 @@ static void update_page(model_t *model, struct page_data *pdata) {
     (void)pdata;
 
     lv_label_set_text_fmt(pdata->label_temperature, "%s: %3i C [%04i]",
-                          view_intl_get_string(model, STRINGS_TEMPERATURA), 0, 0, 0);
+                          view_intl_get_string(model, STRINGS_TEMPERATURA), 0, 0);
 }
 
 

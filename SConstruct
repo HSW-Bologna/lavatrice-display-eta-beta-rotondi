@@ -29,6 +29,7 @@ CJSON = f"{SIMULATOR}/cJSON"
 B64 = f"{SIMULATOR}/b64"
 LVGL = f"{COMPONENTS}/lvgl"
 STRING_TRANSLATIONS = f"{MAIN}/adapters/view/intl"
+PARMAC_DESCRIPTIONS = f"{MAIN}/model/descriptions"
 
 CFLAGS = [
     "-Wall",
@@ -43,7 +44,7 @@ CFLAGS = [
     "-DLV_CONF_INCLUDE_SIMPLE",
     '-DprojCOVERAGE_TEST=0',
 ]
-LDLIBS = ["-lSDL2", "-lpthread", "-lm"]
+LDLIBS = ["-lSDL2", "-lpthread", "-lm", "-lz"]
 
 CPPPATH = [
     COMPONENTS, f'#{SIMULATOR}/port', f'#{MAIN}',
@@ -51,6 +52,11 @@ CPPPATH = [
 ]
 
 TRANSLATIONS = [
+    {
+        "generated_files": [f"{PARMAC_DESCRIPTIONS}/AUTOGEN_FILE_pars.c", f"{PARMAC_DESCRIPTIONS}/AUTOGEN_FILE_pars.h"],
+        "input_folder": f"{ASSETS}/translations/pars",
+        "output_folder": PARMAC_DESCRIPTIONS,
+    },
     {
         "generated_files": [f"{STRING_TRANSLATIONS}/AUTOGEN_FILE_strings.c", f"{STRING_TRANSLATIONS}/AUTOGEN_FILE_strings.h"],
         "input_folder": f"{ASSETS}/translations/strings",
@@ -103,6 +109,11 @@ def main():
         f'{COMPONENTS}/c-watcher/SConscript', exports=['c_watcher_env'])
     env['CPPPATH'] += [include]
 
+    c_parameter_env = env
+    (parameter, include) = SConscript(
+        f'{COMPONENTS}/c-parameter/SConscript', exports=['c_parameter_env'])
+    env['CPPPATH'] += [include]
+
     sources = Glob(f'{SIMULATOR}/*.c')
     sources += Glob(f'{SIMULATOR}/port/*.c')
     sources += [File(filename) for filename in Path('main/model').rglob('*.c')]
@@ -110,7 +121,7 @@ def main():
                 for filename in Path('main/config').rglob('*.c')]
     sources += [File(filename) for filename in Path('main/adapters').rglob('*.c')]
     sources += [File(filename)
-                for filename in Path('main/controller').glob('*.c')]
+                for filename in Path('main/controller').rglob('*.c')]
     sources += [File(filename)
                 for filename in Path('main/services').rglob('*.c')]
     sources += [File(filename)
@@ -119,7 +130,8 @@ def main():
     sources += [File(f'{B64}/encode.c'),
                 File(f'{B64}/decode.c'), File(f'{B64}/buffer.c')]
 
-    prog = env.Program(PROGRAM, sdkconfig + sources + freertos + pman + watcher)
+    prog = env.Program(PROGRAM, sdkconfig + sources + freertos + pman + watcher + parameter)
+
     env.Depends(prog, translations)
     PhonyTargets("run", f"./{PROGRAM}", prog, env)
     compileDB = env.CompilationDatabase('build/compile_commands.json')
