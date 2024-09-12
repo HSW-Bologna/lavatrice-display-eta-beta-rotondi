@@ -98,6 +98,11 @@ def main():
         f'{COMPONENTS}/c-page-manager/SConscript', exports=['pman_env'])
     env['CPPPATH'] += [include]
 
+    c_watcher_env = env
+    (watcher, include) = SConscript(
+        f'{COMPONENTS}/c-watcher/SConscript', exports=['c_watcher_env'])
+    env['CPPPATH'] += [include]
+
     sources = Glob(f'{SIMULATOR}/*.c')
     sources += Glob(f'{SIMULATOR}/port/*.c')
     sources += [File(filename) for filename in Path('main/model').rglob('*.c')]
@@ -114,7 +119,7 @@ def main():
     sources += [File(f'{B64}/encode.c'),
                 File(f'{B64}/decode.c'), File(f'{B64}/buffer.c')]
 
-    prog = env.Program(PROGRAM, sdkconfig + sources + freertos + pman)
+    prog = env.Program(PROGRAM, sdkconfig + sources + freertos + pman + watcher)
     env.Depends(prog, translations)
     PhonyTargets("run", f"./{PROGRAM}", prog, env)
     compileDB = env.CompilationDatabase('build/compile_commands.json')

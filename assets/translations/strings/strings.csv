@@ -1,2 +1,35 @@
 Identificatore, Italiano, Inglese
-HELLO_WORLD, Ciao mondo, Hello world
+DIAGNOSI, Diagnosi, Test
+INGRESSI, Ingressi, Inputs
+USCITE, Uscite, Outputs
+LIVELLO, Livello, Level
+CALIBRAZIONE, Calibrazione, Calibrate
+AZZERA_LITRI, Azzera litri, Clear liters
+AZZERA, Azzera, Clear
+CALDA, Calda, Hot
+FREDDA, Fredda, Cold
+SCARICO, Scarico, Drain
+TEMPERATURA, Temperatura, Temperature
+GETTONI, Gettoni, Coins
+LINEA, Linea, Linea
+TOTALE, Totale, Total
+CASSA, Cassa, Counter
+LED, LED, LEDS
+SPENTO, Spento, Off
+ROSSO, Rosso, Red
+VERDE, Verde, Green
+BLU, Blu, Blue
+GIALLO, Giallo, Yellow
+VIOLETTO, Violetto, Purple
+TURCHESE, Turchese, Turquoise
+BIANCO, Bianco, White
+SERRATURA, Serratura, Lock
+APERTO, Aperto, Open
+CHIUSO, Chiuso, Closed
+APRI, Apri, Open
+CHIUDI, Chiudi, Close
+CHIAVISTELLO, Chiavistello, Bolt
+DIGITALE, Digitale, Digital
+MECCANICA, Meccanica, Mechanical
+CESTO, Cesto, Drum
+OBLO, Oblo', Porthole
