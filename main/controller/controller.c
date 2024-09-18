@@ -8,14 +8,17 @@
 #include "services/serializer.h"
 #include "services/timestamp.h"
 #include "bsp/buzzer.h"
+#include "bsp/msc.h"
 #include "configuration/configuration.h"
 
 
-static const char *TAG = "Controller";
+static const char *TAG                  = "Controller";
+static uint8_t     pending_state_change = 0;
 
 
-void controller_init(mut_model_t *p_model) {
-    (void)p_model;
+void controller_init(mut_model_t *model) {
+    configuration_init();
+    configuration_load_all_data(model);
 
     machine_init();
     machine_invia_presentazioni();
@@ -34,11 +37,9 @@ void controller_manage(mut_model_t *pmodel) {
     static unsigned long stato_ts                    = 0;
     static uint8_t       program_payed               = -1;
     static uint8_t       digital_coin_reader_enabled = -1;
-    static uint8_t       pending_state_change        = 0;
     machine_response_t   machine_response;
 
-#if 0
-    msc_response_t       msc_response;
+    msc_response_t msc_response;
 
     size_t current_program_num = model_get_program_num(pmodel);
     if (program_payed != model_lavaggio_pagato(pmodel, current_program_num)) {
@@ -55,26 +56,37 @@ void controller_manage(mut_model_t *pmodel) {
             case MSC_RESPONSE_CODE_ARCHIVE_EXTRACTION_COMPLETE:
                 configuration_load_all_data(pmodel);
                 model_set_drive_mounted(pmodel, msc_is_device_mounted());
-                view_event((view_event_t){.code = VIEW_EVENT_CODE_CONFIGURATION_LOADED, .error = msc_response.error});
                 break;
 
             case MSC_RESPONSE_CODE_ARCHIVE_SAVING_COMPLETE:
                 ESP_LOGI(TAG, "Configuration saved!");
                 model_set_drive_mounted(pmodel, msc_is_device_mounted());
-                view_event((view_event_t){.code = VIEW_EVENT_CODE_CONFIGURATION_SAVED, .error = msc_response.error});
                 break;
         }
+
+        if (msc_response.error) {
+            pmodel->system.storage_status = STORAGE_STATUS_ERROR;
+        } else {
+            pmodel->system.storage_status = STORAGE_STATUS_DONE;
+        }
     }
-#endif
 
     if (timestamp_is_expired(stato_ts, 500)) {
-        //model_set_drive_mounted(pmodel, msc_is_device_mounted());
-        //msc_read_archives(pmodel);
+        model_set_drive_mounted(pmodel, msc_is_device_mounted());
+        msc_read_archives(pmodel);
+
         machine_richiedi_stato();
-        //view_event((view_event_t){.code = VIEW_EVENT_CODE_DEVICE_UPDATE});
+        if (pmodel->run.test_mode) {
+            machine_richiedi_dati_test();
+        }
+
         stato_ts = timestamp_get();
     }
 
+    if (model_should_clear_test_outputs(pmodel)) {
+        model_test_outputs_clear(pmodel);
+        machine_imposta_uscita_singola(0, 0);
+    }
 
     if (machine_ricevi_risposta(&machine_response)) {
         switch (machine_response.code) {
@@ -97,7 +109,6 @@ void controller_manage(mut_model_t *pmodel) {
 
             case MACHINE_RESPONSE_CODE_ERRORE_COMUNICAZIONE:
                 pmodel->system.errore_comunicazione = 1;
-                // view_event((view_event_t){.code = VIEW_EVENT_CODE_MODEL_UPDATE});
                 break;
 
             case MACHINE_RESPONSE_CODE_PRESENTAZIONI: {
@@ -152,11 +163,10 @@ void controller_manage(mut_model_t *pmodel) {
 
             case MACHINE_RESPONSE_CODE_TEST:
                 pmodel->test = machine_response.test;
-                // view_event((view_event_t){.code = VIEW_EVENT_CODE_MODEL_UPDATE});
                 break;
 
             case MACHINE_RESPONSE_CODE_STATO: {
-                ESP_LOGI(TAG, "LEttora stato");
+                ESP_LOGD(TAG, "Lettura stato");
                 if (machine_read_state(pmodel)) {
                     pending_state_change = 0;
                 }
@@ -213,5 +223,42 @@ void controller_manage(mut_model_t *pmodel) {
         }
     }
 
-    controller_gui_manage();
+    controller_gui_manage(pmodel);
+}
+
+
+void controller_start_program(model_t *model) {
+    if (pending_state_change) {
+        return;
+    }
+    if (model_get_program(model)->num_steps > 0) {
+        // Se eri fermo assicurati di ripartire da 0, in pausa potrei aver
+        // selezionato un nuovo step
+        if (model_macchina_in_stop(model)) {
+            model_azzera_lavaggio(model);
+        }
+
+        pending_state_change = 1;
+        machine_azzera_allarmi();
+        machine_start(model_get_program_num(model));
+
+        // Se nel frattempo ho scelto un altro step devo mandare quello nuovo
+        if (model_macchina_in_pausa(model) && (int)model->run.macchina.numero_step != model->run.num_step_corrente) {
+            machine_esegui_step(model_get_current_step(model), model_get_current_step_number(model));
+        } else {     // Altrimenti l'ho cominciato e devo mandare i parametri macchina
+            machine_invia_parmac(&model->prog.parmac);
+        }
+    }
+}
+
+
+void controller_stop_program(void) {
+    pending_state_change = 1;
+    machine_stop();
+}
+
+
+void controller_pause_program(void) {
+    pending_state_change = 1;
+    machine_pause();
 }

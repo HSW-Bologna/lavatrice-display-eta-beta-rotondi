@@ -22,8 +22,8 @@ typedef struct {
 void                    msc_init(void);
 size_t                  msc_read_archives(model_t *pmodel);
 removable_drive_state_t msc_is_device_mounted(void);
-void                    msc_extract_archive(name_t archive);
+void                    msc_extract_archive(const name_t archive);
 int                     msc_get_response(msc_response_t *response);
-void                    msc_save_archive(name_t archive);
+void                    msc_save_archive(const name_t archive);
 
 #endif

@@ -108,6 +108,7 @@ int configuration_copy_from_tar(mtar_t *tar, const char *name, size_t total) {
     while (total > 0) {
         size_t nread = total < sizeof(buf) ? total : sizeof(buf);
         if (mtar_read_data(tar, buf, nread) != MTAR_ESUCCESS) {
+            ESP_LOGE(TAG, "Errore nella lettura dell'archivio!");
             close(fd_to);
             return -1;
         }
@@ -120,6 +121,7 @@ int configuration_copy_from_tar(mtar_t *tar, const char *name, size_t total) {
             nwritten = write(fd_to, out_ptr, nread);
 
             if (nwritten >= 0) {
+                ESP_LOGE(TAG, "Errore nella scrittura di %s: %s", to, strerror(errno));
                 nread -= nwritten;
                 out_ptr += nwritten;
             } else {

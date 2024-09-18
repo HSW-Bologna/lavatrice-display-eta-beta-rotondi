@@ -7,6 +7,7 @@
 #include "controller/controller.h"
 #include "controller/gui.h"
 #include "bsp/rs232.h"
+#include "bsp/msc.h"
 
 
 static const char *TAG = "Main";
@@ -18,9 +19,10 @@ void app_main(void *arg) {
     mut_model_t model = {0};
 
     bsp_rs232_init();
+    msc_init();
 
     model_init(&model);
-    view_init(&model, controller_process_message, NULL, NULL);
+    view_init(&model, controller_process_message, NULL, NULL, controller_gui_protocol);
     controller_init(&model);
 
     ESP_LOGI(TAG, "Begin main loop");

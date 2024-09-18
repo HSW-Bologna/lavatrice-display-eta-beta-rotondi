@@ -38,8 +38,7 @@ static void open_page(pman_handle_t handle, void *state) {
 
     model_t *model = view_get_model(handle);
 
-    view_common_create_title(lv_scr_act(), view_intl_get_string(model, STRINGS_TEMPERATURA), BTN_BACK_ID, -1,
-                             BTN_NEXT_ID);
+    view_common_create_title(lv_scr_act(), view_intl_get_string(model, STRINGS_TEMPERATURA), BTN_BACK_ID, BTN_NEXT_ID);
 
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
     lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES - 56);
@@ -115,7 +114,8 @@ static void update_page(model_t *model, struct page_data *pdata) {
     (void)pdata;
 
     lv_label_set_text_fmt(pdata->label_temperature, "%s: %3i C [%04i]",
-                          view_intl_get_string(model, STRINGS_TEMPERATURA), 0, 0);
+                          view_intl_get_string(model, STRINGS_TEMPERATURA), model->run.macchina.temperatura,
+                          model->test.adc_temp);
 }
 
 

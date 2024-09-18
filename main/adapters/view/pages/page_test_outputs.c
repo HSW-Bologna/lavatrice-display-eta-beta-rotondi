@@ -42,7 +42,7 @@ static void open_page(pman_handle_t handle, void *state) {
 
     model_t *model = view_get_model(handle);
 
-    view_common_create_title(lv_scr_act(), view_intl_get_string(model, STRINGS_USCITE), BTN_BACK_ID, -1, BTN_NEXT_ID);
+    view_common_create_title(lv_scr_act(), view_intl_get_string(model, STRINGS_USCITE), BTN_BACK_ID, BTN_NEXT_ID);
 
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
     lv_obj_set_style_pad_column(cont, 6, LV_STATE_DEFAULT);
@@ -58,7 +58,7 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_clear_flag(btn, LV_OBJ_FLAG_SCROLLABLE);
         lv_obj_set_style_radius(btn, 4, LV_STATE_DEFAULT);
         lv_obj_set_size(btn, 52, 52);
-        view_register_object_default_callback(btn, BTN_OUTPUT_ID);
+        view_register_object_default_callback_with_number(btn, BTN_OUTPUT_ID, i);
 
         lv_obj_t *led = lv_led_create(btn);
         lv_obj_add_flag(led, LV_OBJ_FLAG_EVENT_BUBBLE);
@@ -89,13 +89,13 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
     switch (event.tag) {
         case PMAN_EVENT_TAG_OPEN:
+            view_get_protocol(handle)->set_test_mode(handle, 1);
             break;
 
         case PMAN_EVENT_TAG_USER: {
             view_event_t *view_event = event.as.user;
             switch (view_event->tag) {
                 case VIEW_EVENT_TAG_PAGE_WATCHER: {
-                    update_page(model, pdata);
                     break;
                 }
 
@@ -113,11 +113,23 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                 case LV_EVENT_CLICKED: {
                     switch (obj_data->id) {
                         case BTN_BACK_ID:
+                            view_get_protocol(handle)->clear_outputs(handle);
+                            view_get_protocol(handle)->set_test_mode(handle, 0);
                             msg.stack_msg = PMAN_STACK_MSG_BACK();
                             break;
 
                         case BTN_NEXT_ID:
+                            view_get_protocol(handle)->clear_outputs(handle);
                             msg.stack_msg = PMAN_STACK_MSG_SWAP(&page_test_drum);
+                            break;
+
+                        case BTN_OUTPUT_ID:
+                            if (obj_data->number == model->run.test_output_active) {
+                                view_get_protocol(handle)->clear_outputs(handle);
+                            } else {
+                                view_get_protocol(handle)->set_output(handle, obj_data->number, 1);
+                            }
+                            update_page(model, pdata);
                             break;
                     }
                     break;
@@ -138,8 +150,13 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
 
 static void update_page(model_t *model, struct page_data *pdata) {
-    (void)model;
-    (void)pdata;
+    for (int16_t i = 0; i < NUM_OUTPUTS; i++) {
+        if (model->run.test_output_active == i) {
+            lv_led_on(pdata->led_outputs[i]);
+        } else {
+            lv_led_off(pdata->led_outputs[i]);
+        }
+    }
 }
 
 

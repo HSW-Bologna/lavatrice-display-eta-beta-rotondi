@@ -16,7 +16,7 @@
 #include "ff.h"
 #include "esp_vfs.h"
 #include "errno.h"
-#include "archive_management.h"
+#include "controller/configuration/archive_management.h"
 #include "config/app_config.h"
 #include "msc.h"
 
@@ -84,7 +84,7 @@ void msc_init(void) {
     message_queue = xQueueCreateStatic(sizeof(message_queue_buffer) / sizeof(task_message_t), sizeof(task_message_t),
                                        message_queue_buffer, &static_message_queue);
 
-    static uint8_t       response_queue_buffer[sizeof(task_message_t) * 4] = {0};
+    static uint8_t       response_queue_buffer[sizeof(msc_response_t) * 4] = {0};
     static StaticQueue_t static_response_queue;
     response_queue = xQueueCreateStatic(sizeof(response_queue_buffer) / sizeof(msc_response_t), sizeof(msc_response_t),
                                         response_queue_buffer, &static_response_queue);
@@ -130,14 +130,14 @@ removable_drive_state_t msc_is_device_mounted(void) {
 }
 
 
-void msc_extract_archive(name_t archive) {
+void msc_extract_archive(const name_t archive) {
     task_message_t message = {.code = TASK_MESSAGE_CODE_LOAD_ARCHIVE};
     strcpy(message.archive_name, archive);
     xQueueSend(message_queue, &message, portMAX_DELAY);
 }
 
 
-void msc_save_archive(name_t archive) {
+void msc_save_archive(const name_t archive) {
     task_message_t message = {.code = TASK_MESSAGE_CODE_SAVE_ARCHIVE};
     strcpy(message.archive_name, archive);
     xQueueSend(message_queue, &message, portMAX_DELAY);

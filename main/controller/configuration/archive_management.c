@@ -7,7 +7,6 @@
 #include "esp_log.h"
 #include "microtar.h"
 #include "zlib.h"
-#include "model/model.h"
 #include "archive_management.h"
 #include "bsp/storage.h"
 #include "configuration.h"
@@ -166,7 +165,6 @@ size_t archive_management_copy_archive_names(char **strings, name_t **archives, 
         name_t *archives_array = malloc(sizeof(name_t) * len);
         assert(archives_array != NULL);
 
-
         char tmp[64] = {0};
 
         for (size_t i = 0; i < len; i++) {
@@ -196,7 +194,7 @@ int archive_management_list_archives(const char *path, char ***strings) {
 
     while ((dir = readdir(d)) != NULL) {
         if (is_archive(dir)) {
-            ESP_LOGI(TAG, "Found archive %s", dir->d_name);
+            //ESP_LOGI(TAG, "Found archive %s", dir->d_name);
             count++;
         }
     }

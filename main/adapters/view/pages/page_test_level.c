@@ -17,7 +17,6 @@ enum {
     BTN_BACK_ID,
     BTN_NEXT_ID,
     BTN_CALIBRATION_ID,
-    BTN_CLEAR_LITERS_ID,
 };
 
 
@@ -40,7 +39,7 @@ static void open_page(pman_handle_t handle, void *state) {
 
     model_t *model = view_get_model(handle);
 
-    view_common_create_title(lv_scr_act(), view_intl_get_string(model, STRINGS_LIVELLO), BTN_BACK_ID, -1, BTN_NEXT_ID);
+    view_common_create_title(lv_scr_act(), view_intl_get_string(model, STRINGS_LIVELLO), BTN_BACK_ID, BTN_NEXT_ID);
 
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
     lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES - 56);
@@ -52,23 +51,16 @@ static void open_page(pman_handle_t handle, void *state) {
 
     {
         lv_obj_t *btn = lv_button_create(cont);
-        lv_obj_set_size(btn, 96, 48);
+        lv_obj_set_size(btn, 128, 48);
         lv_obj_t *lbl = lv_label_create(btn);
         lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_CALIBRAZIONE));
         lv_obj_center(lbl);
         view_register_object_default_callback(btn, BTN_CALIBRATION_ID);
-        lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, 0);
     }
 
-    {
-        lv_obj_t *btn = lv_button_create(cont);
-        lv_obj_set_size(btn, 96, 48);
-        lv_obj_t *lbl = lv_label_create(btn);
-        lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_AZZERA_LITRI));
-        lv_obj_center(lbl);
-        view_register_object_default_callback(btn, BTN_CLEAR_LITERS_ID);
-        lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
-    }
+    VIEW_ADD_WATCHED_VARIABLE(&model->test.adc_press, 0);
+    VIEW_ADD_WATCHED_VARIABLE(&model->test.offset_press, 0);
 
     update_page(model, pdata);
 }
@@ -83,6 +75,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
     switch (event.tag) {
         case PMAN_EVENT_TAG_OPEN:
+            view_get_protocol(handle)->set_test_mode(handle, 1);
             break;
 
         case PMAN_EVENT_TAG_USER: {
@@ -107,11 +100,16 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                 case LV_EVENT_CLICKED: {
                     switch (obj_data->id) {
                         case BTN_BACK_ID:
+                            view_get_protocol(handle)->set_test_mode(handle, 0);
                             msg.stack_msg = PMAN_STACK_MSG_BACK();
                             break;
 
                         case BTN_NEXT_ID:
                             msg.stack_msg = PMAN_STACK_MSG_SWAP(&page_test_temperature);
+                            break;
+
+                        case BTN_CALIBRATION_ID:
+                            view_get_protocol(handle)->pressure_calibration(handle);
                             break;
                     }
                     break;
@@ -135,8 +133,14 @@ static void update_page(model_t *model, struct page_data *pdata) {
     (void)model;
     (void)pdata;
 
-    lv_label_set_text_fmt(pdata->label_level, "%s: %3i cm, %3i lt [%04i]", view_intl_get_string(model, STRINGS_LIVELLO),
-                          0, 0, 0);
+    uint16_t adc = 0;
+    if (model->test.adc_press > model->test.offset_press) {
+        adc = model->test.adc_press - model->test.offset_press;
+    }
+
+    lv_label_set_text_fmt(pdata->label_level, "%s: %3i cm [%04i]\nOffset: %4i [%04i]",
+                          view_intl_get_string(model, STRINGS_LIVELLO), model_get_livello_centimetri(model), adc,
+                          model->test.offset_press, model->test.adc_press);
 }
 
 

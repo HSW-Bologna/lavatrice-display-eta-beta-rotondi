@@ -6,7 +6,7 @@
 
 #define STYLE_FONT_SMALL  (&lv_font_montserrat_16)
 #define STYLE_FONT_MEDIUM (&lv_font_montserrat_24)
-#define STYLE_FONT_BIG    (&lv_font_montserrat_48)
+#define STYLE_FONT_BIG    (&lv_font_montserrat_32)
 #define STYLE_FONT_HUGE   (&font_montserrat_48)
 
 #define VIEW_STYLE_PRIMARY     (lv_color_darken(((lv_color_t)lv_color_make(0x9e, 0xc1, 0xe7)), LV_OPA_30))

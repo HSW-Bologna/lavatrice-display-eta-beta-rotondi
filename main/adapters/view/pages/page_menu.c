@@ -14,8 +14,10 @@ struct page_data {
 
 
 enum {
-    BACK_BTN_ID,
-    TEST_BTN_ID,
+    BTN_BACK_ID,
+    BTN_TEST_ID,
+    BTN_ARCHIVING_ID,
+    BTN_PARMAC_ID,
 };
 
 
@@ -39,7 +41,7 @@ static void open_page(pman_handle_t handle, void *state) {
     model_t *model = view_get_model(handle);
 
 
-    view_common_create_title(lv_scr_act(), "Impostazioni", BACK_BTN_ID, -1, -1);
+    view_common_create_title(lv_scr_act(), view_intl_get_string(model, STRINGS_IMPOSTAZIONI), BTN_BACK_ID, -1);
 
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
     lv_obj_set_style_pad_column(cont, 16, LV_STATE_DEFAULT);
@@ -51,12 +53,22 @@ static void open_page(pman_handle_t handle, void *state) {
 
     {
         lv_obj_t *btn = lv_btn_create(cont);
-        lv_obj_set_size(btn, 180, 80);
+        lv_obj_set_flex_grow(btn, 1);
         lv_obj_t *lbl = lv_label_create(btn);
         lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_DIAGNOSI));
         lv_obj_set_style_text_font(lbl, STYLE_FONT_MEDIUM, LV_STATE_DEFAULT);
         lv_obj_center(lbl);
-        view_register_object_default_callback(btn, TEST_BTN_ID);
+        view_register_object_default_callback(btn, BTN_TEST_ID);
+    }
+
+    {
+        lv_obj_t *btn = lv_btn_create(cont);
+        lv_obj_set_flex_grow(btn, 1);
+        lv_obj_t *lbl = lv_label_create(btn);
+        lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_PARAMETRI));
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_MEDIUM, LV_STATE_DEFAULT);
+        lv_obj_center(lbl);
+        view_register_object_default_callback(btn, BTN_PARMAC_ID);
     }
 
     update_page(model, pdata);
@@ -96,12 +108,20 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
             switch (lv_event_get_code(event.as.lvgl)) {
                 case LV_EVENT_CLICKED: {
                     switch (obj_data->id) {
-                        case BACK_BTN_ID:
+                        case BTN_BACK_ID:
                             msg.stack_msg = PMAN_STACK_MSG_BACK();
                             break;
 
-                        case TEST_BTN_ID:
+                        case BTN_TEST_ID:
                             msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_test_inputs);
+                            break;
+
+                        case BTN_ARCHIVING_ID:
+                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_archiving);
+                            break;
+
+                        case BTN_PARMAC_ID:
+                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_parmac);
                             break;
                     }
                     break;

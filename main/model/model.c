@@ -4,6 +4,7 @@
 #include <string.h>
 #include "model.h"
 #include "services/serializer.h"
+#include "services/timestamp.h"
 #include "esp_log.h"
 
 
@@ -21,6 +22,7 @@ void model_init(model_t *pmodel) {
     pmodel->system.num_archivi             = 0;
     pmodel->run.maybe_programma            = 0;
     pmodel->run.f_richiedi_scarico         = 0;
+    pmodel->run.test_output_active         = -1;
     pmodel->prog.contrast                  = 0x1A;
 
     pmodel->run.digital_coin_reader_test_override = TEST_OVERRIDE_NONE;
@@ -1219,4 +1221,32 @@ void program_deserialize_preview(model_t *pmodel, programma_preview_t *p, uint8_
     p->livello     = max_level;
     p->velocita    = max_speed_centrifuge > 0 ? max_speed_centrifuge : max_speed_wash;
     p->durata      = duration;
+}
+
+
+void model_test_output_activate(mut_model_t *model, uint16_t output) {
+    assert(model != NULL);
+    if (output == RESISTORS_OUTPUT_INDEX) {
+        model->run.resistors_ts = timestamp_get();
+    }
+    model->run.test_output_active = output;
+}
+
+
+void model_test_outputs_clear(mut_model_t *model) {
+    assert(model != NULL);
+    model->run.test_output_active = -1;
+}
+
+
+uint8_t model_should_clear_test_outputs(mut_model_t *model) {
+    assert(model != NULL);
+    return model->run.test_mode && model->run.test_output_active == RESISTORS_OUTPUT_INDEX &&
+           timestamp_is_expired(model->run.resistors_ts, 15000UL);
+}
+
+
+void model_reset_storage_operation(mut_model_t *model) {
+    assert(model != NULL);
+    model->system.storage_status = STORAGE_STATUS_READY;
 }

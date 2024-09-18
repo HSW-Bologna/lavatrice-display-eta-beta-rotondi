@@ -39,11 +39,12 @@ static void open_page(pman_handle_t handle, void *state) {
 
     model_t *model = view_get_model(handle);
 
-    view_common_create_title(lv_scr_act(), view_intl_get_string(model, STRINGS_GETTONI), BTN_BACK_ID, -1, BTN_NEXT_ID);
+    view_common_create_title(lv_scr_act(), view_intl_get_string(model, STRINGS_GETTONI), BTN_BACK_ID, BTN_NEXT_ID);
 
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
     lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES - 56);
     lv_obj_align(cont, LV_ALIGN_BOTTOM_MID, 0, 0);
+    lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
 
     lv_obj_t *table = lv_table_create(cont);
     lv_obj_set_style_pad_all(table, 2, LV_STATE_DEFAULT | LV_PART_ITEMS);
@@ -85,6 +86,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
     switch (event.tag) {
         case PMAN_EVENT_TAG_OPEN:
+            view_get_protocol(handle)->set_test_mode(handle, 1);
             break;
 
         case PMAN_EVENT_TAG_USER: {
@@ -109,6 +111,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                 case LV_EVENT_CLICKED: {
                     switch (obj_data->id) {
                         case BTN_BACK_ID:
+                            view_get_protocol(handle)->set_test_mode(handle, 0);
                             msg.stack_msg = PMAN_STACK_MSG_BACK();
                             break;
 

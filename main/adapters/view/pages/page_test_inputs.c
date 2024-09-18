@@ -8,7 +8,9 @@
 #include "../intl/intl.h"
 
 
-#define NUM_INPUTS 17
+#define NUM_NATIVE_INPUTS 13
+#define NUM_EXP_INPUTS    4
+#define NUM_INPUTS        (NUM_NATIVE_INPUTS + NUM_EXP_INPUTS)
 
 
 struct page_data {
@@ -41,7 +43,7 @@ static void open_page(pman_handle_t handle, void *state) {
 
     model_t *model = view_get_model(handle);
 
-    view_common_create_title(lv_scr_act(), view_intl_get_string(model, STRINGS_INGRESSI), BTN_BACK_ID, -1, BTN_NEXT_ID);
+    view_common_create_title(lv_scr_act(), view_intl_get_string(model, STRINGS_INGRESSI), BTN_BACK_ID, BTN_NEXT_ID);
 
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
     lv_obj_set_style_pad_column(cont, 6, LV_STATE_DEFAULT);
@@ -71,6 +73,9 @@ static void open_page(pman_handle_t handle, void *state) {
         pdata->led_input[i] = led;
     }
 
+    VIEW_ADD_WATCHED_VARIABLE(&model->test.inputs, 0);
+    VIEW_ADD_WATCHED_VARIABLE(&model->test.inputs_exp, 0);
+
     update_page(model, pdata);
 }
 
@@ -84,6 +89,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
     switch (event.tag) {
         case PMAN_EVENT_TAG_OPEN:
+            view_get_protocol(handle)->set_test_mode(handle, 1);
             break;
 
         case PMAN_EVENT_TAG_USER: {
@@ -108,6 +114,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                 case LV_EVENT_CLICKED: {
                     switch (obj_data->id) {
                         case BTN_BACK_ID:
+                            view_get_protocol(handle)->set_test_mode(handle, 0);
                             msg.stack_msg = PMAN_STACK_MSG_BACK();
                             break;
 
@@ -133,8 +140,20 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
 
 static void update_page(model_t *model, struct page_data *pdata) {
-    (void)model;
-    (void)pdata;
+    for (size_t i = 0; i < NUM_NATIVE_INPUTS; i++) {
+        if (model->test.inputs & (1 << i)) {
+            lv_led_off(pdata->led_input[i]);
+        } else {
+            lv_led_on(pdata->led_input[i]);
+        }
+    }
+    for (size_t i = 0; i < NUM_EXP_INPUTS; i++) {
+        if (model->test.inputs_exp & (1 << i)) {
+            lv_led_off(pdata->led_input[i + NUM_NATIVE_INPUTS]);
+        } else {
+            lv_led_on(pdata->led_input[i + NUM_NATIVE_INPUTS]);
+        }
+    }
 }
 
 

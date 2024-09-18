@@ -283,6 +283,7 @@ void machine_richiedi_stato(void) {
 void machine_test(int test) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_COMANDO_SEMPLICE,
                                    .test = test ? ENTRA_IN_TEST : ESCI_DAL_TEST};
+    ESP_LOGI(TAG, "Test %i", test);
     xQueueSend(requestq, &richiesta, portMAX_DELAY);
 }
 
@@ -312,6 +313,7 @@ void machine_imposta_led(uint8_t led) {
 
 
 void machine_imposta_uscita_singola(size_t uscita, int valore) {
+    ESP_LOGI(TAG, "Uscita %zu %i", uscita, valore);
     machine_request_t richiesta = {
         .code = MACHINE_REQUEST_CODE_IMPOSTA_USCITA, .uscita = uscita, .singola = 1, .valore = valore};
     xQueueSend(requestq, &richiesta, portMAX_DELAY);

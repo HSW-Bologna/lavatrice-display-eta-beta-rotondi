@@ -12,6 +12,4 @@ typedef struct __attribute__((__packed__)) {
     const char ***valori;
 } parameter_user_data_t;
 
-#define C_PARAMETER_MAX_SIZE 2
-
 #endif

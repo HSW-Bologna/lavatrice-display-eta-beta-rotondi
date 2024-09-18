@@ -46,7 +46,7 @@ static void open_page(pman_handle_t handle, void *state) {
     pdata->valid  = 0;
     pdata->lockts = 0;
 
-    view_common_create_title(lv_scr_act(), "Password", BACK_BTN_ID, -1, -1);
+    view_common_create_title(lv_scr_act(), "Password", BACK_BTN_ID, -1);
 
     static const char *kbmap[] = {
         "1", "2", "3", "4", "5", "\n", "6", "7", "8", "9", "0", "\n", LV_SYMBOL_BACKSPACE, LV_SYMBOL_OK, "",
@@ -56,7 +56,7 @@ static void open_page(pman_handle_t handle, void *state) {
     };
 
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
-    lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES - 64);
+    lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES - 56);
     lv_obj_add_style(cont, (lv_style_t *)&style_padless_cont, LV_STATE_DEFAULT);
     lv_obj_align(cont, LV_ALIGN_BOTTOM_MID, 0, 0);
 

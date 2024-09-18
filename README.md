@@ -1,1 +1,5 @@
-Template for esp32 projects with UI.
+# Lavatrice Eta Beta
+
+## TODO
+
+ - Add return timer to all settings pages

@@ -15,4 +15,6 @@
 
 #define VER_DATI 3
 
+#define APP_CONFIG_PAGE_TIMEOUT     60UL * 1000UL
+
 #endif

@@ -48,6 +48,8 @@
 
 #define NUM_LINGUE 5
 
+#define RESISTORS_OUTPUT_INDEX 0
+
 #if NUM_LINGUE > MAX_LINGUE
 #error "Too many languages!"
 #endif
@@ -88,6 +90,14 @@ typedef enum {
     NETWORK_SCANNING,
     NETWORK_INACTIVE,
 } network_status_t;
+
+
+typedef enum {
+    STORAGE_STATUS_READY = 0,
+    STORAGE_STATUS_LOADING,
+    STORAGE_STATUS_DONE,
+    STORAGE_STATUS_ERROR,
+} storage_status_t;
 
 typedef struct {
     name_t   nome;
@@ -382,6 +392,9 @@ typedef struct {
         int     livello_accesso_temporaneo;
 
         test_override_t digital_coin_reader_test_override;
+        uint8_t         test_mode;
+        int16_t         test_output_active;
+        unsigned long   resistors_ts;
     } run;     // Informazioni relative all'esecuzione attuale (sia della scheda quadro che dell'applicazione)
 
     struct {
@@ -401,6 +414,8 @@ typedef struct {
         int comunicazione_abilitata;
 
         unsigned int debug_code;
+
+        storage_status_t storage_status;
     } system;     // Dati del sistema Linux sottostante
 } model_t;
 
@@ -464,5 +479,9 @@ int                        model_get_velocita_corretta(model_t *model);
 void         program_deserialize_preview(model_t *pmodel, programma_preview_t *p, uint8_t *buffer, uint16_t lingua);
 int          model_gettoniera_digitale_abilitata(model_t *pmodel);
 unsigned int model_get_credito_gettoniera_digitale(model_t *model);
+void         model_test_output_activate(mut_model_t *model, uint16_t output);
+void         model_test_outputs_clear(mut_model_t *model);
+uint8_t      model_should_clear_test_outputs(mut_model_t *model);
+void         model_reset_storage_operation(mut_model_t *model);
 
 #endif

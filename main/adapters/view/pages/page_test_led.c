@@ -38,8 +38,7 @@ static void open_page(pman_handle_t handle, void *state) {
 
     model_t *model = view_get_model(handle);
 
-    view_common_create_title(lv_scr_act(), view_intl_get_string(model, STRINGS_LED), BTN_BACK_ID, -1,
-                             BTN_NEXT_ID);
+    view_common_create_title(lv_scr_act(), view_intl_get_string(model, STRINGS_LED), BTN_BACK_ID, BTN_NEXT_ID);
 
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
     lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES - 56);
@@ -52,8 +51,8 @@ static void open_page(pman_handle_t handle, void *state) {
 
     char            options[128] = {0};
     const strings_t colors[8]    = {
-           STRINGS_SPENTO, STRINGS_ROSSO,    STRINGS_VERDE,    STRINGS_BLU,
-           STRINGS_GIALLO, STRINGS_VIOLETTO, STRINGS_TURCHESE, STRINGS_BIANCO,
+        STRINGS_SPENTO, STRINGS_ROSSO,    STRINGS_VERDE,    STRINGS_BLU,
+        STRINGS_GIALLO, STRINGS_VIOLETTO, STRINGS_TURCHESE, STRINGS_BIANCO,
     };
     for (size_t i = 0; i < 8; i++) {
         strcat(options, view_intl_get_string(model, colors[i]));
