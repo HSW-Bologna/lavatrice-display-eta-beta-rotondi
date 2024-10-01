@@ -44,7 +44,7 @@ static void open_page(pman_handle_t handle, void *state) {
     view_common_create_title(lv_scr_act(), view_intl_get_string(model, STRINGS_IMPOSTAZIONI), BTN_BACK_ID, -1);
 
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
-    lv_obj_set_style_pad_column(cont, 16, LV_STATE_DEFAULT);
+    lv_obj_set_style_pad_column(cont, 8, LV_STATE_DEFAULT);
     lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES - 56);
     lv_obj_set_layout(cont, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(cont, LV_FLEX_FLOW_ROW_WRAP);
@@ -53,22 +53,32 @@ static void open_page(pman_handle_t handle, void *state) {
 
     {
         lv_obj_t *btn = lv_btn_create(cont);
-        lv_obj_set_flex_grow(btn, 1);
+        lv_obj_set_width(btn, 140);
         lv_obj_t *lbl = lv_label_create(btn);
         lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_DIAGNOSI));
-        lv_obj_set_style_text_font(lbl, STYLE_FONT_MEDIUM, LV_STATE_DEFAULT);
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
         lv_obj_center(lbl);
         view_register_object_default_callback(btn, BTN_TEST_ID);
     }
 
     {
         lv_obj_t *btn = lv_btn_create(cont);
-        lv_obj_set_flex_grow(btn, 1);
+        lv_obj_set_width(btn, 140);
         lv_obj_t *lbl = lv_label_create(btn);
         lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_PARAMETRI));
-        lv_obj_set_style_text_font(lbl, STYLE_FONT_MEDIUM, LV_STATE_DEFAULT);
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
         lv_obj_center(lbl);
         view_register_object_default_callback(btn, BTN_PARMAC_ID);
+    }
+
+    {
+        lv_obj_t *btn = lv_btn_create(cont);
+        lv_obj_set_width(btn, 140);
+        lv_obj_t *lbl = lv_label_create(btn);
+        lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_ARCHIVIAZIONE));
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        lv_obj_center(lbl);
+        view_register_object_default_callback(btn, BTN_ARCHIVING_ID);
     }
 
     update_page(model, pdata);

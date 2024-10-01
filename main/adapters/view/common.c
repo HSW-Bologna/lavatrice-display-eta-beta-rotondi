@@ -17,6 +17,15 @@ void view_common_set_hidden(lv_obj_t *obj, uint8_t hidden) {
 }
 
 
+void view_common_set_disabled(lv_obj_t *obj, uint8_t disabled) {
+    if (disabled) {
+        lv_obj_add_state(obj, LV_STATE_DISABLED);
+    } else {
+        lv_obj_clear_state(obj, LV_STATE_DISABLED);
+    }
+}
+
+
 password_page_options_t *view_common_default_password_page_options(pman_stack_msg_t msg, const char *password) {
     password_page_options_t *fence = (password_page_options_t *)lv_malloc(sizeof(password_page_options_t));
     assert(fence != NULL);
@@ -208,5 +217,44 @@ const char *view_require_payment_string(model_t *pmodel, int language) {
 
         default:
             return "";
+    }
+}
+
+
+const char *view_common_step2str(model_t *model, uint16_t step) {
+    const strings_t step2str[NUM_STEPS] = {
+        STRINGS_AMMOLLO, STRINGS_PRELAVAGGIO, STRINGS_LAVAGGIO,     STRINGS_RISCIACQUO,
+        STRINGS_SCARICO, STRINGS_CENTRIFUGA,  STRINGS_SROTOLAMENTO, STRINGS_ATTESA_OPERATORE,
+    };
+
+    assert(step <= NUM_STEPS && step > 0);
+    return view_intl_get_string(model, step2str[step - 1]);
+}
+
+
+const char *view_common_pedantic_string(model_t *pmodel) {
+    const strings_t pedantic2str[] = {
+        STRINGS_PRECARICA_IN_CORSO,
+        STRINGS_ATTESA_LIVELLO_E_TEMPERATURA,
+        STRINGS_ATTESA_LIVELLO,
+        STRINGS_ATTESA_TEMPERATURA,
+        STRINGS_RIEMPIMENTO,
+        STRINGS_ATTESA_TERMODEGRADAZIONE,
+        STRINGS_ATTESA_LIVELLO_SCARICO,
+        STRINGS_PRESCARICO,
+        STRINGS_PREPARAZIONE,
+        STRINGS_RAGGIUNGIMENTO_VELOCITA,
+        STRINGS_IN_FRENATA,
+        STRINGS_ATTESA_FRENATA,
+        STRINGS_SCARICO_FORZATO,
+        STRINGS_RECUPERO,
+        STRINGS_USCITA_LAVAGGIO,
+    };
+
+    if (pmodel->run.macchina.descrizione_pedante > sizeof(pedantic2str) / sizeof(pedantic2str[0]) ||
+        pmodel->run.macchina.descrizione_pedante == 0) {
+        return "";
+    } else {
+        return view_intl_get_string(pmodel, pedantic2str[pmodel->run.macchina.descrizione_pedante - 1]);
     }
 }

@@ -365,6 +365,7 @@ static void communication_task(void *args) {
                 errore_comunicazione = task_gestisci_richiesta(ultima_richiesta_fallita);
                 if (errore_comunicazione) {
                     ESP_LOGW(TAG, "Risposta assente o non valida (durante il riavvio)!");
+                    vTaskDelay(pdMS_TO_TICKS(2000));
                     xQueueSend(responseq, &risposta_errore, portMAX_DELAY);
                     continue;
                 }
@@ -453,17 +454,17 @@ static int task_gestisci_richiesta(machine_request_t request) {
             deserialize_uint8(&risposta_task.presentazioni.nro_step, &risposta_pacchetto.data[5]);
 
             // Versione di firmware della macchina
-            char string[64];
+            char string[32];
             strcpy(string, (char *)&risposta_pacchetto.data[6]);
             char *dash = strchr(string, '-');
             if (dash) {
                 *dash = '\0';
                 dash++;
                 memset(risposta_task.presentazioni.machine_fw_date, 0, STRING_NAME_SIZE);
-                strncpy(risposta_task.presentazioni.machine_fw_date, dash, STRING_NAME_SIZE);
+                strncpy(risposta_task.presentazioni.machine_fw_date, dash, STRING_NAME_SIZE - 1);
             }
             memset(risposta_task.presentazioni.machine_fw_version, 0, STRING_NAME_SIZE);
-            strncpy(risposta_task.presentazioni.machine_fw_version, string, MAX_NAME_LENGTH);
+            strncpy(risposta_task.presentazioni.machine_fw_version, string, STRING_NAME_SIZE - 1);
 
             xQueueSend(responseq, &risposta_task, portMAX_DELAY);
             break;
@@ -645,11 +646,13 @@ static int invia_pacchetto(int comando, uint8_t *dati, uint16_t lunghezza_dati, 
         err     = elaborate_data(read_buffer, len, risposta, NULL);
         if (err) {
             ESP_LOGW(TAG, "Risposta non valida al comando 0x%02X: %i (%i)", comando, err, len);
+            vTaskDelay(pdMS_TO_TICKS(RITARDO_MS));
             tentativi++;
         } else {
             if (risposta->data_length > 0 && risposta->data != NULL && risposta->data[0] != comando) {
                 ESP_LOGW(TAG, "Risposta a comando diverso: mi aspettavo %i, ho ricevuto %i", comando,
                          risposta->data[0]);
+                vTaskDelay(pdMS_TO_TICKS(RITARDO_MS));
                 tentativi++;
                 err = 1;
             }

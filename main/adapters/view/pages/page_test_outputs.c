@@ -120,7 +120,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
                         case BTN_NEXT_ID:
                             view_get_protocol(handle)->clear_outputs(handle);
-                            msg.stack_msg = PMAN_STACK_MSG_SWAP(&page_test_drum);
+                            msg.stack_msg = PMAN_STACK_MSG_SWAP_EXTRA(&page_test_drum, (void *)(uintptr_t)0);
                             break;
 
                         case BTN_OUTPUT_ID:

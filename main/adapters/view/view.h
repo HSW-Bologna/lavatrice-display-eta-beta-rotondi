@@ -6,7 +6,7 @@
 #include "page_manager.h"
 
 
-#define VIEW_LVGL_BUFFER_SIZE                    (BUILD_CONFIG_DISPLAY_HORIZONTAL_RESOLUTION * 10)
+#define VIEW_LVGL_BUFFER_SIZE                    (BUILD_CONFIG_DISPLAY_HORIZONTAL_RESOLUTION * 40)
 #define VIEW_ADD_WATCHED_VARIABLE(ptr, code)     view_add_watched_variable((void *)ptr, sizeof(*ptr), code)
 #define VIEW_ADD_WATCHED_ARRAY(ptr, items, code) view_add_watched_variable((void *)ptr, sizeof(*ptr) * items, code)
 
@@ -55,6 +55,9 @@ typedef struct {
     void (*start_program)(pman_handle_t handle);
     void (*stop_program)(pman_handle_t handle);
     void (*pause_program)(pman_handle_t handle);
+    void (*test_dac)(pman_handle_t handle, uint8_t value);
+    void (*unlock_porthole)(pman_handle_t handle, uint8_t force);
+    void (*lock_porthole)(pman_handle_t handle);
 } view_protocol_t;
 
 

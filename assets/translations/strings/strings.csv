@@ -8,6 +8,13 @@ AZZERA_LITRI, Azzera litri, Clear liters
 AZZERA, Azzera, Clear
 CALDA, Calda, Hot
 FREDDA, Fredda, Cold
+AMMOLLO, Ammollo, Soaking
+PRELAVAGGIO, Prelavaggio, Prewash
+LAVAGGIO, Lavaggio, Washing
+RISCIACQUO, Risciacquo, Flushing
+CENTRIFUGA, Centrifuga, Centrifuge
+SROTOLAMENTO, Srotolamento, Unrolling
+ATTESA_OPERATORE, Attesa operatore, Waiting
 SCARICO, Scarico, Drain
 TEMPERATURA, Temperatura, Temperature
 GETTONI, Gettoni, Coins
@@ -31,7 +38,8 @@ CHIUDI, Chiudi, Close
 CHIAVISTELLO, Chiavistello, Bolt
 DIGITALE, Digitale, Digital
 MECCANICA, Meccanica, Mechanical
-CESTO, Cesto, Drum
+MOTORE_AVANTI, Motore avanti, Motor forward
+MOTORE_INDIETRO, Motore indietro, Motor back
 OBLO, Oblo', Porthole
 ARCHIVIAZIONE, Archiviazione, Archiving
 IMPOSTAZIONI, Impostazioni, Settings
@@ -81,3 +89,21 @@ APRIRE_OBLO, APRIRE OBLO, OPEN PORT
 STANDBY_SAPONI, STANDBY SAPONI, DETERGENT STANDBY
 ALLARME, Allarme, Alarm
 PARAMETRI, Parametri, Parameters
+PAUSA_LAVAGGIO, Pausa lavaggio, Cycle pause
+SCARICO_NECESSARIO, Scarico necessario; tenere premuto il tasto stop, Drain required; long press the stop button
+PAUSA_LAVAGGIO, Pausa lavaggio, Cycle pause
+PRECARICA_IN_CORSO, Precarica in corso, Preloading
+ATTESA_LIVELLO_E_TEMPERATURA, Attesa livel. e temp., Wait for temper/level
+ATTESA_LIVELLO, Attesa livello, Waiting for the water level
+ATTESA_TEMPERATURA, Attesa temperatura, Waiting for temperature
+RIEMPIMENTO, Riempimento, Filling up
+ATTESA_TERMODEGRADAZIONE, Att.termodegradazione, Wait for thermal down
+ATTESA_LIVELLO_SCARICO, Attesa livel. scarico, Wait for drain level
+PRESCARICO, Prescarico, Pre-draining
+PREPARAZIONE, Preparazione, Preparing
+RAGGIUNGIMENTO_VELOCITA, Attesa velocita', Warning speed
+IN_FRENATA, In frenata, Stopping due to lurching
+ATTESA_FRENATA, Attesa frenata, Waiting for full stop
+SCARICO_FORZATO, Scarico forzato, Forced drain
+RECUPERO, Recupero, Recovery
+USCITA_LAVAGGIO, Uscita lavaggio, Washing exit

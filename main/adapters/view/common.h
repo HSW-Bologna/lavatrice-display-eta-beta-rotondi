@@ -34,11 +34,14 @@ typedef struct {
 
 void                        view_common_set_hidden(lv_obj_t *obj, uint8_t hidden);
 password_page_options_t    *view_common_default_password_page_options(pman_stack_msg_t msg, const char *password);
-view_title_t         view_common_create_title(lv_obj_t *root, const char *text, int back_id, int next_id);
+view_title_t                view_common_create_title(lv_obj_t *root, const char *text, int back_id, int next_id);
 void                        view_common_image_set_src(lv_obj_t *img, const lv_image_dsc_t *img_dsc);
 communication_error_popup_t view_common_communication_error_popup(lv_obj_t *parent);
 const char                 *view_common_alarm_description(model_t *pmodel);
 const char                 *view_require_payment_string(model_t *pmodel, int language);
+void                        view_common_set_disabled(lv_obj_t *obj, uint8_t disabled);
+const char                 *view_common_step2str(model_t *model, uint16_t step);
+const char                 *view_common_pedantic_string(model_t *pmodel);
 
 
 #endif

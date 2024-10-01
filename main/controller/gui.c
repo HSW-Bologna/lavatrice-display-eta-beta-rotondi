@@ -23,6 +23,9 @@ static void save_parmac(pman_handle_t handle);
 static void start_program(pman_handle_t handle);
 static void stop_program(pman_handle_t handle);
 static void pause_program(pman_handle_t handle);
+static void test_dac(pman_handle_t handle, uint8_t value);
+static void lock_porthole(pman_handle_t handle);
+static void unlock_porthole(pman_handle_t handle, uint8_t force);
 
 
 view_protocol_t controller_gui_protocol = {
@@ -37,6 +40,9 @@ view_protocol_t controller_gui_protocol = {
     .start_program        = start_program,
     .stop_program         = stop_program,
     .pause_program        = pause_program,
+    .test_dac             = test_dac,
+    .unlock_porthole      = unlock_porthole,
+    .lock_porthole        = lock_porthole,
 };
 
 
@@ -142,4 +148,22 @@ static void stop_program(pman_handle_t handle) {
 static void pause_program(pman_handle_t handle) {
     (void)handle;
     controller_pause_program();
+}
+
+
+static void test_dac(pman_handle_t handle, uint8_t value) {
+    (void)handle;
+    machine_imposta_dac(value);
+}
+
+
+static void unlock_porthole(pman_handle_t handle, uint8_t force) {
+    (void)handle;
+    machine_apri_oblo(force);
+}
+
+
+static void lock_porthole(pman_handle_t handle) {
+    (void)handle;
+    machine_chiudi_oblo();
 }

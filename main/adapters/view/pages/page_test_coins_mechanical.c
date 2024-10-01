@@ -47,6 +47,7 @@ static void open_page(pman_handle_t handle, void *state) {
     lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
 
     lv_obj_t *table = lv_table_create(cont);
+    lv_obj_set_style_text_font(table, STYLE_FONT_SMALL, LV_PART_ITEMS);
     lv_obj_set_style_pad_all(table, 2, LV_STATE_DEFAULT | LV_PART_ITEMS);
 
     lv_table_set_col_width(table, 0, 128);

@@ -45,6 +45,7 @@ static void open_page(pman_handle_t handle, void *state) {
     lv_obj_align(cont, LV_ALIGN_BOTTOM_MID, 0, 0);
 
     lv_obj_t *lbl = lv_label_create(cont);
+    lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
     lv_obj_align(lbl, LV_ALIGN_TOP_LEFT, 0, 0);
     pdata->label_temperature = lbl;
 

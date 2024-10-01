@@ -46,6 +46,7 @@ static void open_page(pman_handle_t handle, void *state) {
     lv_obj_align(cont, LV_ALIGN_BOTTOM_MID, 0, 0);
 
     lv_obj_t *table = lv_table_create(cont);
+    lv_obj_set_style_text_font(table, STYLE_FONT_SMALL, LV_PART_ITEMS);
     lv_obj_set_style_pad_all(table, 2, LV_STATE_DEFAULT | LV_PART_ITEMS);
 
     lv_table_set_cell_value(table, 0, 0, view_intl_get_string(model, STRINGS_DIGITALE));

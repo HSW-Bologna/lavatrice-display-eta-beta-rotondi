@@ -46,6 +46,7 @@ static void open_page(pman_handle_t handle, void *state) {
     lv_obj_align(cont, LV_ALIGN_BOTTOM_MID, 0, 0);
 
     lv_obj_t *lbl = lv_label_create(cont);
+    lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
     lv_obj_align(lbl, LV_ALIGN_TOP_LEFT, 0, 0);
     pdata->label_level = lbl;
 
@@ -53,6 +54,7 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_t *btn = lv_button_create(cont);
         lv_obj_set_size(btn, 128, 48);
         lv_obj_t *lbl = lv_label_create(btn);
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
         lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_CALIBRAZIONE));
         lv_obj_center(lbl);
         view_register_object_default_callback(btn, BTN_CALIBRATION_ID);

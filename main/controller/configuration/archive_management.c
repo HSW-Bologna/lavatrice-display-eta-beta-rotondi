@@ -194,7 +194,7 @@ int archive_management_list_archives(const char *path, char ***strings) {
 
     while ((dir = readdir(d)) != NULL) {
         if (is_archive(dir)) {
-            //ESP_LOGI(TAG, "Found archive %s", dir->d_name);
+            // ESP_LOGI(TAG, "Found archive %s", dir->d_name);
             count++;
         }
     }
@@ -239,9 +239,13 @@ static int is_archive(struct dirent *dir) {
 
 
 static int gzip_mtar_read(mtar_t *tar, void *data, unsigned size) {
-    int res = gzread(tar->stream, data, size) == size ? MTAR_ESUCCESS : MTAR_EREADFAIL;
+    ESP_LOGI(TAG, "%p %p %i", tar, tar->stream, size);
+
+    int res = gzread(tar->stream, data, size) == (int)size ? MTAR_ESUCCESS : MTAR_EREADFAIL;
     if (res != MTAR_ESUCCESS) {
         ESP_LOGW(TAG, "Could not read from archive: %s (%i)", mtar_strerror(res), res);
+        // gz_state *state = tar->stream;
+        // ESP_LOGW(TAG, "%p %i %i %i %s", tar->stream, state->mode, state->err, size, state->msg);
     }
     return res;
 }

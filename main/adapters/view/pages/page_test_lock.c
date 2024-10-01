@@ -20,6 +20,8 @@ struct page_data {
 enum {
     BTN_BACK_ID,
     BTN_NEXT_ID,
+    BTN_OPEN_ID,
+    BTN_CLOSE_ID,
 };
 
 
@@ -50,6 +52,7 @@ static void open_page(pman_handle_t handle, void *state) {
 
     {
         lv_obj_t *lbl = lv_label_create(cont);
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
         lv_obj_align(lbl, LV_ALIGN_TOP_LEFT, 0, 16);
         pdata->label_porthole = lbl;
 
@@ -62,6 +65,7 @@ static void open_page(pman_handle_t handle, void *state) {
 
     {
         lv_obj_t *lbl = lv_label_create(cont);
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
         lv_obj_align(lbl, LV_ALIGN_TOP_MID, 0, 96);
         lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_CHIAVISTELLO));
 
@@ -69,9 +73,11 @@ static void open_page(pman_handle_t handle, void *state) {
             lv_obj_t *btn = lv_button_create(cont);
             lv_obj_set_size(btn, 64, 48);
             lv_obj_t *lbl = lv_label_create(btn);
+            lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
             lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_APRI));
             lv_obj_center(lbl);
             lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 32, -64);
+            view_register_object_default_callback(btn, BTN_OPEN_ID);
 
             lv_obj_t *led = lv_led_create(cont);
             lv_led_set_color(led, VIEW_STYLE_COLOR_RED);
@@ -84,17 +90,23 @@ static void open_page(pman_handle_t handle, void *state) {
             lv_obj_t *btn = lv_button_create(cont);
             lv_obj_set_size(btn, 64, 48);
             lv_obj_t *lbl = lv_label_create(btn);
+            lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
             lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_CHIUDI));
             lv_obj_center(lbl);
             lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -32, -64);
+            view_register_object_default_callback(btn, BTN_CLOSE_ID);
 
             lv_obj_t *led = lv_led_create(cont);
             lv_led_set_color(led, VIEW_STYLE_COLOR_GREEN);
             lv_obj_set_size(led, 32, 32);
             lv_obj_align_to(led, btn, LV_ALIGN_OUT_BOTTOM_MID, 0, 8);
-            pdata->led_bolt_open = led;
+            pdata->led_bolt_closed = led;
         }
     }
+
+    VIEW_ADD_WATCHED_VARIABLE(&model->run.macchina.oblo_aperto_chiuso, 0);
+    VIEW_ADD_WATCHED_VARIABLE(&model->run.macchina.chiavistello_aperto, 0);
+    VIEW_ADD_WATCHED_VARIABLE(&model->run.macchina.chiavistello_chiuso, 0);
 
     update_page(model, pdata);
 }
@@ -141,6 +153,14 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                         case BTN_NEXT_ID:
                             msg.stack_msg = PMAN_STACK_MSG_SWAP(&page_test_inputs);
                             break;
+
+                        case BTN_OPEN_ID:
+                            view_get_protocol(handle)->unlock_porthole(handle, 0);
+                            break;
+
+                        case BTN_CLOSE_ID:
+                            view_get_protocol(handle)->lock_porthole(handle);
+                            break;
                     }
                     break;
                 }
@@ -165,6 +185,24 @@ static void update_page(model_t *model, struct page_data *pdata) {
 
     lv_label_set_text_fmt(pdata->label_porthole, "%s %s", view_intl_get_string(model, STRINGS_OBLO),
                           view_intl_get_string(model, STRINGS_APERTO));
+
+    if (model->run.macchina.chiavistello_aperto) {
+        lv_led_on(pdata->led_bolt_open);
+    } else {
+        lv_led_off(pdata->led_bolt_open);
+    }
+    if (model->run.macchina.chiavistello_chiuso) {
+        lv_led_on(pdata->led_bolt_closed);
+    } else {
+        lv_led_off(pdata->led_bolt_closed);
+    }
+    if (model->run.macchina.oblo_aperto_chiuso) {
+        lv_label_set_text(pdata->label_porthole, view_intl_get_string(model, STRINGS_CHIUSO));
+        lv_led_set_color(pdata->led_porthole, VIEW_STYLE_COLOR_GREEN);
+    } else {
+        lv_label_set_text(pdata->label_porthole, view_intl_get_string(model, STRINGS_APERTO));
+        lv_led_set_color(pdata->led_porthole, VIEW_STYLE_COLOR_RED);
+    }
 }
 
 

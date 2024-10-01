@@ -25,7 +25,14 @@ static const char *TAG = "PageMain";
 
 
 struct page_data {
+    lv_obj_t *label_program;
     lv_obj_t *label_status;
+    lv_obj_t *label_step;
+    lv_obj_t *label_phase;
+    lv_obj_t *label_remaining;
+    lv_obj_t *lbl_alarm;
+    lv_obj_t *lbl_alarm_code;
+
     lv_obj_t *button_start;
     lv_obj_t *button_stop;
 
@@ -33,7 +40,7 @@ struct page_data {
 };
 
 
-static void update_page(model_t *pmodel, struct page_data *pdata);
+static void update_page(model_t *model, struct page_data *pdata);
 
 
 static void *create_page(pman_handle_t handle, void *extra) {
@@ -53,14 +60,10 @@ static void open_page(pman_handle_t handle, void *state) {
     model_t          *model = view_get_model(handle);
     struct page_data *pdata = state;
 
-    lv_obj_t *lbl = lv_label_create(lv_screen_active());
-    lv_label_set_text(lbl, "Lavaggio");
-    lv_obj_align(lbl, LV_ALIGN_TOP_MID, 0, 0);
-
     {
         lv_obj_t *btn = lv_button_create(lv_screen_active());
-        lv_obj_align(btn, LV_ALIGN_CENTER, +72, 0);
-        lbl = lv_label_create(btn);
+        lv_obj_align(btn, LV_ALIGN_TOP_RIGHT, 0, 0);
+        lv_obj_t *lbl = lv_label_create(btn);
         lv_label_set_text(lbl, "Start");
         lv_obj_center(lbl);
         view_register_object_default_callback(btn, BTN_START_ID);
@@ -69,12 +72,48 @@ static void open_page(pman_handle_t handle, void *state) {
 
     {
         lv_obj_t *btn = lv_button_create(lv_screen_active());
-        lv_obj_align(btn, LV_ALIGN_CENTER, -72, 0);
-        lbl = lv_label_create(btn);
+        lv_obj_align(btn, LV_ALIGN_TOP_LEFT, 0, 0);
+        lv_obj_t *lbl = lv_label_create(btn);
         lv_label_set_text(lbl, "Stop");
         lv_obj_center(lbl);
         view_register_object_default_callback(btn, BTN_STOP_ID);
         pdata->button_stop = btn;
+    }
+
+    {
+        lv_obj_t *lbl = lv_label_create(lv_screen_active());
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        lv_label_set_long_mode(lbl, LV_LABEL_LONG_SCROLL_CIRCULAR);
+        lv_obj_set_width(lbl, LV_PCT(95));
+        lv_obj_align(lbl, LV_ALIGN_LEFT_MID, 0, 72);
+        pdata->label_program = lbl;
+    }
+
+    {
+        lv_obj_t *lbl = lv_label_create(lv_screen_active());
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        lv_label_set_long_mode(lbl, LV_LABEL_LONG_SCROLL_CIRCULAR);
+        lv_obj_set_width(lbl, LV_PCT(95));
+        lv_obj_align(lbl, LV_ALIGN_LEFT_MID, 0, 96);
+        pdata->label_step = lbl;
+    }
+
+    {
+        lv_obj_t *lbl = lv_label_create(lv_screen_active());
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        lv_label_set_long_mode(lbl, LV_LABEL_LONG_SCROLL_CIRCULAR);
+        lv_obj_set_width(lbl, LV_PCT(95));
+        lv_obj_align(lbl, LV_ALIGN_LEFT_MID, 0, 120);
+        pdata->label_phase = lbl;
+    }
+
+    {
+        lv_obj_t *lbl = lv_label_create(lv_screen_active());
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        lv_label_set_long_mode(lbl, LV_LABEL_LONG_SCROLL_CIRCULAR);
+        lv_obj_set_width(lbl, LV_PCT(95));
+        lv_obj_align(lbl, LV_ALIGN_LEFT_MID, 0, 144);
+        pdata->label_remaining = lbl;
     }
 
     VIEW_ADD_WATCHED_VARIABLE(&model->run.macchina.stato, 0);
@@ -184,6 +223,36 @@ static void update_page(model_t *model, struct page_data *pdata) {
         view_common_set_hidden(pdata->button_start, 1);
         lv_label_set_text(lbl, "Pausa");
     }
+
+    const programma_lavatrice_t *program = model_get_program(model);
+    const char                  *nome    = program->nomi[model_get_language(model)];
+    if (strcmp(nome, lv_label_get_text(pdata->label_program))) {
+        lv_label_set_text(pdata->label_program, nome);
+    }
+
+    parametri_step_t *step = model_get_current_step(model);
+    lv_label_set_text_fmt(pdata->label_step, "# %s %02i/%02i #", view_common_step2str(model, step->tipo),
+                          model_get_current_step_number(model) + 1, (int)program->num_steps);
+
+    if (model->run.f_richiedi_scarico) {
+        lv_label_set_text(pdata->label_phase, view_intl_get_string_in_language(model_get_temporary_language(model),
+                                                                               STRINGS_SCARICO_NECESSARIO));
+    } else if (model_macchina_in_scarico_forzato(model)) {
+        lv_label_set_text(pdata->label_phase, view_intl_get_string_in_language(model_get_temporary_language(model),
+                                                                               STRINGS_SCARICO_FORZATO));
+    } else if (model_macchina_in_pausa(model)) {
+        lv_label_set_text(pdata->label_phase, view_intl_get_string_in_language(model_get_temporary_language(model),
+                                                                               STRINGS_PAUSA_LAVAGGIO));
+    } else if (model->run.macchina.descrizione_pedante == 0) {
+        lv_label_set_text(pdata->label_phase, view_common_step2str(model, step->tipo));
+    } else {
+        lv_label_set_text(pdata->label_phase, view_common_pedantic_string(model));
+    }
+
+    uint16_t step_rimanente = model->run.macchina.rimanente;
+    uint16_t rimanente      = model_program_remaining(model);
+    lv_label_set_text_fmt(pdata->label_remaining, "%02im%02is - %02im%02is", step_rimanente / 60, step_rimanente % 60,
+                          rimanente / 60, rimanente % 60);
 }
 
 
