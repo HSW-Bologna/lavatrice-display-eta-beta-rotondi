@@ -109,8 +109,9 @@ typedef enum {
     STRINGS_SCARICO_FORZATO,
     STRINGS_RECUPERO,
     STRINGS_USCITA_LAVAGGIO,
+    STRINGS_PROGRAMMI,
 } strings_t;
 
-extern const char *strings[107][2];
+extern const char *strings[108][2];
 
 #endif
