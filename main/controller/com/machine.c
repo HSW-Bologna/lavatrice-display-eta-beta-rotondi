@@ -117,6 +117,9 @@ void machine_init(void) {
     responseq = xQueueCreateStatic(sizeof(responseq_queue_buffer) / sizeof(machine_response_t),
                                    sizeof(machine_response_t), responseq_queue_buffer, &static_responseq_queue);
 
+    static StaticSemaphore_t static_semaphore;
+    sem = xSemaphoreCreateMutexStatic(&static_semaphore);
+
     static StackType_t task_stack[512 * 8] = {0};
 #ifdef BUILD_CONFIG_SIMULATED_APP
     xTaskCreate(communication_task, TAG, sizeof(task_stack), NULL, 5, NULL);
@@ -124,9 +127,6 @@ void machine_init(void) {
     static StaticTask_t static_task;
     xTaskCreateStatic(communication_task, TAG, sizeof(task_stack), NULL, 5, task_stack, &static_task);
 #endif
-
-    static StaticSemaphore_t static_semaphore;
-    sem = xSemaphoreCreateMutexStatic(&static_semaphore);
 }
 
 
@@ -307,7 +307,7 @@ void machine_imposta_dac(uint8_t dac) {
 
 
 void machine_imposta_led(uint8_t led) {
-    machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_IMPOSTA_LED, .dac = {.value = led}};
+    machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_IMPOSTA_LED, .led = {.value = led}};
     xQueueSend(requestq, &richiesta, portMAX_DELAY);
 }
 

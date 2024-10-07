@@ -58,6 +58,9 @@ typedef struct {
     void (*test_dac)(pman_handle_t handle, uint8_t value);
     void (*unlock_porthole)(pman_handle_t handle, uint8_t force);
     void (*lock_porthole)(pman_handle_t handle);
+    void (*toggle_lock)(pman_handle_t handle);
+    void (*new_program)(pman_handle_t handle, uint16_t program_index);
+    void (*beep)(void);
 } view_protocol_t;
 
 

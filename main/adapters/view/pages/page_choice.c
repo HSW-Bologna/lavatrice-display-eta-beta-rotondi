@@ -10,6 +10,8 @@
 #include "bsp/tft/display.h"
 #include "config/app_config.h"
 
+LV_IMAGE_DECLARE(img_start);
+
 
 enum {
     BTN_BACK_ID,
@@ -64,54 +66,55 @@ static void open_page(pman_handle_t handle, void *state) {
     lv_label_set_long_mode(title.label_title, LV_LABEL_LONG_SCROLL_CIRCULAR);
 
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
-    lv_obj_add_style(cont, &style_padless_cont, LV_STATE_DEFAULT);
-    lv_obj_set_style_pad_column(cont, 12, LV_STATE_DEFAULT);
-    lv_obj_set_style_pad_row(cont, 12, LV_STATE_DEFAULT);
-    lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES - 56);
-    lv_obj_set_layout(cont, LV_LAYOUT_FLEX);
-    lv_obj_set_flex_flow(cont, LV_FLEX_FLOW_ROW_WRAP);
-    lv_obj_set_flex_align(cont, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-    lv_obj_align(cont, LV_ALIGN_BOTTOM_MID, 0, 0);
+    lv_obj_set_style_bg_color(cont, VIEW_STYLE_COLOR_BACKGROUND, LV_STATE_DEFAULT);
+    lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES - 56 - 56);
+    lv_obj_align(cont, LV_ALIGN_TOP_MID, 0, 56);
 
     pdata->allarme         = 0;
     pdata->previous_credit = model_get_credito(model);
 
-    lv_obj_t *lbl = lv_label_create(lv_scr_act());
-    lv_label_set_long_mode(lbl, LV_LABEL_LONG_SCROLL_CIRCULAR);
-    lv_obj_set_width(lbl, LV_PCT(95));
-    lv_obj_set_style_text_align(lbl, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);
-    lv_obj_align(lbl, LV_ALIGN_BOTTOM_MID, 0, 0);
-    pdata->lbl_status = lbl;
-
-    lbl             = lv_label_create(lv_scr_act());
-    char string[32] = {0};
+    lv_obj_t *lbl        = lv_label_create(cont);
+    char      string[32] = {0};
     model_formatta_prezzo(string, model, preview->prezzo);
     lv_label_set_text(lbl, string);
-    lv_obj_align(lbl, LV_ALIGN_CENTER, 0, -10);
+    lv_obj_align(lbl, LV_ALIGN_CENTER, 0, -20 - 48);
     pdata->lbl_price = lbl;
 
-    lbl = lv_label_create(lv_scr_act());
+    lbl = lv_label_create(cont);
     lv_obj_set_style_text_align(lbl, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);
-    lv_obj_align(lbl, LV_ALIGN_CENTER, 0, 10);
+    lv_obj_align(lbl, LV_ALIGN_CENTER, 0, 20 - 48);
     pdata->lbl_credit = lbl;
 
     {
-        lv_obj_t *btn = lv_button_create(lv_screen_active());
-        lv_obj_set_size(btn, 64, 64);
-        lv_obj_t *lbl = lv_label_create(btn);
-        lv_label_set_text(lbl, LV_SYMBOL_PLAY);
-        lv_obj_center(lbl);
-        lv_obj_center(btn);
+        lv_obj_t *btn = lv_button_create(cont);
+        lv_obj_set_size(btn, 96, 96);
+        lv_obj_set_style_radius(btn, 16, LV_STATE_DEFAULT);
+        lv_obj_set_style_bg_color(btn, VIEW_STYLE_COLOR_START, LV_STATE_DEFAULT);
+        lv_obj_t *img = lv_img_create(btn);
+        lv_image_set_src(img, &img_start);
+        lv_obj_add_style(img, &style_white_icon, LV_STATE_DEFAULT);
+        lv_obj_center(img);
+        lv_obj_align(btn, LV_ALIGN_CENTER, 0, 32);
         view_register_object_default_callback(btn, BTN_START_ID);
         pdata->button_start = btn;
     }
 
-    VIEW_ADD_WATCHED_VARIABLE(&model->run.macchina.codice_allarme, 0);
-    VIEW_ADD_WATCHED_VARIABLE(&model->run.macchina.pagato, 0);
-    VIEW_ADD_WATCHED_ARRAY(model->run.macchina.credito, LINEE_PAGAMENTO_GETTONIERA, 0);
-    VIEW_ADD_WATCHED_VARIABLE(&model->run.credito, 0);
-    VIEW_ADD_WATCHED_VARIABLE(&model->run.macchina.stato, 0);
-    VIEW_ADD_WATCHED_VARIABLE(&model->run.macchina.sottostato, 0);
+    {
+        lv_obj_t *cont = lv_obj_create(lv_scr_act());
+        lv_obj_add_style(cont, &style_padless_cont, LV_STATE_DEFAULT);
+        lv_obj_set_size(cont, LV_HOR_RES, 56);
+        lv_obj_set_style_bg_color(cont, VIEW_STYLE_COLOR_BACKGROUND, LV_STATE_DEFAULT);
+        lv_obj_align(cont, LV_ALIGN_BOTTOM_MID, 0, 0);
+
+        lv_obj_t *lbl = lv_label_create(cont);
+        lv_label_set_long_mode(lbl, LV_LABEL_LONG_SCROLL_CIRCULAR);
+        lv_obj_set_width(lbl, LV_PCT(95));
+        lv_obj_set_style_text_align(lbl, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);
+        lv_obj_align(lbl, LV_ALIGN_CENTER, 0, 0);
+        pdata->lbl_status = lbl;
+    }
+
+    VIEW_ADD_WATCHED_VARIABLE(&model->run.macchina, 0);
 
     update_page(model, pdata);
     ESP_LOGI(TAG, "Open");
@@ -144,8 +147,6 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
                     if (!model_macchina_in_stop(model) && model_can_work(model)) {
                         msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_washing);
-                    } else if (model_alarm_code(model) > 0) {
-                        msg.stack_msg = PMAN_STACK_MSG_BACK();
                     } else {
                         update_page(model, pdata);
                     }
@@ -208,7 +209,7 @@ static void update_page(model_t *model, struct page_data *pdata) {
         }
         view_common_set_hidden(pdata->lbl_credit, 0);
         view_common_set_hidden(pdata->lbl_price, 0);
-        view_common_set_hidden(pdata->button_start, 1);
+        view_common_set_hidden(pdata->button_start, 0);
     } else if (model_lavaggio_pagato(model, pdata->number)) {
         lv_label_set_text(pdata->lbl_status, view_intl_get_string_in_language(model_get_temporary_language(model),
                                                                               STRINGS_SCELTA_PROGRAMMA));

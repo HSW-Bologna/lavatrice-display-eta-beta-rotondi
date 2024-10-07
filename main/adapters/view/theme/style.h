@@ -14,6 +14,7 @@
 #define VIEW_STYLE_COLOR_RED        ((lv_color_t)LV_COLOR_MAKE(0xFF, 0x0, 0x0))
 #define VIEW_STYLE_COLOR_BLACK      ((lv_color_t)LV_COLOR_MAKE(0x0, 0x0, 0x0))
 #define VIEW_STYLE_COLOR_GREEN      ((lv_color_t)LV_COLOR_MAKE(0x0, 0xFF, 0x0))
+#define VIEW_STYLE_COLOR_START      ((lv_color_t)LV_COLOR_MAKE(0x2F, 0xBA, 0x74))
 #define VIEW_STYLE_COLOR_BACKGROUND ((lv_color_t)LV_COLOR_MAKE(0x6B, 0x6B, 0x6B))
 #define STYLE_PRIMARY_DARKER        ((lv_color_t)LV_COLOR_MAKE(0x38, 0x6A, 0x80))
 
@@ -23,8 +24,10 @@ extern const lv_style_t style_padless_cont;
 extern const lv_style_t style_borderless_cont;
 extern const lv_style_t style_black_border;
 extern const lv_style_t style_config_btn;
+extern const lv_style_t style_white_icon;
 
 
 void style_init(void);
+
 
 #endif

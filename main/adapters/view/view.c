@@ -28,9 +28,10 @@ static struct {
 };
 
 
-static void view_clear_watcher(pman_handle_t handle);
-static void view_watcher_cb(void *old_value, const void *memory, uint16_t size, void *user_ptr, void *arg);
-static void retry_communication_callback(lv_event_t *event);
+static void    clear_watcher(pman_handle_t handle);
+static uint8_t event_callback(pman_handle_t handle, pman_event_t event);
+static void    watcher_cb(void *old_value, const void *memory, uint16_t size, void *user_ptr, void *arg);
+static void    retry_communication_callback(lv_event_t *event);
 
 
 void view_init(model_t *p_model, pman_user_msg_cb_t controller_cb, lv_display_flush_cb_t flush_cb,
@@ -76,13 +77,14 @@ void view_init(model_t *p_model, pman_user_msg_cb_t controller_cb, lv_display_fl
                         &state.pman);
     view_common_set_hidden(state.popup_communication_error.blanket, 1);
 
-    pman_init(&state.pman, (void *)p_model, touch_indev, controller_cb, view_clear_watcher);
+    pman_init(&state.pman, (void *)p_model, touch_indev, controller_cb, clear_watcher, event_callback);
 }
 
 
 void view_manage(model_t *model) {
-    //view_common_set_hidden(state.popup_communication_error.blanket, !model->system.errore_comunicazione);
-    lv_label_set_text(state.popup_communication_error.lbl_msg, view_intl_get_string(model, STRINGS_ERRORE_DI_COMUNICAZIONE));
+    view_common_set_hidden(state.popup_communication_error.blanket, !model->system.errore_comunicazione);
+    lv_label_set_text(state.popup_communication_error.lbl_msg,
+                      view_intl_get_string(model, STRINGS_ERRORE_DI_COMUNICAZIONE));
     lv_label_set_text(state.popup_communication_error.lbl_retry, view_intl_get_string(model, STRINGS_RIPROVA));
 
     watcher_watch(&state.watcher, timestamp_get());
@@ -142,18 +144,40 @@ void view_register_object_default_callback_with_number(lv_obj_t *obj, int id, in
 
 
 void view_add_watched_variable(void *ptr, size_t size, int code) {
-    watcher_add_entry(&state.watcher, ptr, size, view_watcher_cb, (void *)(uintptr_t)code);
+    watcher_add_entry(&state.watcher, ptr, size, watcher_cb, (void *)(uintptr_t)code);
 }
 
 
-static void view_clear_watcher(pman_handle_t handle) {
+static uint8_t event_callback(pman_handle_t handle, pman_event_t event) {
+    switch (event.tag) {
+        case PMAN_EVENT_TAG_LVGL: {
+            switch (event.as.lvgl->code) {
+                case LV_EVENT_CLICKED:
+                    view_get_protocol(handle)->beep();
+                    break;
+                default:
+                    break;
+            }
+
+            break;
+        }
+
+        default:
+            break;
+    }
+
+    return 0;
+}
+
+
+static void clear_watcher(pman_handle_t handle) {
     (void)handle;
     watcher_destroy(&state.watcher);
     WATCHER_INIT_STD(&state.watcher, NULL);
 }
 
 
-static void view_watcher_cb(void *old_value, const void *memory, uint16_t size, void *user_ptr, void *arg) {
+static void watcher_cb(void *old_value, const void *memory, uint16_t size, void *user_ptr, void *arg) {
     (void)old_value;
     (void)memory;
     (void)size;

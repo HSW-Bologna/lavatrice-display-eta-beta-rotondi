@@ -24,6 +24,13 @@ typedef struct {
     lv_obj_t *btn_retry;
 } communication_error_popup_t;
 
+typedef struct {
+    lv_obj_t *blanket;
+
+    lv_obj_t *lbl_description;
+
+    lv_obj_t *btn_ok;
+} alarm_popup_t;
 
 typedef struct {
     lv_obj_t *obj_title;
@@ -42,6 +49,8 @@ const char                 *view_require_payment_string(model_t *pmodel, int lan
 void                        view_common_set_disabled(lv_obj_t *obj, uint8_t disabled);
 const char                 *view_common_step2str(model_t *model, uint16_t step);
 const char                 *view_common_pedantic_string(model_t *pmodel);
+alarm_popup_t               view_common_alarm_popup_create(lv_obj_t *parent);
+void view_common_alarm_popup_update(alarm_popup_t *alarm_popup, uint16_t language, uint16_t alarm_code);
 
 
 #endif

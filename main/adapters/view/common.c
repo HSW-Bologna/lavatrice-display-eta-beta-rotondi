@@ -8,6 +8,9 @@
 #define SQUARE_BUTTON_SIZE 48
 
 
+static const char *get_alarm_description(uint16_t alarm_code, uint16_t language);
+
+
 void view_common_set_hidden(lv_obj_t *obj, uint8_t hidden) {
     if (hidden) {
         lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
@@ -49,6 +52,7 @@ view_title_t view_common_create_title(lv_obj_t *root, const char *text, int back
     lv_obj_set_size(btn, SQUARE_BUTTON_SIZE, SQUARE_BUTTON_SIZE);
     lv_obj_t *img = lv_image_create(btn);
     lv_image_set_src(img, &img_door);
+    lv_obj_add_style(img, &style_white_icon, LV_STATE_DEFAULT);
     lv_obj_center(img);
     lv_obj_align(btn, LV_ALIGN_LEFT_MID, 4, 0);
     view_register_object_default_callback(btn, back_id);
@@ -91,13 +95,53 @@ void view_common_image_set_src(lv_obj_t *img, const lv_image_dsc_t *img_dsc) {
 }
 
 
+void view_common_alarm_popup_update(alarm_popup_t *alarm_popup, uint16_t language, uint16_t alarm_code) {
+    const char *description = get_alarm_description(alarm_code, language);
+    lv_label_set_text_fmt(alarm_popup->lbl_description, "%s\n\n%s: %i", description,
+                          view_intl_get_string_in_language(language, STRINGS_CODICE), alarm_code);
+}
+
+
+alarm_popup_t view_common_alarm_popup_create(lv_obj_t *parent) {
+    lv_obj_t *blanket = lv_obj_create(parent);
+    lv_obj_add_style(blanket, &style_transparent_cont, LV_STATE_DEFAULT);
+    lv_obj_set_size(blanket, LV_PCT(100), LV_PCT(100));
+
+    lv_obj_t *cont = lv_obj_create(blanket);
+    lv_obj_set_size(cont, LV_PCT(70), LV_PCT(90));
+    lv_obj_center(cont);
+    lv_obj_set_style_radius(cont, 48, LV_STATE_DEFAULT);
+
+    lv_obj_t *lbl_msg = lv_label_create(cont);
+    lv_obj_set_style_text_align(lbl_msg, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(lbl_msg, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+    lv_label_set_long_mode(lbl_msg, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(lbl_msg, LV_PCT(95));
+    lv_obj_align(lbl_msg, LV_ALIGN_CENTER, 0, -32);
+
+    lv_obj_t *btn = lv_button_create(cont);
+    lv_obj_set_size(btn, 64, 48);
+    lv_obj_t *lbl = lv_label_create(btn);
+    lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+    lv_label_set_text(lbl, LV_SYMBOL_OK);
+    lv_obj_center(lbl);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, 0);
+
+    return (alarm_popup_t){
+        .blanket         = blanket,
+        .btn_ok          = btn,
+        .lbl_description = lbl_msg,
+    };
+}
+
+
 communication_error_popup_t view_common_communication_error_popup(lv_obj_t *parent) {
     lv_obj_t *blanket = lv_obj_create(parent);
     lv_obj_add_style(blanket, &style_transparent_cont, LV_STATE_DEFAULT);
     lv_obj_set_size(blanket, LV_PCT(100), LV_PCT(100));
 
     lv_obj_t *cont = lv_obj_create(blanket);
-    lv_obj_set_size(cont, LV_PCT(90), LV_PCT(90));
+    lv_obj_set_size(cont, LV_PCT(80), LV_PCT(80));
     lv_obj_center(cont);
 
     lv_obj_t *lbl_msg = lv_label_create(cont);
@@ -123,79 +167,8 @@ communication_error_popup_t view_common_communication_error_popup(lv_obj_t *pare
 
 
 const char *view_common_alarm_description(model_t *pmodel) {
-    static char codice_generico[32] = {0};
-    uint16_t    alarm_code          = model_alarm_code(pmodel);
-
-    switch (alarm_code) {
-        case 1:
-            return view_intl_get_string(pmodel, STRINGS_ERRORE_EEPROM);
-        case 2:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_SPEGNIMENTO);
-        case 3:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_COMUNICAZIONE);
-        case 4:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_OBLO_APERTO);
-        case 5:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_OBLO_SBLOCCATO);
-        case 6 ... 7:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_EMERGENZA);
-        case 8:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_INVERTER);
-        case 9:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_TEMPERATURA_1);
-        case 10 ... 11:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_SBILANCIAMENTO);
-        case 12:
-        case 14:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_CHIAVISTELLO_BLOCCATO);
-        case 13:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_SERRATURA);
-        case 15:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_APERTO_H2O);
-        case 16:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_SERRATURA_FORZATA);
-        case 17:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_ACCELEROMETRO);
-        case 18:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_ACCELEROMETRO_FUORI_SCALA);
-        case 19:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_VELOCITA);
-        case 20:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_NO_MOTO);
-        case 21:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_NO_FERMO);
-        case 22:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_TEMPERATURA);
-        case 23:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_H2O_IN_VASCA);
-        case 24:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_LIVELLO);
-        case 30:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_RIEMPIMENTO);
-        case 31:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_RISCALDAMENTO);
-        case 32:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_SCARICO);
-        case 50:
-            return view_intl_get_string(pmodel, STRINGS_MACCHINA_ACCESA);
-        case 51:
-            return view_intl_get_string(pmodel, STRINGS_ALLARME_SPEGNIMENTO);
-        case 52:
-            return view_intl_get_string(pmodel, STRINGS_INIZIO_LAVAGGIO);
-        case 53:
-            return view_intl_get_string(pmodel, STRINGS_FINE_LAVAGGIO);
-        case 54:
-            return view_intl_get_string(pmodel, STRINGS_LAVAGGIO_INTERROTTO);
-        case 60:
-            return view_intl_get_string(pmodel, STRINGS_APRIRE_OBLO);
-        case 70:
-            return view_intl_get_string(pmodel, STRINGS_STANDBY_SAPONI);
-
-        default:
-            snprintf(codice_generico, sizeof(codice_generico), "%s %i", view_intl_get_string(pmodel, STRINGS_ALLARME),
-                     alarm_code);
-            return codice_generico;
-    }
+    uint16_t alarm_code = model_alarm_code(pmodel);
+    return get_alarm_description(alarm_code, pmodel->run.lingua);
 }
 
 
@@ -256,5 +229,81 @@ const char *view_common_pedantic_string(model_t *pmodel) {
         return "";
     } else {
         return view_intl_get_string(pmodel, pedantic2str[pmodel->run.macchina.descrizione_pedante - 1]);
+    }
+}
+
+
+static const char *get_alarm_description(uint16_t alarm_code, uint16_t language) {
+    switch (alarm_code) {
+        case 1:
+            return view_intl_get_string_in_language(language, STRINGS_ERRORE_EEPROM);
+        case 2:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_SPEGNIMENTO);
+        case 3:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_COMUNICAZIONE);
+        case 4:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_OBLO_APERTO);
+        case 5:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_OBLO_SBLOCCATO);
+        case 6 ... 7:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_EMERGENZA);
+        case 8:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_INVERTER);
+        case 9:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_TEMPERATURA_1);
+        case 10 ... 11:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_SBILANCIAMENTO);
+        case 12:
+        case 14:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_CHIAVISTELLO_BLOCCATO);
+        case 13:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_SERRATURA);
+        case 15:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_APERTO_H2O);
+        case 16:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_SERRATURA_FORZATA);
+        case 17:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_ACCELEROMETRO);
+        case 18:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_ACCELEROMETRO_FUORI_SCALA);
+        case 19:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_VELOCITA);
+        case 20:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_NO_MOTO);
+        case 21:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_NO_FERMO);
+        case 22:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_TEMPERATURA);
+        case 23:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_H2O_IN_VASCA);
+        case 24:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_LIVELLO);
+        case 30:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_RIEMPIMENTO);
+        case 31:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_RISCALDAMENTO);
+        case 32:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_SCARICO);
+        case 50:
+            return view_intl_get_string_in_language(language, STRINGS_MACCHINA_ACCESA);
+        case 51:
+            return view_intl_get_string_in_language(language, STRINGS_ALLARME_SPEGNIMENTO);
+        case 52:
+            return view_intl_get_string_in_language(language, STRINGS_INIZIO_LAVAGGIO);
+        case 53:
+            return view_intl_get_string_in_language(language, STRINGS_FINE_LAVAGGIO);
+        case 54:
+            return view_intl_get_string_in_language(language, STRINGS_LAVAGGIO_INTERROTTO);
+        case 60:
+            return view_intl_get_string_in_language(language, STRINGS_APRIRE_OBLO);
+        case 70:
+            return view_intl_get_string_in_language(language, STRINGS_STANDBY_SAPONI);
+
+        default: {
+            static char codice_generico[32] = {0};
+            snprintf(codice_generico, sizeof(codice_generico), "%s %i",
+                     view_intl_get_string_in_language(language, STRINGS_ALLARME), alarm_code);
+            return codice_generico;
+        }
     }
 }

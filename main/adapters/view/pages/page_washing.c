@@ -36,7 +36,8 @@ struct page_data {
     lv_obj_t *button_start;
     lv_obj_t *button_stop;
 
-    uint8_t scarico_fallito;
+    uint8_t  scarico_fallito;
+    uint16_t allarme;
 };
 
 
@@ -51,6 +52,7 @@ static void *create_page(pman_handle_t handle, void *extra) {
     assert(pdata != NULL);
 
     pdata->scarico_fallito = 0;
+    pdata->allarme         = -1;
 
     return pdata;
 }
@@ -85,7 +87,7 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
         lv_label_set_long_mode(lbl, LV_LABEL_LONG_SCROLL_CIRCULAR);
         lv_obj_set_width(lbl, LV_PCT(95));
-        lv_obj_align(lbl, LV_ALIGN_LEFT_MID, 0, 72);
+        lv_obj_align(lbl, LV_ALIGN_TOP_LEFT, 0, 72);
         pdata->label_program = lbl;
     }
 
@@ -94,7 +96,7 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
         lv_label_set_long_mode(lbl, LV_LABEL_LONG_SCROLL_CIRCULAR);
         lv_obj_set_width(lbl, LV_PCT(95));
-        lv_obj_align(lbl, LV_ALIGN_LEFT_MID, 0, 96);
+        lv_obj_align(lbl, LV_ALIGN_TOP_LEFT, 0, 96);
         pdata->label_step = lbl;
     }
 
@@ -103,7 +105,7 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
         lv_label_set_long_mode(lbl, LV_LABEL_LONG_SCROLL_CIRCULAR);
         lv_obj_set_width(lbl, LV_PCT(95));
-        lv_obj_align(lbl, LV_ALIGN_LEFT_MID, 0, 120);
+        lv_obj_align(lbl, LV_ALIGN_TOP_LEFT, 0, 120);
         pdata->label_phase = lbl;
     }
 
@@ -112,8 +114,23 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
         lv_label_set_long_mode(lbl, LV_LABEL_LONG_SCROLL_CIRCULAR);
         lv_obj_set_width(lbl, LV_PCT(95));
-        lv_obj_align(lbl, LV_ALIGN_LEFT_MID, 0, 144);
+        lv_obj_align(lbl, LV_ALIGN_TOP_LEFT, 0, 144);
         pdata->label_remaining = lbl;
+    }
+
+    {
+        lv_obj_t *cont = lv_obj_create(lv_scr_act());
+        lv_obj_add_style(cont, &style_padless_cont, LV_STATE_DEFAULT);
+        lv_obj_set_size(cont, LV_HOR_RES, 56);
+        lv_obj_set_style_bg_color(cont, VIEW_STYLE_COLOR_BACKGROUND, LV_STATE_DEFAULT);
+        lv_obj_align(cont, LV_ALIGN_BOTTOM_MID, 0, 0);
+
+        lv_obj_t *lbl = lv_label_create(cont);
+        lv_label_set_long_mode(lbl, LV_LABEL_LONG_SCROLL_CIRCULAR);
+        lv_obj_set_width(lbl, LV_PCT(95));
+        lv_obj_set_style_text_align(lbl, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);
+        lv_obj_align(lbl, LV_ALIGN_CENTER, 0, 0);
+        pdata->label_status = lbl;
     }
 
     VIEW_ADD_WATCHED_VARIABLE(&model->run.macchina.stato, 0);
@@ -253,6 +270,16 @@ static void update_page(model_t *model, struct page_data *pdata) {
     uint16_t rimanente      = model_program_remaining(model);
     lv_label_set_text_fmt(pdata->label_remaining, "%02im%02is - %02im%02is", step_rimanente / 60, step_rimanente % 60,
                           rimanente / 60, rimanente % 60);
+
+    if (model_alarm_code(model) > 0) {
+        if (pdata->allarme != model_alarm_code(model)) {
+            pdata->allarme = model_alarm_code(model);
+            lv_label_set_text(pdata->label_status, view_common_alarm_description(model));
+        }
+        view_common_set_hidden(pdata->button_start, 0);
+    } else {
+        lv_label_set_text(pdata->label_status, "");
+    }
 }
 
 

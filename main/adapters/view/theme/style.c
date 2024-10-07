@@ -40,4 +40,12 @@ static const lv_style_const_prop_t style_config_btn_props[] = {
 LV_STYLE_CONST_INIT(style_config_btn, (void *)style_config_btn_props);
 
 
+static const lv_style_const_prop_t style_white_icon_props[] = {
+    LV_STYLE_CONST_IMAGE_RECOLOR_OPA(LV_OPA_COVER),
+    LV_STYLE_CONST_IMAGE_RECOLOR(LV_COLOR_MAKE(0xFF, 0xFF, 0xFF)),
+    LV_STYLE_CONST_PROPS_END,
+};
+LV_STYLE_CONST_INIT(style_white_icon, (void *)style_white_icon_props);
+
+
 void style_init(void) {}

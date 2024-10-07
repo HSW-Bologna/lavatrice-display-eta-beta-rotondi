@@ -46,7 +46,7 @@
 
 #define EVENT_LOG_CHUNK 50
 
-#define NUM_LINGUE 5
+#define NUM_LINGUE 2
 
 #define RESISTORS_OUTPUT_INDEX 0
 

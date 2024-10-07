@@ -364,19 +364,26 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
 static void update_page(model_t *model, struct page_data *pdata) {
     for (uint16_t i = 0; i < PROGRAM_WINDOW_SIZE; i++) {
-        uint16_t                   absolute_index = pdata->program_window_index * PROGRAM_WINDOW_SIZE + i;
-        const programma_preview_t *preview        = model_get_preview(model, absolute_index);
+        uint16_t absolute_index = pdata->program_window_index * PROGRAM_WINDOW_SIZE + i;
 
-        if (pdata->selected_program == i) {
-            lv_obj_add_state(pdata->button_programs[i], LV_STATE_CHECKED);
+        if (absolute_index < model->prog.num_programmi) {
+            const programma_preview_t *preview = model_get_preview(model, absolute_index);
+
+            if (pdata->selected_program == i) {
+                lv_obj_add_state(pdata->button_programs[i], LV_STATE_CHECKED);
+            } else {
+                lv_obj_clear_state(pdata->button_programs[i], LV_STATE_CHECKED);
+            }
+
+            char string[64] = {0};
+            snprintf(string, sizeof(string), "%02i. %s", absolute_index + 1, preview->name);
+            if (strcmp(lv_label_get_text(pdata->label_programs[i]), string)) {
+                lv_label_set_text(pdata->label_programs[i], string);
+            }
+
+            view_common_set_hidden(pdata->button_programs[i], 0);
         } else {
-            lv_obj_clear_state(pdata->button_programs[i], LV_STATE_CHECKED);
-        }
-
-        char string[64] = {0};
-        snprintf(string, sizeof(string), "%02i. %s", absolute_index + 1, preview->name);
-        if (strcmp(lv_label_get_text(pdata->label_programs[i]), string)) {
-            lv_label_set_text(pdata->label_programs[i], string);
+            view_common_set_hidden(pdata->button_programs[i], 1);
         }
     }
 

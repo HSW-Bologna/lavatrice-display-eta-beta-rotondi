@@ -10,8 +10,8 @@
 
 
 #define DA2RPM(da)   ((da * 1000) / 100)
-#define OUT_AVANTI   14
-#define OUT_INDIETRO 13
+#define OUT_AVANTI   15
+#define OUT_INDIETRO 14
 
 
 struct page_data {

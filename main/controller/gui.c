@@ -6,6 +6,7 @@
 #include "controller/com/machine.h"
 #include "controller/configuration/configuration.h"
 #include "bsp/msc.h"
+#include "bsp/buzzer.h"
 #include "lvgl.h"
 
 
@@ -26,6 +27,9 @@ static void pause_program(pman_handle_t handle);
 static void test_dac(pman_handle_t handle, uint8_t value);
 static void lock_porthole(pman_handle_t handle);
 static void unlock_porthole(pman_handle_t handle, uint8_t force);
+static void toggle_lock(pman_handle_t handle);
+static void new_program(pman_handle_t handle, uint16_t program_index);
+static void beep(void);
 
 
 view_protocol_t controller_gui_protocol = {
@@ -43,6 +47,9 @@ view_protocol_t controller_gui_protocol = {
     .test_dac             = test_dac,
     .unlock_porthole      = unlock_porthole,
     .lock_porthole        = lock_porthole,
+    .toggle_lock          = toggle_lock,
+    .new_program          = new_program,
+    .beep                 = beep,
 };
 
 
@@ -166,4 +173,34 @@ static void unlock_porthole(pman_handle_t handle, uint8_t force) {
 static void lock_porthole(pman_handle_t handle) {
     (void)handle;
     machine_chiudi_oblo();
+}
+
+
+static void toggle_lock(pman_handle_t handle) {
+    mut_model_t *model = view_get_model(handle);
+
+    if (model_oblo_serrato(model)) {
+        ESP_LOGI(TAG, "Apertura oblo'");
+        machine_apri_oblo(0);
+    } else if (model_oblo_libero(model) && model_oblo_chiuso(model)) {
+        ESP_LOGI(TAG, "Chiusura oblo'");
+        machine_chiudi_oblo();
+    } else {
+        ESP_LOGI(TAG, "Oblo' aperto, non posso fare nulla");
+    }
+}
+
+
+static void new_program(pman_handle_t handle, uint16_t program_index) {
+    mut_model_t *model = view_get_model(handle);
+
+    configuration_create_empty_program(model);
+    model->prog.num_programmi = configuration_load_programs_preview(model, model->prog.preview_programmi, MAX_PROGRAMMI,
+                                                                    model_get_language(model));
+    configuration_clear_orphan_programs(model->prog.preview_programmi, model->prog.num_programmi);
+}
+
+
+static void beep(void) {
+    buzzer_beep(1, 50, 50, 3);
 }
