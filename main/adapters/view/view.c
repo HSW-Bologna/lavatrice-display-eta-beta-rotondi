@@ -77,7 +77,7 @@ void view_init(model_t *p_model, pman_user_msg_cb_t controller_cb, lv_display_fl
                         &state.pman);
     view_common_set_hidden(state.popup_communication_error.blanket, 1);
 
-    pman_init(&state.pman, (void *)p_model, touch_indev, controller_cb, clear_watcher, event_callback);
+    pman_init(&state.pman, (void *)p_model, touch_indev, controller_cb, clear_watcher);
 }
 
 

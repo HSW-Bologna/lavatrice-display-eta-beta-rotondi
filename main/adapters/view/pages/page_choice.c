@@ -10,12 +10,16 @@
 #include "bsp/tft/display.h"
 #include "config/app_config.h"
 
+
 LV_IMAGE_DECLARE(img_start);
+LV_IMAGE_DECLARE(img_italiano);
+LV_IMAGE_DECLARE(img_english);
 
 
 enum {
     BTN_BACK_ID,
     BTN_START_ID,
+    BTN_LANGUAGE_ID,
 };
 
 
@@ -26,6 +30,8 @@ struct page_data {
     lv_obj_t *lbl_status;
     lv_obj_t *lbl_credit;
     lv_obj_t *lbl_price;
+
+    lv_obj_t *image_language;
 
     lv_obj_t *button_start;
 
@@ -63,6 +69,7 @@ static void open_page(pman_handle_t handle, void *state) {
     const programma_preview_t *preview = model_get_preview(model, pdata->number);
 
     view_title_t title = view_common_create_title(lv_screen_active(), preview->name, BTN_BACK_ID, -1);
+    lv_obj_set_style_bg_color(title.obj_title, VIEW_STYLE_COLOR_BACKGROUND, LV_STATE_DEFAULT);
     lv_label_set_long_mode(title.label_title, LV_LABEL_LONG_SCROLL_CIRCULAR);
 
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
@@ -73,16 +80,13 @@ static void open_page(pman_handle_t handle, void *state) {
     pdata->allarme         = 0;
     pdata->previous_credit = model_get_credito(model);
 
-    lv_obj_t *lbl        = lv_label_create(cont);
-    char      string[32] = {0};
-    model_formatta_prezzo(string, model, preview->prezzo);
-    lv_label_set_text(lbl, string);
-    lv_obj_align(lbl, LV_ALIGN_CENTER, 0, -20 - 48);
+    lv_obj_t *lbl = lv_label_create(cont);
+    lv_obj_align(lbl, LV_ALIGN_CENTER, -96, -96);
     pdata->lbl_price = lbl;
 
     lbl = lv_label_create(cont);
     lv_obj_set_style_text_align(lbl, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);
-    lv_obj_align(lbl, LV_ALIGN_CENTER, 0, 20 - 48);
+    lv_obj_align(lbl, LV_ALIGN_CENTER, 96, -96);
     pdata->lbl_credit = lbl;
 
     {
@@ -94,9 +98,21 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_image_set_src(img, &img_start);
         lv_obj_add_style(img, &style_white_icon, LV_STATE_DEFAULT);
         lv_obj_center(img);
-        lv_obj_align(btn, LV_ALIGN_CENTER, 0, 32);
+        lv_obj_align(btn, LV_ALIGN_CENTER, 0, 0);
         view_register_object_default_callback(btn, BTN_START_ID);
         pdata->button_start = btn;
+    }
+
+    {
+        lv_obj_t *btn = lv_btn_create(cont);
+        lv_obj_set_size(btn, 64, 64);
+        lv_obj_t *img = lv_image_create(btn);
+        lv_image_set_scale(img, 150);
+        lv_image_set_src(img, &img_italiano);
+        view_register_object_default_callback(btn, BTN_LANGUAGE_ID);
+        lv_obj_center(img);
+        pdata->image_language = img;
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
     }
 
     {
@@ -173,6 +189,12 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             break;
                         }
 
+                        case BTN_LANGUAGE_ID: {
+                            model->run.lingua = (model->run.lingua + 1) % NUM_LINGUE;
+                            update_page(model, pdata);
+                            break;
+                        }
+
                         case BTN_START_ID: {
                             if (model_lavaggio_pagato(model, pdata->number)) {
                                 view_get_protocol(handle)->start_program(handle);
@@ -202,6 +224,12 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
 
 static void update_page(model_t *model, struct page_data *pdata) {
+    const programma_preview_t *preview = model_get_preview(model, pdata->number);
+
+    char string[32] = {0};
+    model_formatta_prezzo(string, model, preview->prezzo);
+    lv_label_set_text(pdata->lbl_price, string);
+
     if (model_alarm_code(model) > 0) {
         if (pdata->allarme != model_alarm_code(model)) {
             pdata->allarme = model_alarm_code(model);
@@ -223,9 +251,11 @@ static void update_page(model_t *model, struct page_data *pdata) {
         view_common_set_hidden(pdata->button_start, 1);
     }
 
-    char string[32] = {0};
     model_formatta_prezzo(string, model, model_get_credito(model));
     lv_label_set_text(pdata->lbl_credit, string);
+
+    const lv_image_dsc_t *icons_language[NUM_LINGUE] = {&img_italiano, &img_english};
+    lv_image_set_src(pdata->image_language, icons_language[model->run.lingua]);
 }
 
 
