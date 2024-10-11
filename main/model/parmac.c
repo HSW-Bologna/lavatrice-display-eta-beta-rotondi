@@ -57,7 +57,7 @@ void parmac_init(model_t *pmodel, int reset) {
     ps[i++] = PARAMETER(&p->abilitazione_sblocco_get, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_SBLOCCO_GETTONIERA, pars_abilitazione), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->secondi_pausa, 0, 10, 1, FFINT(PARS_DESCRIPTIONS_TEMPO_TASTO_PAUSA, fmt_sec), BIT_UTENTE);
     ps[i++] = PARAMETER(&p->secondi_stop, 0, 10, 3, FFINT(PARS_DESCRIPTIONS_TEMPO_TASTO_STOP, fmt_sec), BIT_UTENTE);
-    ps[i++]= PARAMETER(&p->tempo_out_pagine, 3, 60, 20, FFINT(PARS_DESCRIPTIONS_TEMPO_OUT_PAGINE, fmt_sec), BIT_TECNICO);
+    ps[i++] = PARAMETER(&p->tempo_out_pagine, 3, 60, 20, FFINT(PARS_DESCRIPTIONS_TEMPO_OUT_PAGINE, fmt_sec), BIT_TECNICO);
     ps[i++] = PARAMETER(&p->tempo_allarme_livello, 1, 100, 30, FFINT(PARS_DESCRIPTIONS_TEMPO_ALLARME_LIVELLO, fmt_min), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->tempo_allarme_temperatura, 1, 100, 45, FFINT(PARS_DESCRIPTIONS_TEMPO_ALLARME_TEMPERATURA, fmt_min), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->tempo_allarme_scarico, 1, 100, 45, FFINT(PARS_DESCRIPTIONS_TEMPO_ALLARME_SCARICO, fmt_min), BIT_COSTRUTTORE);

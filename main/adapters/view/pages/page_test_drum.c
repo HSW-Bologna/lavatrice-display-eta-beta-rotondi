@@ -10,8 +10,8 @@
 
 
 #define DA2RPM(da)   ((da * 1000) / 100)
-#define OUT_AVANTI   15
-#define OUT_INDIETRO 14
+#define OUT_AVANTI   14
+#define OUT_INDIETRO 13
 
 
 struct page_data {
@@ -20,6 +20,7 @@ struct page_data {
     lv_obj_t *label_run;
     lv_obj_t *label_level;
     lv_obj_t *label_control;
+    lv_obj_t *label_proximity;
 
     lv_obj_t *button_control;
 
@@ -130,13 +131,20 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_t *lbl = lv_label_create(cont);
         lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
         lv_obj_align(lbl, LV_ALIGN_TOP_LEFT, 0, 64 + 48);
-        pdata->label_run = lbl;
+        pdata->label_proximity = lbl;
     }
 
     {
         lv_obj_t *lbl = lv_label_create(cont);
         lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
         lv_obj_align(lbl, LV_ALIGN_TOP_LEFT, 0, 64 + 72);
+        pdata->label_run = lbl;
+    }
+
+    {
+        lv_obj_t *lbl = lv_label_create(cont);
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        lv_obj_align(lbl, LV_ALIGN_TOP_LEFT, 0, 64 + 96);
         pdata->label_level = lbl;
     }
 
@@ -157,7 +165,7 @@ static void open_page(pman_handle_t handle, void *state) {
         alarm_led_create(bottom, &pdata->led_emergency, "EMER.");
     }
 
-    VIEW_ADD_WATCHED_VARIABLE(&model->test.inputs, 0);
+    VIEW_ADD_WATCHED_VARIABLE(&model->test, 0);
     VIEW_ADD_WATCHED_VARIABLE(&model->run.macchina.livello, 0);
     VIEW_ADD_WATCHED_VARIABLE(&model->run.macchina.livello_litri, 0);
 
@@ -209,28 +217,27 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                         case BTN_MINUS_ID: {
                             if (pdata->da_value > 5) {
                                 pdata->da_value -= 5;
+                            } else if (pdata->da_value > 0) {
+                                pdata->da_value = 0;
                             } else {
                                 pdata->da_value = 100;
                             }
 
-                            if (pdata->da_value == 0) {
-                                view_get_protocol(handle)->clear_outputs(handle);
-                                pdata->run = 0;
-                            } else {
-                                view_get_protocol(handle)->test_dac(handle, pdata->da_value);
-                            }
+                            view_get_protocol(handle)->test_dac(handle, pdata->da_value);
                             update_page(model, pdata);
                             break;
                         }
 
                         case BTN_PLUS_ID: {
-                            pdata->da_value = (pdata->da_value + 5) % 101;
-
-                            if (pdata->da_value == 0) {
-                                view_get_protocol(handle)->clear_outputs(handle);
+                            if (pdata->da_value >= 100) {
+                                pdata->da_value = 0;
+                            } else if (pdata->da_value >= 95) {
+                                pdata->da_value = 100;
                             } else {
-                                view_get_protocol(handle)->test_dac(handle, pdata->da_value);
+                                pdata->da_value = (pdata->da_value + 5) % 100;
                             }
+
+                            view_get_protocol(handle)->test_dac(handle, pdata->da_value);
                             update_page(model, pdata);
                             break;
                         }
@@ -266,6 +273,19 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                     break;
                 }
 
+                case LV_EVENT_LONG_PRESSED: {
+                    switch (obj_data->id) {
+                        case BTN_NEXT_ID:
+                            if (pdata->forward) {
+                                msg.stack_msg = PMAN_STACK_MSG_SWAP_EXTRA(&page_test_drum, (void *)(uintptr_t)0);
+                            } else {
+                                msg.stack_msg = PMAN_STACK_MSG_SWAP(&page_test_outputs);
+                            }
+                            break;
+                    }
+                    break;
+                }
+
                 default:
                     break;
             }
@@ -281,6 +301,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
 
 static int test_cesto_in_sicurezza(model_t *model, struct page_data *data) {
+    (void)data;
     return model_oblo_chiuso(model) && model_get_livello_centimetri(model) == 0 && (model->test.inputs & 0x01) &&
            (model->test.inputs & 0x02) && (model->test.inputs & (1 << 10));
 }
@@ -294,6 +315,8 @@ static void update_page(model_t *model, struct page_data *pdata) {
                           DA2RPM(pdata->da_value) % 100);
     lv_label_set_text_fmt(pdata->label_run, "[marcia] %s %s", pdata->run ? "on " : "off",
                           test_cesto_in_sicurezza(model, pdata) ? "ok" : "no");
+    lv_label_set_text_fmt(pdata->label_proximity, "m=%04" PRIuLEAST32 "    M=%04" PRIuLEAST32, model->test.pmin,
+                          model->test.pmax);
 
     if ((model->test.inputs & 1) > 0) {
         lv_led_off(pdata->led_emergency);

@@ -127,14 +127,15 @@ typedef struct {
 } programma_preview_t;
 
 
-void init_new_program(programma_lavatrice_t *p, int num);
-void update_program_name(programma_lavatrice_t *p, const char *str, int lingua);
-void update_program_price(programma_lavatrice_t *p, const char *string);
-void update_program_type(programma_lavatrice_t *p, unsigned char type);
-void program_add_step(programma_lavatrice_t *p, int tipo);
-void swap_steps(programma_lavatrice_t *p, int first, int second);
-void programs_remove_step(programma_lavatrice_t *p, int index);
-void program_insert_step(programma_lavatrice_t *p, int tipo, size_t index);
+void    init_new_program(programma_lavatrice_t *p, int num);
+void    update_program_name(programma_lavatrice_t *p, const char *str, int lingua);
+void    update_program_price(programma_lavatrice_t *p, const char *string);
+void    update_program_type(programma_lavatrice_t *p, unsigned char type);
+void    program_add_step(programma_lavatrice_t *p, int tipo);
+uint8_t programs_swap_steps(programma_lavatrice_t *p, int first, int second);
+void    programs_remove_step(programma_lavatrice_t *p, int index);
+void    program_insert_step(programma_lavatrice_t *p, int tipo, size_t index);
+void    programs_copy_step(programma_lavatrice_t *p, uint16_t source_step_index, uint16_t destination_step_index);
 
 parametri_step_t default_step(int tipo, int delicato_energico);
 int              pack_step(uint8_t *buffer, const parametri_step_t *step, int num);

@@ -48,4 +48,20 @@ static const lv_style_const_prop_t style_white_icon_props[] = {
 LV_STYLE_CONST_INIT(style_white_icon, (void *)style_white_icon_props);
 
 
-void style_init(void) {}
+static const lv_style_const_prop_t style_black_icon_props[] = {
+    LV_STYLE_CONST_IMAGE_RECOLOR_OPA(LV_OPA_COVER),
+    LV_STYLE_CONST_IMAGE_RECOLOR(LV_COLOR_MAKE(0x0, 0x0, 0x0)),
+    LV_STYLE_CONST_PROPS_END,
+};
+LV_STYLE_CONST_INIT(style_black_icon, (void *)style_black_icon_props);
+
+
+lv_style_t style_work_button = {0};
+
+
+void style_init(void) {
+    lv_style_init(&style_work_button);
+    lv_style_set_border_width(&style_work_button, 4);
+    lv_style_set_border_color(&style_work_button, VIEW_STYLE_PRIMARY);
+    lv_style_set_bg_color(&style_work_button, VIEW_STYLE_COLOR_WHITE);
+}

@@ -170,7 +170,7 @@ void controller_manage(mut_model_t *pmodel) {
                 if (machine_read_state(pmodel)) {
                     pending_state_change = 0;
                 }
-                //ESP_LOGI(TAG, "Porthole: %i", pmodel->run.macchina.oblo_aperto_chiuso);
+                // ESP_LOGI(TAG, "Porthole: %i", pmodel->run.macchina.oblo_aperto_chiuso);
 
                 if (!model_macchina_in_stop(pmodel) &&
                     (model_get_program_num(pmodel) != pmodel->run.macchina.numero_programma ||

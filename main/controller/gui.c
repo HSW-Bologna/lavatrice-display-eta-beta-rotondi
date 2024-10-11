@@ -28,28 +28,38 @@ static void test_dac(pman_handle_t handle, uint8_t value);
 static void lock_porthole(pman_handle_t handle);
 static void unlock_porthole(pman_handle_t handle, uint8_t force);
 static void toggle_lock(pman_handle_t handle);
-static void new_program(pman_handle_t handle, uint16_t program_index);
+static void clear_coin_count(pman_handle_t handle);
+static void save_programs(pman_handle_t handle);
 static void beep(void);
+static void digital_coin_reader_enable(pman_handle_t handle, uint8_t enable);
+static void create_new_program(pman_handle_t handle, uint16_t program_index);
+static void delete_program(pman_handle_t handle, uint16_t program_index);
+static void clone_program(pman_handle_t handle, uint16_t source_program_index, uint16_t destination_program_index);
 
 
 view_protocol_t controller_gui_protocol = {
-    .retry_communication  = retry_communication,
-    .set_output           = set_output,
-    .clear_outputs        = clear_outputs,
-    .set_test_mode        = set_test_mode,
-    .pressure_calibration = pressure_calibration,
-    .import_configuration = import_configuration,
-    .load_program         = load_program,
-    .save_parmac          = save_parmac,
-    .start_program        = start_program,
-    .stop_program         = stop_program,
-    .pause_program        = pause_program,
-    .test_dac             = test_dac,
-    .unlock_porthole      = unlock_porthole,
-    .lock_porthole        = lock_porthole,
-    .toggle_lock          = toggle_lock,
-    .new_program          = new_program,
-    .beep                 = beep,
+    .retry_communication        = retry_communication,
+    .set_output                 = set_output,
+    .clear_outputs              = clear_outputs,
+    .digital_coin_reader_enable = digital_coin_reader_enable,
+    .clear_coin_count           = clear_coin_count,
+    .set_test_mode              = set_test_mode,
+    .pressure_calibration       = pressure_calibration,
+    .import_configuration       = import_configuration,
+    .load_program               = load_program,
+    .save_parmac                = save_parmac,
+    .start_program              = start_program,
+    .stop_program               = stop_program,
+    .pause_program              = pause_program,
+    .test_dac                   = test_dac,
+    .unlock_porthole            = unlock_porthole,
+    .lock_porthole              = lock_porthole,
+    .toggle_lock                = toggle_lock,
+    .save_programs              = save_programs,
+    .create_new_program         = create_new_program,
+    .delete_program             = delete_program,
+    .clone_program              = clone_program,
+    .beep                       = beep,
 };
 
 
@@ -191,16 +201,63 @@ static void toggle_lock(pman_handle_t handle) {
 }
 
 
-static void new_program(pman_handle_t handle, uint16_t program_index) {
-    mut_model_t *model = view_get_model(handle);
+static void beep(void) {
+    buzzer_beep(1, 50, 50, 3);
+}
 
+
+static void clear_coin_count(pman_handle_t handle) {
+    (void)handle;
+    machine_azzera_credito();
+}
+
+
+static void digital_coin_reader_enable(pman_handle_t handle, uint8_t enable) {
+    (void)handle;
+    machine_enable_digital_coin_reader(enable);
+}
+
+
+static void save_programs(pman_handle_t handle) {
+    mut_model_t *model = view_get_model(handle);
+    configuration_update_index(model->prog.preview_programmi, model->prog.num_programmi);
+}
+
+
+static void create_new_program(pman_handle_t handle, uint16_t program_index) {
+    mut_model_t *model = view_get_model(handle);
     configuration_create_empty_program(model);
     model->prog.num_programmi = configuration_load_programs_preview(model, model->prog.preview_programmi, MAX_PROGRAMMI,
                                                                     model_get_language(model));
     configuration_clear_orphan_programs(model->prog.preview_programmi, model->prog.num_programmi);
+
+    programma_preview_t new_program = model->prog.preview_programmi[model->prog.num_programmi - 1];
+    for (uint16_t i = model->prog.num_programmi - 1; i > program_index; i--) {
+        model->prog.preview_programmi[i] = model->prog.preview_programmi[i - 1];
+    }
+    model->prog.preview_programmi[program_index] = new_program;
+
+    ESP_LOGI(TAG, "Created new program at index %i", program_index);
 }
 
 
-static void beep(void) {
-    buzzer_beep(1, 50, 50, 3);
+static void delete_program(pman_handle_t handle, uint16_t program_index) {
+    mut_model_t *model = view_get_model(handle);
+    configuration_remove_program(model->prog.preview_programmi, model->prog.num_programmi, program_index);
+    model->prog.num_programmi--;
+}
+
+
+static void clone_program(pman_handle_t handle, uint16_t source_program_index, uint16_t destination_program_index) {
+    mut_model_t *model = view_get_model(handle);
+
+    if (configuration_load_program(model, source_program_index)) {
+        ESP_LOGW(TAG, "No program at %i", source_program_index);
+        return;
+    }
+
+    configuration_clone_program(model, destination_program_index);
+    model->prog.num_programmi = configuration_load_programs_preview(model, model->prog.preview_programmi, MAX_PROGRAMMI,
+                                                                    model_get_language(model));
+    ESP_LOGI(TAG, "Clone program at %i to %i", source_program_index, destination_program_index);
 }

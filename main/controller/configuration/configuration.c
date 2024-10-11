@@ -36,7 +36,6 @@
 
 
 static int load_parmac(parmac_t *parmac);
-static int update_index(programma_preview_t *previews, size_t len);
 
 
 static const char *TAG = "Configuration";
@@ -217,7 +216,7 @@ int configuration_clone_program(model_t *pmodel, size_t destination) {
 
         pmodel->prog.num_programmi++;
     }
-    update_index(pmodel->prog.preview_programmi, model_get_num_programs(pmodel));
+    configuration_update_index(pmodel->prog.preview_programmi, model_get_num_programs(pmodel));
     return res;
 }
 
@@ -418,7 +417,7 @@ void configuration_remove_program(programma_preview_t *previews, size_t len, siz
         previews[i] = previews[i + 1];
     }
 
-    update_index(previews, len);
+    configuration_update_index(previews, len - 1);
 }
 
 
@@ -576,7 +575,7 @@ int configuration_read_local_data_version(void) {
 }
 
 
-static int update_index(programma_preview_t *previews, size_t len) {
+int configuration_update_index(programma_preview_t *previews, size_t len) {
     FILE *findex = fopen(PATH_FILE_INDICE, "w");
     if (findex == NULL) {
         ESP_LOGE(TAG, "Unable to open index: %s", strerror(errno));

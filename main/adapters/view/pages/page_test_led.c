@@ -45,7 +45,7 @@ static void open_page(pman_handle_t handle, void *state) {
     lv_obj_align(cont, LV_ALIGN_BOTTOM_MID, 0, 0);
 
     lv_obj_t *roller = lv_roller_create(cont);
-    lv_roller_set_visible_row_count(roller, 5);
+    lv_roller_set_visible_row_count(roller, 4);
     lv_obj_set_style_text_font(roller, STYLE_FONT_MEDIUM, LV_STATE_DEFAULT);
 
 
@@ -112,6 +112,15 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                     break;
                 }
 
+                case LV_EVENT_LONG_PRESSED: {
+                    switch (obj_data->id) {
+                        case BTN_NEXT_ID:
+                            msg.stack_msg = PMAN_STACK_MSG_SWAP(&page_test_coins_mechanical);
+                            break;
+                    }
+                    break;
+                }
+
                 default:
                     break;
             }
@@ -132,7 +141,7 @@ static void update_page(model_t *model, struct page_data *pdata) {
 }
 
 
-const pman_page_t page_test_lock = {
+const pman_page_t page_test_led = {
     .create        = create_page,
     .destroy       = pman_destroy_all,
     .open          = open_page,

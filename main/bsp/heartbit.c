@@ -62,9 +62,11 @@ void heartbit_resume(void) {
 
 
 static void print_heap_status(void) {
+    /*
     ESP_LOGI(TAG, "Internal RAM: LWM = %u, free = %u, biggest = %u",
              heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL), heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL));
     ESP_LOGI(TAG, "PSRAM       : LWM = %zu, free = %zu\n", heap_caps_get_minimum_free_size(MALLOC_CAP_SPIRAM),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
+             */
 }

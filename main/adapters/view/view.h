@@ -8,7 +8,7 @@
 
 #define VIEW_LVGL_BUFFER_SIZE                    (BUILD_CONFIG_DISPLAY_HORIZONTAL_RESOLUTION * 40)
 #define VIEW_ADD_WATCHED_VARIABLE(ptr, code)     view_add_watched_variable((void *)ptr, sizeof(*ptr), code)
-#define VIEW_ADD_WATCHED_ARRAY(ptr, items, code) view_add_watched_variable((void *)ptr, sizeof(*ptr) * items, code)
+#define VIEW_ADD_WATCHED_ARRAY(ptr, items, code) view_add_watched_variable((void *)ptr, sizeof(*ptr) * (items), code)
 
 
 typedef enum {
@@ -47,6 +47,8 @@ typedef struct {
     void (*retry_communication)(pman_handle_t handle);
     void (*set_output)(pman_handle_t handle, uint16_t output, uint8_t level);
     void (*clear_outputs)(pman_handle_t handle);
+    void (*clear_coin_count)(pman_handle_t handle);
+    void (*digital_coin_reader_enable)(pman_handle_t handle, uint8_t enable);
     void (*set_test_mode)(pman_handle_t handle, uint8_t test_mode);
     void (*pressure_calibration)(pman_handle_t handle);
     void (*import_configuration)(pman_handle_t handle, const char *name);
@@ -59,7 +61,11 @@ typedef struct {
     void (*unlock_porthole)(pman_handle_t handle, uint8_t force);
     void (*lock_porthole)(pman_handle_t handle);
     void (*toggle_lock)(pman_handle_t handle);
-    void (*new_program)(pman_handle_t handle, uint16_t program_index);
+    void (*create_new_program)(pman_handle_t handle, uint16_t program_index);
+    void (*create_new_step)(pman_handle_t handle, uint16_t step_index);
+    void (*clone_program)(pman_handle_t handle, uint16_t source_program_index, uint16_t destination_program_index);
+    void (*delete_program)(pman_handle_t handle, uint16_t program_index);
+    void (*save_programs)(pman_handle_t handle);
     void (*beep)(void);
 } view_protocol_t;
 
@@ -81,7 +87,7 @@ view_protocol_t *view_get_protocol(pman_handle_t handle);
 extern const pman_page_t page_main, page_password, page_menu, page_test_inputs, page_test_outputs, page_test_drum,
     page_test_level, page_test_temperature, page_test_coins_digital, page_test_coins_mechanical, page_test_led,
     page_test_lock, page_archiving, page_drive, page_import_configuration, page_choice, page_parmac, page_washing,
-    page_programs;
+    page_programs, page_program, page_program_info;
 
 
 #endif

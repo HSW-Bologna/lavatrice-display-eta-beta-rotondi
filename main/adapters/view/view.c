@@ -77,7 +77,7 @@ void view_init(model_t *p_model, pman_user_msg_cb_t controller_cb, lv_display_fl
                         &state.pman);
     view_common_set_hidden(state.popup_communication_error.blanket, 1);
 
-    pman_init(&state.pman, (void *)p_model, touch_indev, controller_cb, clear_watcher);
+    pman_init(&state.pman, (void *)p_model, touch_indev, controller_cb, clear_watcher, event_callback);
 }
 
 
@@ -152,6 +152,7 @@ static uint8_t event_callback(pman_handle_t handle, pman_event_t event) {
     switch (event.tag) {
         case PMAN_EVENT_TAG_LVGL: {
             switch (event.as.lvgl->code) {
+                case LV_EVENT_LONG_PRESSED:
                 case LV_EVENT_CLICKED:
                     view_get_protocol(handle)->beep();
                     break;

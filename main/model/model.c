@@ -1250,3 +1250,22 @@ void model_reset_storage_operation(mut_model_t *model) {
     assert(model != NULL);
     model->system.storage_status = STORAGE_STATUS_READY;
 }
+
+
+uint8_t model_swap_programs(model_t *model, size_t first, size_t second) {
+    if (first >= model->prog.num_programmi) {
+        return 0;
+    }
+    if (second >= model->prog.num_programmi) {
+        return 0;
+    }
+    if (first == second) {
+        return 0;
+    }
+
+    programma_preview_t p                 = model->prog.preview_programmi[first];
+    model->prog.preview_programmi[first]  = model->prog.preview_programmi[second];
+    model->prog.preview_programmi[second] = p;
+
+    return 1;
+}

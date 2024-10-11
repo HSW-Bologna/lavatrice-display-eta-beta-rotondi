@@ -2,4 +2,4 @@
 
 ## TODO
 
- - Add return timer to all settings pages
+ - Make sure coin readers and liter counter are fast enough (read signals that change over 1.5 ms)

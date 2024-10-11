@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "programs.h"
-//#include "view/lingue.h"
+// #include "view/lingue.h"
 #include "assert.h"
 #include "services/serializer.h"
 
@@ -73,11 +73,24 @@ void programs_remove_step(programma_lavatrice_t *p, int index) {
     }
 }
 
-void swap_steps(programma_lavatrice_t *p, int first, int second) {
+
+uint8_t programs_swap_steps(programma_lavatrice_t *p, int first, int second) {
     if (first != second) {
         parametri_step_t s = p->steps[first];
         p->steps[first]    = p->steps[second];
         p->steps[second]   = s;
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+
+void programs_copy_step(programma_lavatrice_t *p, uint16_t source_step_index, uint16_t destination_step_index) {
+    if (source_step_index < p->num_steps && destination_step_index <= p->num_steps && p->num_steps < MAX_STEPS) {
+        p->steps[p->num_steps] = p->steps[source_step_index];
+        p->num_steps++;
+        programs_swap_steps(p, destination_step_index, p->num_steps - 1);
     }
 }
 

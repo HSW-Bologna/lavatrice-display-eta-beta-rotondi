@@ -1,4 +1,4 @@
-const char *strings[109][2] = {
+const char *strings[114][2] = {
     {"Diagnosi", "Test", },
     {"Ingressi", "Inputs", },
     {"Uscite", "Outputs", },
@@ -108,5 +108,10 @@ const char *strings[109][2] = {
     {"Uscita lavaggio", "Washing exit", },
     {"Programmi", "Programs", },
     {"Codice", "Code", },
+    {"In marcia", "Running", },
+    {"Abilita", "Enable", },
+    {"Informazioni", "Info", },
+    {"Cancellare il programma?", "Delete the program?", },
+    {"Cancellare il passo?", "Delete the step?", },
 };
 

@@ -35,6 +35,7 @@ int  configuration_clone_program(model_t *pmodel, size_t destination);
 void configuration_save_contrast(model_t *pmodel);
 void configuration_load_contrast(model_t *pmodel);
 int  configuration_copy_from_tar(mtar_t *tar, const char *name, size_t total);
+int  configuration_update_index(programma_preview_t *previews, size_t len);
 
 
 #endif

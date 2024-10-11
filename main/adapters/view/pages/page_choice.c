@@ -81,12 +81,12 @@ static void open_page(pman_handle_t handle, void *state) {
     pdata->previous_credit = model_get_credito(model);
 
     lv_obj_t *lbl = lv_label_create(cont);
-    lv_obj_align(lbl, LV_ALIGN_CENTER, -96, -96);
+    lv_obj_align(lbl, LV_ALIGN_CENTER, 96, -64);
     pdata->lbl_price = lbl;
 
     lbl = lv_label_create(cont);
     lv_obj_set_style_text_align(lbl, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);
-    lv_obj_align(lbl, LV_ALIGN_CENTER, 96, -96);
+    lv_obj_align(lbl, LV_ALIGN_CENTER, -96, -64);
     pdata->lbl_credit = lbl;
 
     {

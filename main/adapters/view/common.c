@@ -58,6 +58,7 @@ view_title_t view_common_create_title(lv_obj_t *root, const char *text, int back
     view_register_object_default_callback(btn, back_id);
     lv_obj_t *button_back = btn;
 
+    lv_obj_t *button_next = NULL;
     if (next_id >= 0) {
         btn = lv_button_create(cont);
         lv_obj_add_style(btn, (lv_style_t *)&style_config_btn, LV_STATE_DEFAULT);
@@ -68,10 +69,11 @@ view_title_t view_common_create_title(lv_obj_t *root, const char *text, int back
         lv_obj_center(lbl);
         lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -4, 0);
         view_register_object_default_callback(btn, next_id);
+        button_next = btn;
     }
 
     lbl = lv_label_create(cont);
-    lv_label_set_long_mode(lbl, LV_LABEL_LONG_WRAP);
+    lv_label_set_long_mode(lbl, LV_LABEL_LONG_SCROLL_CIRCULAR);
     lv_obj_set_style_text_align(lbl, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(lbl, STYLE_FONT_MEDIUM, LV_STATE_DEFAULT);
     lv_label_set_text(lbl, text);
@@ -84,7 +86,12 @@ view_title_t view_common_create_title(lv_obj_t *root, const char *text, int back
         lv_obj_align(lbl, LV_ALIGN_RIGHT_MID, 0, 0);
     }
 
-    return (view_title_t){.label_title = lbl, .button_back = button_back, .obj_title = cont};
+    return (view_title_t){
+        .label_title = lbl,
+        .button_back = button_back,
+        .button_next = button_next,
+        .obj_title   = cont,
+    };
 }
 
 
@@ -95,14 +102,19 @@ void view_common_image_set_src(lv_obj_t *img, const lv_image_dsc_t *img_dsc) {
 }
 
 
-void view_common_alarm_popup_update(alarm_popup_t *alarm_popup, uint16_t language, uint16_t alarm_code) {
+void view_common_alarm_popup_update(popup_t *alarm_popup, uint16_t language, uint16_t alarm_code) {
     const char *description = get_alarm_description(alarm_code, language);
     lv_label_set_text_fmt(alarm_popup->lbl_description, "%s\n\n%s: %i", description,
                           view_intl_get_string_in_language(language, STRINGS_CODICE), alarm_code);
 }
 
 
-alarm_popup_t view_common_alarm_popup_create(lv_obj_t *parent) {
+popup_t view_common_alarm_popup_create(lv_obj_t *parent, int id) {
+    return view_common_popup_create(parent, "", id, -1);
+}
+
+
+popup_t view_common_popup_create(lv_obj_t *parent, const char *text, int ok_id, int cancel_id) {
     lv_obj_t *blanket = lv_obj_create(parent);
     lv_obj_add_style(blanket, &style_transparent_cont, LV_STATE_DEFAULT);
     lv_obj_set_size(blanket, LV_PCT(100), LV_PCT(100));
@@ -117,7 +129,21 @@ alarm_popup_t view_common_alarm_popup_create(lv_obj_t *parent) {
     lv_obj_set_style_text_font(lbl_msg, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
     lv_label_set_long_mode(lbl_msg, LV_LABEL_LONG_WRAP);
     lv_obj_set_width(lbl_msg, LV_PCT(95));
+    lv_label_set_text(lbl_msg, text);
     lv_obj_align(lbl_msg, LV_ALIGN_CENTER, 0, -32);
+
+    lv_obj_t *btn_cancel = NULL;
+    if (cancel_id >= 0) {
+        lv_obj_t *btn = lv_button_create(cont);
+        lv_obj_set_size(btn, 64, 48);
+        lv_obj_t *lbl = lv_label_create(btn);
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        lv_label_set_text(lbl, LV_SYMBOL_CLOSE);
+        lv_obj_center(lbl);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+        view_register_object_default_callback(btn, cancel_id);
+        btn_cancel = btn;
+    }
 
     lv_obj_t *btn = lv_button_create(cont);
     lv_obj_set_size(btn, 64, 48);
@@ -125,11 +151,17 @@ alarm_popup_t view_common_alarm_popup_create(lv_obj_t *parent) {
     lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
     lv_label_set_text(lbl, LV_SYMBOL_OK);
     lv_obj_center(lbl);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, 0);
+    if (cancel_id >= 0) {
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+    } else {
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, 0);
+    }
+    view_register_object_default_callback(btn, ok_id);
 
-    return (alarm_popup_t){
+    return (popup_t){
         .blanket         = blanket,
         .btn_ok          = btn,
+        .btn_cancel      = btn_cancel,
         .lbl_description = lbl_msg,
     };
 }

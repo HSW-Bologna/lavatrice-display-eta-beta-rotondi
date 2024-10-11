@@ -109,3 +109,8 @@ RECUPERO, Recupero, Recovery
 USCITA_LAVAGGIO, Uscita lavaggio, Washing exit
 PROGRAMMI, Programmi, Programs
 CODICE, Codice, Code
+IN_MARCIA, In marcia, Running
+ABILITA, Abilita, Enable
+INFORMAZIONI, Informazioni, Info
+CANCELLARE_IL_PROGRAMMA, Cancellare il programma?, Delete the program?
+CANCELLARE_IL_PASSO, Cancellare il passo?, Delete the step?

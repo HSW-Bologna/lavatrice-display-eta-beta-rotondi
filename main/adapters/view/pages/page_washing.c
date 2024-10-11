@@ -11,6 +11,13 @@
 #include "config/app_config.h"
 
 
+LV_IMAGE_DECLARE(img_start);
+LV_IMAGE_DECLARE(img_stop);
+LV_IMAGE_DECLARE(img_pause);
+LV_IMAGE_DECLARE(img_italiano);
+LV_IMAGE_DECLARE(img_english);
+
+
 #define ALLARME_CHIAVISTELLO 15
 #define ALLARME_SCARICO      32
 
@@ -18,6 +25,8 @@
 enum {
     BTN_STOP_ID,
     BTN_START_ID,
+    BTN_LEFT_ID,
+    BTN_RIGHT_ID,
 };
 
 
@@ -28,13 +37,14 @@ struct page_data {
     lv_obj_t *label_program;
     lv_obj_t *label_status;
     lv_obj_t *label_step;
-    lv_obj_t *label_phase;
     lv_obj_t *label_remaining;
     lv_obj_t *lbl_alarm;
     lv_obj_t *lbl_alarm_code;
 
     lv_obj_t *button_start;
     lv_obj_t *button_stop;
+    lv_obj_t *button_left;
+    lv_obj_t *button_right;
 
     uint8_t  scarico_fallito;
     uint16_t allarme;
@@ -62,70 +72,108 @@ static void open_page(pman_handle_t handle, void *state) {
     model_t          *model = view_get_model(handle);
     struct page_data *pdata = state;
 
+    lv_obj_t *cont = lv_obj_create(lv_scr_act());
+    lv_obj_set_style_pad_all(cont, 8, LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(cont, VIEW_STYLE_COLOR_BACKGROUND, LV_STATE_DEFAULT);
+    lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES - 56);
+    lv_obj_align(cont, LV_ALIGN_TOP_MID, 0, 0);
+
     {
-        lv_obj_t *btn = lv_button_create(lv_screen_active());
+        lv_obj_t *btn = lv_button_create(cont);
+        lv_obj_set_size(btn, 64, 64);
+        lv_obj_set_style_radius(btn, 16, LV_STATE_DEFAULT);
+        lv_obj_set_style_bg_color(btn, VIEW_STYLE_COLOR_START, LV_STATE_DEFAULT);
+        lv_obj_t *img = lv_img_create(btn);
+        lv_image_set_scale(img, 170);
+        lv_image_set_src(img, &img_start);
+        lv_obj_add_style(img, &style_white_icon, LV_STATE_DEFAULT);
+        lv_obj_center(img);
         lv_obj_align(btn, LV_ALIGN_TOP_RIGHT, 0, 0);
-        lv_obj_t *lbl = lv_label_create(btn);
-        lv_label_set_text(lbl, "Start");
-        lv_obj_center(lbl);
         view_register_object_default_callback(btn, BTN_START_ID);
         pdata->button_start = btn;
     }
 
     {
-        lv_obj_t *btn = lv_button_create(lv_screen_active());
+        lv_obj_t *btn = lv_button_create(cont);
+        lv_obj_set_size(btn, 64, 64);
+        lv_obj_set_style_radius(btn, 16, LV_STATE_DEFAULT);
+        lv_obj_set_style_bg_color(btn, VIEW_STYLE_COLOR_PAUSE, LV_STATE_DEFAULT);
+        lv_obj_t *img = lv_img_create(btn);
+        lv_image_set_scale(img, 170);
+        lv_image_set_src(img, &img_pause);
+        lv_obj_add_style(img, &style_white_icon, LV_STATE_DEFAULT);
+        lv_obj_center(img);
         lv_obj_align(btn, LV_ALIGN_TOP_LEFT, 0, 0);
-        lv_obj_t *lbl = lv_label_create(btn);
-        lv_label_set_text(lbl, "Stop");
-        lv_obj_center(lbl);
         view_register_object_default_callback(btn, BTN_STOP_ID);
         pdata->button_stop = btn;
     }
 
     {
-        lv_obj_t *lbl = lv_label_create(lv_screen_active());
+        lv_obj_t *btn = lv_button_create(cont);
+        lv_obj_set_size(btn, 64, 64);
+        lv_obj_set_style_radius(btn, 16, LV_STATE_DEFAULT);
+        lv_obj_set_style_bg_color(btn, VIEW_STYLE_PRIMARY, LV_STATE_DEFAULT);
+        lv_obj_t *lbl = lv_label_create(btn);
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_HUGE, LV_STATE_DEFAULT);
+        lv_label_set_text(lbl, LV_SYMBOL_LEFT);
+        lv_obj_align(lbl, LV_ALIGN_CENTER, -2, 0);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+        view_register_object_default_callback(btn, BTN_LEFT_ID);
+        pdata->button_left = btn;
+    }
+
+    {
+        lv_obj_t *btn = lv_button_create(cont);
+        lv_obj_set_size(btn, 64, 64);
+        lv_obj_set_style_radius(btn, 16, LV_STATE_DEFAULT);
+        lv_obj_set_style_bg_color(btn, VIEW_STYLE_PRIMARY, LV_STATE_DEFAULT);
+        lv_obj_t *lbl = lv_label_create(btn);
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_HUGE, LV_STATE_DEFAULT);
+        lv_label_set_text(lbl, LV_SYMBOL_RIGHT);
+        lv_obj_align(lbl, LV_ALIGN_CENTER, 2, 0);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+        view_register_object_default_callback(btn, BTN_RIGHT_ID);
+        pdata->button_right = btn;
+    }
+
+    {
+        lv_obj_t *lbl = lv_label_create(cont);
         lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        lv_obj_set_style_text_align(lbl, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);
         lv_label_set_long_mode(lbl, LV_LABEL_LONG_SCROLL_CIRCULAR);
         lv_obj_set_width(lbl, LV_PCT(95));
-        lv_obj_align(lbl, LV_ALIGN_TOP_LEFT, 0, 72);
+        lv_obj_align(lbl, LV_ALIGN_TOP_MID, 0, 96);
         pdata->label_program = lbl;
     }
 
     {
-        lv_obj_t *lbl = lv_label_create(lv_screen_active());
-        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        lv_obj_t *lbl = lv_label_create(cont);
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_MEDIUM, LV_STATE_DEFAULT);
+        lv_obj_set_style_text_align(lbl, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);
         lv_label_set_long_mode(lbl, LV_LABEL_LONG_SCROLL_CIRCULAR);
-        lv_obj_set_width(lbl, LV_PCT(95));
-        lv_obj_align(lbl, LV_ALIGN_TOP_LEFT, 0, 96);
+        lv_obj_set_width(lbl, LV_HOR_RES - 64 * 2 - 32);
+        lv_obj_align(lbl, LV_ALIGN_BOTTOM_MID, 0, -2);
         pdata->label_step = lbl;
     }
 
     {
-        lv_obj_t *lbl = lv_label_create(lv_screen_active());
+        lv_obj_t *lbl = lv_label_create(cont);
         lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        lv_obj_set_style_text_align(lbl, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);
         lv_label_set_long_mode(lbl, LV_LABEL_LONG_SCROLL_CIRCULAR);
         lv_obj_set_width(lbl, LV_PCT(95));
-        lv_obj_align(lbl, LV_ALIGN_TOP_LEFT, 0, 120);
-        pdata->label_phase = lbl;
-    }
-
-    {
-        lv_obj_t *lbl = lv_label_create(lv_screen_active());
-        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
-        lv_label_set_long_mode(lbl, LV_LABEL_LONG_SCROLL_CIRCULAR);
-        lv_obj_set_width(lbl, LV_PCT(95));
-        lv_obj_align(lbl, LV_ALIGN_TOP_LEFT, 0, 144);
+        lv_obj_align(lbl, LV_ALIGN_TOP_MID, 0, 96 + 24);
         pdata->label_remaining = lbl;
     }
 
     {
-        lv_obj_t *cont = lv_obj_create(lv_scr_act());
-        lv_obj_add_style(cont, &style_padless_cont, LV_STATE_DEFAULT);
-        lv_obj_set_size(cont, LV_HOR_RES, 56);
-        lv_obj_set_style_bg_color(cont, VIEW_STYLE_COLOR_BACKGROUND, LV_STATE_DEFAULT);
-        lv_obj_align(cont, LV_ALIGN_BOTTOM_MID, 0, 0);
+        lv_obj_t *status_cont = lv_obj_create(lv_scr_act());
+        lv_obj_add_style(status_cont, &style_padless_cont, LV_STATE_DEFAULT);
+        lv_obj_set_size(status_cont, LV_HOR_RES, 56);
+        lv_obj_set_style_bg_color(status_cont, VIEW_STYLE_COLOR_BACKGROUND, LV_STATE_DEFAULT);
+        lv_obj_align(status_cont, LV_ALIGN_BOTTOM_MID, 0, 0);
 
-        lv_obj_t *lbl = lv_label_create(cont);
+        lv_obj_t *lbl = lv_label_create(status_cont);
         lv_label_set_long_mode(lbl, LV_LABEL_LONG_SCROLL_CIRCULAR);
         lv_obj_set_width(lbl, LV_PCT(95));
         lv_obj_set_style_text_align(lbl, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);
@@ -133,8 +181,7 @@ static void open_page(pman_handle_t handle, void *state) {
         pdata->label_status = lbl;
     }
 
-    VIEW_ADD_WATCHED_VARIABLE(&model->run.macchina.stato, 0);
-    VIEW_ADD_WATCHED_VARIABLE(&model->run.macchina.sottostato, 0);
+    VIEW_ADD_WATCHED_VARIABLE(&model->run.macchina, 0);
 
     update_page(model, pdata);
     ESP_LOGI(TAG, "Open");
@@ -152,7 +199,6 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
     switch (event.tag) {
         case PMAN_EVENT_TAG_TIMER: {
-            msg.stack_msg = PMAN_STACK_MSG_BACK();
             break;
         }
 
@@ -171,6 +217,11 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             pdata->scarico_fallito = 1;
                         }
                     }
+
+                    if (model_alarm_code(model) > 0 && pdata->allarme != model_alarm_code(model)) {
+                        pdata->allarme = model_alarm_code(model);
+                    }
+
                     update_page(model, pdata);
                     break;
                 }
@@ -190,7 +241,6 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                     switch (obj_data->id) {
                         case BTN_START_ID: {
                             view_get_protocol(handle)->start_program(handle);
-                            msg.stack_msg = PMAN_STACK_MSG_BACK();
                             break;
                         }
 
@@ -202,6 +252,23 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                                 ESP_LOGI(TAG, "Requesting pause");
                                 view_get_protocol(handle)->pause_program(handle);
                             }
+                            break;
+                        }
+
+                        case BTN_LEFT_ID: {
+                            if (model_macchina_in_pausa(model)) {
+                                model_arretra_step(model);
+                                update_page(model, pdata);
+                            }
+                            break;
+                        }
+
+                        case BTN_RIGHT_ID: {
+                            if (model_macchina_in_pausa(model)) {
+                                model_avanza_step(model);
+                                update_page(model, pdata);
+                            }
+                            break;
                         }
 
                         default:
@@ -216,7 +283,6 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
             break;
         }
-
         default:
             break;
     }
@@ -226,19 +292,27 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
 
 static void update_page(model_t *model, struct page_data *pdata) {
-    lv_obj_t *lbl = lv_obj_get_child(pdata->button_stop, 0);
+    lv_obj_t *img = lv_obj_get_child(pdata->button_stop, 0);
 
     if (model_macchina_in_stop(model)) {
         view_common_set_hidden(pdata->button_stop, 1);
         view_common_set_hidden(pdata->button_start, 0);
+        view_common_set_hidden(pdata->button_left, 1);
+        view_common_set_hidden(pdata->button_right, 1);
     } else if (model_macchina_in_pausa(model)) {
         view_common_set_hidden(pdata->button_stop, 0);
         view_common_set_hidden(pdata->button_start, 0);
-        lv_label_set_text(lbl, "Stop");
+        view_common_set_hidden(pdata->button_left, 0);
+        view_common_set_hidden(pdata->button_right, 0);
+        lv_obj_set_style_bg_color(pdata->button_stop, VIEW_STYLE_COLOR_STOP, LV_STATE_DEFAULT);
+        lv_img_set_src(img, &img_stop);
     } else {
         view_common_set_hidden(pdata->button_stop, 0);
         view_common_set_hidden(pdata->button_start, 1);
-        lv_label_set_text(lbl, "Pausa");
+        view_common_set_hidden(pdata->button_left, 1);
+        view_common_set_hidden(pdata->button_right, 1);
+        lv_obj_set_style_bg_color(pdata->button_stop, VIEW_STYLE_COLOR_PAUSE, LV_STATE_DEFAULT);
+        lv_img_set_src(img, &img_pause);
     }
 
     const programma_lavatrice_t *program = model_get_program(model);
@@ -248,37 +322,35 @@ static void update_page(model_t *model, struct page_data *pdata) {
     }
 
     parametri_step_t *step = model_get_current_step(model);
-    lv_label_set_text_fmt(pdata->label_step, "# %s %02i/%02i #", view_common_step2str(model, step->tipo),
+    lv_label_set_text_fmt(pdata->label_step, "%s\n%02i/%02i", view_common_step2str(model, step->tipo),
                           model_get_current_step_number(model) + 1, (int)program->num_steps);
-
-    if (model->run.f_richiedi_scarico) {
-        lv_label_set_text(pdata->label_phase, view_intl_get_string_in_language(model_get_temporary_language(model),
-                                                                               STRINGS_SCARICO_NECESSARIO));
-    } else if (model_macchina_in_scarico_forzato(model)) {
-        lv_label_set_text(pdata->label_phase, view_intl_get_string_in_language(model_get_temporary_language(model),
-                                                                               STRINGS_SCARICO_FORZATO));
-    } else if (model_macchina_in_pausa(model)) {
-        lv_label_set_text(pdata->label_phase, view_intl_get_string_in_language(model_get_temporary_language(model),
-                                                                               STRINGS_PAUSA_LAVAGGIO));
-    } else if (model->run.macchina.descrizione_pedante == 0) {
-        lv_label_set_text(pdata->label_phase, view_common_step2str(model, step->tipo));
-    } else {
-        lv_label_set_text(pdata->label_phase, view_common_pedantic_string(model));
-    }
 
     uint16_t step_rimanente = model->run.macchina.rimanente;
     uint16_t rimanente      = model_program_remaining(model);
     lv_label_set_text_fmt(pdata->label_remaining, "%02im%02is - %02im%02is", step_rimanente / 60, step_rimanente % 60,
                           rimanente / 60, rimanente % 60);
 
+    const char *string = view_intl_get_string_in_language(model_get_temporary_language(model), STRINGS_IN_MARCIA);
     if (model_alarm_code(model) > 0) {
-        if (pdata->allarme != model_alarm_code(model)) {
-            pdata->allarme = model_alarm_code(model);
-            lv_label_set_text(pdata->label_status, view_common_alarm_description(model));
-        }
+        string = view_common_alarm_description(model);
         view_common_set_hidden(pdata->button_start, 0);
     } else {
         lv_label_set_text(pdata->label_status, "");
+
+        if (model->run.f_richiedi_scarico) {
+            string = view_intl_get_string_in_language(model_get_temporary_language(model), STRINGS_SCARICO_NECESSARIO);
+        } else if (model_macchina_in_scarico_forzato(model)) {
+            string = view_intl_get_string_in_language(model_get_temporary_language(model), STRINGS_SCARICO_FORZATO);
+        } else if (model_macchina_in_pausa(model)) {
+            string = view_intl_get_string_in_language(model_get_temporary_language(model), STRINGS_PAUSA_LAVAGGIO);
+        } else if (model->run.macchina.descrizione_pedante == 0) {
+            string = view_common_step2str(model, step->tipo);
+        } else {
+            string = view_common_pedantic_string(model);
+        }
+    }
+    if (strcmp(lv_label_get_text(pdata->label_status), string) != 0) {
+        lv_label_set_text(pdata->label_status, string);
     }
 }
 

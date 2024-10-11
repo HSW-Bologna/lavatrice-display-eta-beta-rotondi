@@ -49,6 +49,9 @@ static void open_page(pman_handle_t handle, void *state) {
     lv_obj_align(lbl, LV_ALIGN_TOP_LEFT, 0, 0);
     pdata->label_temperature = lbl;
 
+    VIEW_ADD_WATCHED_VARIABLE(&model->test.adc_temp, 0);
+    VIEW_ADD_WATCHED_VARIABLE(&model->run.macchina.temperatura, 0);
+
     update_page(model, pdata);
 }
 
@@ -91,6 +94,15 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
                         case BTN_NEXT_ID:
                             msg.stack_msg = PMAN_STACK_MSG_SWAP(&page_test_coins_digital);
+                            break;
+                    }
+                    break;
+                }
+
+                case LV_EVENT_LONG_PRESSED: {
+                    switch (obj_data->id) {
+                        case BTN_NEXT_ID:
+                            msg.stack_msg = PMAN_STACK_MSG_SWAP(&page_test_level);
                             break;
                     }
                     break;

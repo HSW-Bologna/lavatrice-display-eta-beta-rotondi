@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "lvgl.h"
 #include "model/model.h"
 #include "../view.h"
@@ -10,6 +11,7 @@
 
 struct page_data {
     lv_obj_t *table_digital;
+    lv_obj_t *led_enable;
 };
 
 
@@ -17,6 +19,7 @@ enum {
     BTN_BACK_ID,
     BTN_NEXT_ID,
     BTN_CLEAR_ID,
+    BTN_ENABLE_ID,
 };
 
 
@@ -65,9 +68,36 @@ static void open_page(pman_handle_t handle, void *state) {
     lv_obj_set_size(btn, 96, 48);
     lv_obj_t *lbl = lv_label_create(btn);
     lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_AZZERA));
+    lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
     lv_obj_center(lbl);
     view_register_object_default_callback(btn, BTN_CLEAR_ID);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, 0);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+
+    {
+        lv_obj_t *btn = lv_btn_create(cont);
+        lv_obj_clear_flag(btn, LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_set_size(btn, 128, 48);
+        view_register_object_default_callback(btn, BTN_ENABLE_ID);
+
+        lv_obj_t *led = lv_led_create(btn);
+        lv_obj_add_flag(led, LV_OBJ_FLAG_EVENT_BUBBLE);
+        lv_led_set_color(led, VIEW_STYLE_COLOR_GREEN);
+        lv_obj_set_size(led, 32, 32);
+        lv_obj_align(led, LV_ALIGN_RIGHT_MID, 0, 0);
+        pdata->led_enable = led;
+
+        lv_obj_t *lbl = lv_label_create(btn);
+        lv_obj_add_flag(lbl, LV_OBJ_FLAG_EVENT_BUBBLE);
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_ABILITA));
+        lv_obj_align(lbl, LV_ALIGN_LEFT_MID, 0, 0);
+
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+    }
+
+    VIEW_ADD_WATCHED_VARIABLE(&model->test.gettoniera_impulsi_abilitata, 0);
+    VIEW_ADD_WATCHED_ARRAY(model->run.macchina.credito,
+                           sizeof(model->run.macchina.credito) / sizeof(model->run.macchina.credito[0]), 0);
 
     update_page(model, pdata);
 }
@@ -107,12 +137,33 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                 case LV_EVENT_CLICKED: {
                     switch (obj_data->id) {
                         case BTN_BACK_ID:
+                            model->test.gettoniera_impulsi_abilitata = 0;
                             view_get_protocol(handle)->set_test_mode(handle, 0);
                             msg.stack_msg = PMAN_STACK_MSG_BACK();
                             break;
 
                         case BTN_NEXT_ID:
-                            msg.stack_msg = PMAN_STACK_MSG_SWAP(&page_test_coins_mechanical);
+                            model->test.gettoniera_impulsi_abilitata = 0;
+                            msg.stack_msg                            = PMAN_STACK_MSG_SWAP(&page_test_coins_mechanical);
+                            break;
+
+                        case BTN_ENABLE_ID:
+                            view_get_protocol(handle)->digital_coin_reader_enable(
+                                handle, !model->test.gettoniera_impulsi_abilitata);
+                            break;
+
+                        case BTN_CLEAR_ID:
+                            view_get_protocol(handle)->clear_coin_count(handle);
+                            update_page(model, pdata);
+                            break;
+                    }
+                    break;
+                }
+
+                case LV_EVENT_LONG_PRESSED: {
+                    switch (obj_data->id) {
+                        case BTN_NEXT_ID:
+                            msg.stack_msg = PMAN_STACK_MSG_SWAP(&page_test_temperature);
                             break;
                     }
                     break;
@@ -135,12 +186,19 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 static void update_page(model_t *model, struct page_data *pdata) {
     (void)model;
 
-    lv_table_set_cell_value_fmt(pdata->table_digital, 1, 1, "%i", 0);
-    lv_table_set_cell_value_fmt(pdata->table_digital, 2, 1, "%i", 0);
-    lv_table_set_cell_value_fmt(pdata->table_digital, 3, 1, "%i", 0);
-    lv_table_set_cell_value_fmt(pdata->table_digital, 4, 1, "%i", 0);
-    lv_table_set_cell_value_fmt(pdata->table_digital, 5, 1, "%i", 0);
-    lv_table_set_cell_value_fmt(pdata->table_digital, 6, 1, "%i", 0);
+    const size_t tf[] = {5, 1, 2, 3, 4};
+    for (size_t i = LINEA_1_GETTONIERA_DIGITALE; i < LINEA_1_GETTONIERA_DIGITALE + LINEE_GETTONIERA_DIGITALE; i++) {
+        size_t ti        = i - LINEA_1_GETTONIERA_DIGITALE;
+        char   string[8] = {0};
+        snprintf(string, sizeof(string), "%i", model->run.macchina.credito[tf[ti]]);
+        lv_table_set_cell_value(pdata->table_digital, ti + 1, 1, string);
+    }
+
+    if (model->test.gettoniera_impulsi_abilitata) {
+        lv_led_on(pdata->led_enable);
+    } else {
+        lv_led_off(pdata->led_enable);
+    }
 }
 
 

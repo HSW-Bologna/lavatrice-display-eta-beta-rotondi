@@ -84,7 +84,7 @@ struct page_data {
 
     lv_style_t style_pr;
 
-    alarm_popup_t alarm_popup;
+    popup_t alarm_popup;
 
     uint16_t program_window_index;
     uint8_t  alarm_pacified;
@@ -198,9 +198,11 @@ static void open_page(pman_handle_t handle, void *state) {
 
     {
         lv_obj_t *buttons_cont = lv_obj_create(cont);
-        lv_obj_add_style(buttons_cont, &style_padless_cont, LV_STATE_DEFAULT);
+        lv_obj_clear_flag(buttons_cont, LV_OBJ_FLAG_SCROLLABLE);
         lv_obj_set_style_pad_column(buttons_cont, 12, LV_STATE_DEFAULT);
         lv_obj_set_style_pad_row(buttons_cont, 12, LV_STATE_DEFAULT);
+        lv_obj_set_style_pad_ver(buttons_cont, 0, LV_STATE_DEFAULT);
+        lv_obj_set_style_pad_hor(buttons_cont, 4, LV_STATE_DEFAULT);
         lv_obj_set_size(buttons_cont, LV_HOR_RES, LV_VER_RES * 1 / 4);
         lv_obj_set_layout(buttons_cont, LV_LAYOUT_FLEX);
         lv_obj_set_flex_flow(buttons_cont, LV_FLEX_FLOW_ROW);
@@ -210,48 +212,57 @@ static void open_page(pman_handle_t handle, void *state) {
 
         {
             lv_obj_t *button = lv_button_create(buttons_cont);
-            lv_obj_t *lbl    = lv_label_create(button);
-            lv_label_set_text(lbl, LV_SYMBOL_LEFT);
-            lv_obj_center(lbl);
+            lv_obj_add_style(button, &style_work_button, LV_STATE_DEFAULT);
             lv_obj_set_size(button, BUTTON_HEIGHT, BUTTON_HEIGHT);
             view_register_object_default_callback(button, BTN_LEFT_ID);
+
+            lv_obj_t *lbl = lv_label_create(button);
+            lv_label_set_text(lbl, LV_SYMBOL_LEFT);
+            lv_obj_set_style_text_color(lbl, VIEW_STYLE_COLOR_BLACK, LV_STATE_DEFAULT);
+            lv_obj_center(lbl);
 
             pdata->button_left = button;
         }
 
         {
             lv_obj_t *btn = lv_btn_create(buttons_cont);
+            lv_obj_add_style(btn, &style_work_button, LV_STATE_DEFAULT);
             lv_obj_set_size(btn, BUTTON_HEIGHT, BUTTON_HEIGHT);
+            view_register_object_default_callback(btn, BTN_PADLOCK_ID);
+            pdata->button_padlock = btn;
+
             lv_obj_t *img = lv_image_create(btn);
-            lv_obj_add_style(img, &style_white_icon, LV_STATE_DEFAULT);
+            lv_obj_add_style(img, &style_black_icon, LV_STATE_DEFAULT);
             lv_image_set_scale(img, 200);
             lv_image_set_src(img, &img_padlock_closed);
-            view_register_object_default_callback(btn, BTN_PADLOCK_ID);
             lv_obj_center(img);
-            pdata->button_padlock = btn;
-            pdata->image_padlock  = img;
+            pdata->image_padlock = img;
         }
 
         {
             lv_obj_t *btn = lv_btn_create(buttons_cont);
+            lv_obj_add_style(btn, &style_work_button, LV_STATE_DEFAULT);
             lv_obj_set_size(btn, BUTTON_HEIGHT, BUTTON_HEIGHT);
+            view_register_object_default_callback(btn, BTN_LANGUAGE_ID);
+
             lv_obj_t *img = lv_image_create(btn);
             lv_image_set_scale(img, 150);
             lv_image_set_src(img, &img_italiano);
-            view_register_object_default_callback(btn, BTN_LANGUAGE_ID);
             lv_obj_center(img);
             pdata->image_language = img;
         }
 
         {
             lv_obj_t *button = lv_button_create(buttons_cont);
-            lv_obj_t *lbl    = lv_label_create(button);
-            lv_label_set_text(lbl, LV_SYMBOL_RIGHT);
-            lv_obj_center(lbl);
+            lv_obj_add_style(button, &style_work_button, LV_STATE_DEFAULT);
             lv_obj_set_size(button, BUTTON_HEIGHT, BUTTON_HEIGHT);
             view_register_object_default_callback(button, BTN_RIGHT_ID);
-
             pdata->button_right = button;
+
+            lv_obj_t *lbl = lv_label_create(button);
+            lv_obj_set_style_text_color(lbl, VIEW_STYLE_COLOR_BLACK, LV_STATE_DEFAULT);
+            lv_label_set_text(lbl, LV_SYMBOL_RIGHT);
+            lv_obj_center(lbl);
         }
     }
 
@@ -260,13 +271,11 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_set_size(obj, SETTINGS_DRAG_WIDTH, SETTINGS_DRAG_HEIGHT);
         lv_obj_align(obj, LV_ALIGN_TOP_MID, 0, 0);
         lv_obj_add_style(obj, (lv_style_t *)&style_transparent_cont, LV_STATE_DEFAULT);
-        // lv_obj_add_style(obj, (lv_style_t *)&style_padless_cont, LV_STATE_DEFAULT);
         lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
         view_register_object_default_callback(obj, OBJ_SETTINGS_ID);
         pdata->obj_handle = obj;
 
         lv_obj_t *drawer = lv_obj_create(cont);
-        // lv_obj_add_style(obj, (lv_style_t *)&style_transparent_cont, LV_STATE_DEFAULT);
         lv_obj_set_size(drawer, SETTINGS_DRAWER_WIDTH, SETTINGS_DRAWER_HEIGHT);
         lv_obj_align_to(drawer, obj, LV_ALIGN_OUT_TOP_MID, 0, 0);
         pdata->obj_drawer = drawer;
@@ -279,9 +288,8 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_align(btn, LV_ALIGN_CENTER, 0, 0);
     }
 
-    pdata->alarm_popup = view_common_alarm_popup_create(cont);
+    pdata->alarm_popup = view_common_alarm_popup_create(cont, BTN_ALARM_ID);
     lv_obj_set_size(pdata->alarm_popup.blanket, LV_HOR_RES, LV_VER_RES * 3 / 4);
-    view_register_object_default_callback(pdata->alarm_popup.btn_ok, BTN_ALARM_ID);
 
     ESP_LOGI(TAG, "Open");
 
@@ -310,6 +318,10 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
         case PMAN_EVENT_TAG_OPEN: {
             handle_alarm(model, pdata);
             update_page(model, pdata);
+
+            if (!model_macchina_in_stop(model)) {
+                msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_washing);
+            }
             break;
         }
 
@@ -331,6 +343,10 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
                         default:
                             break;
+                    }
+
+                    if (!model_macchina_in_stop(model)) {
+                        msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_washing);
                     }
                     break;
                 }
