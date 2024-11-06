@@ -162,7 +162,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                     }
 
                     if (!model_macchina_in_stop(model) && model_can_work(model)) {
-                        msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_washing);
+                        msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(view_common_washing_page(model));
                     } else {
                         update_page(model, pdata);
                     }

@@ -302,7 +302,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
             break;
 
         case PMAN_EVENT_TAG_TIMER: {
-            msg.stack_msg = PMAN_STACK_MSG_REBASE(&page_main);
+            msg.stack_msg = PMAN_STACK_MSG_REBASE(view_common_main_page(model));
             break;
         }
 
@@ -324,8 +324,6 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
         case PMAN_EVENT_TAG_LVGL: {
             lv_obj_t           *target   = lv_event_get_current_target_obj(event.as.lvgl);
             view_object_data_t *obj_data = lv_obj_get_user_data(target);
-
-            ESP_LOGI(TAG, "%i %i", lv_event_get_code(event.as.lvgl), obj_data->id);
 
             switch (lv_event_get_code(event.as.lvgl)) {
                 case LV_EVENT_CLICKED: {

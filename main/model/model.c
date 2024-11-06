@@ -6,6 +6,7 @@
 #include "services/serializer.h"
 #include "services/timestamp.h"
 #include "esp_log.h"
+#include "parmac.h"
 
 
 static unsigned int get_credito_macchina(model_t *model);
@@ -129,6 +130,13 @@ int model_oblo_serrato(model_t *pmodel) {
 void model_reset_temporary_language(model_t *pmodel) {
     assert(pmodel != NULL);
     pmodel->run.lingua = pmodel->prog.parmac.lingua;
+}
+
+
+void model_reset_configuration_to_default(model_t *model) {
+    strcpy(model->prog.parmac.nome, "MACCHINA NUOVA");
+    parmac_init(model, 1);
+    model->prog.num_programmi = 0;
 }
 
 
@@ -1268,4 +1276,38 @@ uint8_t model_swap_programs(model_t *model, size_t first, size_t second) {
     model->prog.preview_programmi[second] = p;
 
     return 1;
+}
+
+
+unsigned int model_get_total_remaining(model_t *model) {
+    unsigned int           totale = 0;
+    const parmac_t        *parmac = &model->prog.parmac;
+    programma_lavatrice_t *p      = model_get_program(model);
+    size_t                 step   = model->run.num_step_corrente;
+
+    if (!p) {
+        return 0;
+    }
+
+    for (size_t i = step; i < p->num_steps; i++) {
+        const parametri_step_t *s = &p->steps[i];
+        totale += s->durata;
+
+        if (s->tipo == STEP_CENTRIFUGA) {
+            unsigned int rampe[3]  = {s->tempo_rampa_1, s->tempo_rampa_2, s->tempo_rampa_3};
+            unsigned int attese[3] = {s->tempo_attesa_centrifuga_1, s->tempo_attesa_centrifuga_2, 0};
+
+            totale += s->tempo_frenata;
+            for (size_t j = 0; j < s->numero_rampe; j++)
+                totale += rampe[j] + attese[j];
+
+            totale += s->tempo_preparazione;
+            for (size_t j = 0; j < parmac->abilitazione_preparazione_rotazione; j++) {
+                totale +=
+                    parmac->tempo_marcia_preparazione_rotazione * 2 + parmac->tempo_sosta_preparazione_rotazione * 2;
+            }
+        }
+    }
+
+    return totale;
 }

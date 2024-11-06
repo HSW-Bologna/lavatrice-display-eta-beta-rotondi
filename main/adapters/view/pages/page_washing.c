@@ -208,7 +208,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                 case VIEW_EVENT_TAG_PAGE_WATCHER: {
                     if (model_macchina_in_stop(model) || !model_can_work(model)) {
                         model->run.done = 1;
-                        msg.stack_msg   = PMAN_STACK_MSG_REBASE(&page_main);
+                        msg.stack_msg   = PMAN_STACK_MSG_REBASE(view_common_main_page(model));
                     }
 
                     if (model_alarm_code(model) == ALLARME_SCARICO || model_alarm_code(model) == ALLARME_CHIAVISTELLO) {

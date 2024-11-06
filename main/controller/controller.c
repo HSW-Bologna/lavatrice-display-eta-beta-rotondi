@@ -3,6 +3,7 @@
 #include "controller.h"
 #include "model/model.h"
 #include "adapters/view/view.h"
+#include "adapters/view/common.h"
 #include "gui.h"
 #include "com/machine.h"
 #include "services/serializer.h"
@@ -23,7 +24,7 @@ void controller_init(mut_model_t *model) {
     machine_init();
     machine_invia_presentazioni();
 
-    view_change_page(&page_main);
+    view_change_page(view_common_main_page(model));
 }
 
 

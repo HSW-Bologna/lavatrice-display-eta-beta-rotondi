@@ -183,17 +183,24 @@ communication_error_popup_t view_common_communication_error_popup(lv_obj_t *pare
     lv_obj_align(lbl_msg, LV_ALIGN_TOP_MID, 0, 0);
 
     lv_obj_t *btn = lv_button_create(cont);
-    lv_obj_set_size(btn, 96, 64);
+    lv_obj_set_size(btn, 96, 48);
     lv_obj_t *lbl_retry = lv_label_create(btn);
-    // lv_label_set_text(lbl_retry, view_intl_get_string(model, STRINGS_RIPROVA));
     lv_obj_center(lbl_retry);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, 0);
 
+    lv_obj_t *btn_disable = lv_button_create(cont);
+    lv_obj_set_size(btn_disable, 96, 48);
+    lv_obj_t *lbl_disable = lv_label_create(btn_disable);
+    lv_obj_center(lbl_disable);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, 0);
+
     return (communication_error_popup_t){
-        .blanket   = blanket,
-        .btn_retry = btn,
-        .lbl_msg   = lbl_msg,
-        .lbl_retry = lbl_retry,
+        .blanket     = blanket,
+        .btn_retry   = btn,
+        .btn_disable = btn_disable,
+        .lbl_msg     = lbl_msg,
+        .lbl_retry   = lbl_retry,
+        .lbl_disable = lbl_disable,
     };
 }
 
@@ -262,6 +269,24 @@ const char *view_common_pedantic_string(model_t *pmodel) {
     } else {
         return view_intl_get_string(pmodel, pedantic2str[pmodel->run.macchina.descrizione_pedante - 1]);
     }
+}
+
+
+const pman_page_t *view_common_main_page(model_t *model) {
+    (void)model;
+    return &page_main_self;
+}
+
+
+const pman_page_t *view_common_choice_page(model_t *model) {
+    (void)model;
+    return &page_choice_self;
+}
+
+
+const pman_page_t *view_common_washing_page(model_t *model) {
+    (void)model;
+    return &page_washing_self;
 }
 
 

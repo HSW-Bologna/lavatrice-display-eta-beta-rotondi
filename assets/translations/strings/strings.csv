@@ -111,6 +111,28 @@ PROGRAMMI, Programmi, Programs
 CODICE, Codice, Code
 IN_MARCIA, In marcia, Running
 ABILITA, Abilita, Enable
+DISABILITA, Disabilita, Disable
 INFORMAZIONI, Informazioni, Info
 CANCELLARE_IL_PROGRAMMA, Cancellare il programma?, Delete the program?
 CANCELLARE_IL_PASSO, Cancellare il passo?, Delete the step?
+LAVAGGIO, Lavaggio, Wash
+AVANZATE, Avanzate, Advanced
+COMUNICAZIONE, Comunicazione, Communication
+RIPRISTINO_A_IMPOSTAZIONI_DI_FABBRICA, Ripristino a impostazioni di fabbrica, Factory reset
+ACCESSO, Accesso, Access
+MOLTO_SPORCHI_CON_PRELAVAGGIO, Molto sporchi con prelavaggio,Very dirty with prewash
+MEDIO_SPORCHI_CON_PRELAVAGGIO, Medio sporchi con prelavaggio,Average dirty with prewash
+MOLTO_SPORCHI, Molto sporchi,Very dirty
+MEDIO_SPORCHI, Medio sporchi,Average dirty
+COLORATI, Colorati,Colored
+SINTETICI, Sintetici,Synthetic
+PIUMONI, Piumoni,Duvets
+DELICATI_A_FREDDO, Delicati a freddo,Cold for delicates
+LANA, Lana,Wool
+LINO_E_TENDAGGI, Lino e tendaggi,Linen and curtains
+SOLO_CENTRIFUGA_1000_GIRI, Solo centrifuga (1000 giri),Centrifuge only (1000 rpm)
+SOLO_CENTRIFUGA_600_GIRI, Solo centrifuga (600 giri),Centrifuge only (600 rpm)
+SANIFICAZIONE, Sanificazione,Sanification
+AMMOLLO, Ammollo,Soaking
+PRELAVAGGIO_CON_CENTRIFUGA, Prelavaggio con centrifuga,Prewash with centrifuge
+RISCIACQUO_CON_CENTRIFUGA, Risciacquo con centrifuga,Flushing with centrifuge

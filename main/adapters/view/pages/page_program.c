@@ -97,7 +97,7 @@ static void open_page(pman_handle_t handle, void *state) {
     lv_obj_set_style_pad_ver(cont, 2, LV_STATE_DEFAULT);
     lv_obj_set_style_pad_hor(cont, 2, LV_STATE_DEFAULT);
     lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES - 56);
-    lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_remove_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_align(cont, LV_ALIGN_BOTTOM_MID, 0, 0);
 
     const int32_t button_height = 48;
@@ -306,7 +306,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
             break;
 
         case PMAN_EVENT_TAG_TIMER: {
-            msg.stack_msg = PMAN_STACK_MSG_REBASE(&page_main);
+            msg.stack_msg = PMAN_STACK_MSG_REBASE(view_common_main_page(model));
             break;
         }
 
@@ -337,7 +337,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                         case BTN_BACK_ID:
                             msg.stack_msg = PMAN_STACK_MSG_BACK();
                             if (pdata->changed) {
-                                view_get_protocol(handle)->save_programs(handle);
+                                view_get_protocol(handle)->save_program(handle);
                             }
                             break;
 
@@ -350,6 +350,12 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             update_page(model, pdata);
                             break;
                         }
+
+                        case BTN_MODIFY_ID: {
+
+                            break;
+                        }
+
 
                         case BTN_UP_ID: {
                             pdata->selected_step = -1;
@@ -526,6 +532,8 @@ static void update_page(model_t *model, struct page_data *pdata) {
     } else {
         lv_obj_add_state(pdata->button_new, LV_STATE_DISABLED);
     }
+
+    view_common_set_hidden(pdata->popup.blanket, !pdata->delete_step);
 }
 
 

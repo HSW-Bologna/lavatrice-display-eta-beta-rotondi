@@ -66,7 +66,7 @@ static void open_page(pman_handle_t handle, void *state) {
     lv_textarea_set_text(ta, "");
     lv_textarea_set_max_length(ta, strlen(pdata->fence->password));
     lv_obj_set_width(ta, LV_PCT(50));
-    lv_obj_clear_flag(ta, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_remove_flag(ta, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_align(ta, LV_ALIGN_TOP_MID, 0, 8);
     lv_obj_set_style_text_font(ta, STYLE_FONT_MEDIUM, LV_STATE_DEFAULT);
     lv_obj_set_style_text_align(ta, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);

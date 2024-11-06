@@ -21,7 +21,9 @@ typedef struct {
 
     lv_obj_t *lbl_msg;
     lv_obj_t *lbl_retry;
+    lv_obj_t *lbl_disable;
     lv_obj_t *btn_retry;
+    lv_obj_t *btn_disable;
 } communication_error_popup_t;
 
 
@@ -55,7 +57,10 @@ const char                 *view_common_step2str(model_t *model, uint16_t step);
 const char                 *view_common_pedantic_string(model_t *pmodel);
 popup_t                     view_common_alarm_popup_create(lv_obj_t *parent, int id);
 popup_t                     view_common_popup_create(lv_obj_t *parent, const char *text, int ok_id, int cancel_id);
-void view_common_alarm_popup_update(popup_t *alarm_popup, uint16_t language, uint16_t alarm_code);
+void               view_common_alarm_popup_update(popup_t *alarm_popup, uint16_t language, uint16_t alarm_code);
+const pman_page_t *view_common_main_page(model_t *model);
+const pman_page_t *view_common_choice_page(model_t *model);
+const pman_page_t *view_common_washing_page(model_t *model);
 
 
 #endif

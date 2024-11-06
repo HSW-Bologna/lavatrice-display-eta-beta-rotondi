@@ -19,12 +19,16 @@ static struct {
     watcher_t                   watcher;
     communication_error_popup_t popup_communication_error;
     view_protocol_t             protocol;
+    uint16_t                    communication_attempts;
+    timestamp_t                 last_communication_attempt;
 } state = {
-    .pman                      = {},
-    .display                   = NULL,
-    .watcher                   = {},
-    .popup_communication_error = {},
-    .protocol                  = {},
+    .pman                       = {},
+    .display                    = NULL,
+    .watcher                    = {},
+    .popup_communication_error  = {},
+    .protocol                   = {},
+    .communication_attempts     = 0,
+    .last_communication_attempt = 0,
 };
 
 
@@ -32,6 +36,7 @@ static void    clear_watcher(pman_handle_t handle);
 static uint8_t event_callback(pman_handle_t handle, pman_event_t event);
 static void    watcher_cb(void *old_value, const void *memory, uint16_t size, void *user_ptr, void *arg);
 static void    retry_communication_callback(lv_event_t *event);
+static void    ignore_communication_error_callback(lv_event_t *event);
 
 
 void view_init(model_t *p_model, pman_user_msg_cb_t controller_cb, lv_display_flush_cb_t flush_cb,
@@ -52,7 +57,6 @@ void view_init(model_t *p_model, pman_user_msg_cb_t controller_cb, lv_display_fl
     lv_indev_t *touch_indev = lv_sdl_mouse_create();
 
 #else
-
     state.display =
         lv_display_create(BUILD_CONFIG_DISPLAY_HORIZONTAL_RESOLUTION, BUILD_CONFIG_DISPLAY_VERTICAL_RESOLUTION);
 
@@ -72,9 +76,14 @@ void view_init(model_t *p_model, pman_user_msg_cb_t controller_cb, lv_display_fl
     style_init();
     theme_init(state.display);
 
-    state.popup_communication_error = view_common_communication_error_popup(lv_layer_top());
+    state.communication_attempts     = 0;
+    state.last_communication_attempt = timestamp_get();
+    state.popup_communication_error  = view_common_communication_error_popup(lv_layer_top());
+
     lv_obj_add_event_cb(state.popup_communication_error.btn_retry, retry_communication_callback, LV_EVENT_CLICKED,
                         &state.pman);
+    lv_obj_add_event_cb(state.popup_communication_error.btn_disable, ignore_communication_error_callback,
+                        LV_EVENT_CLICKED, &state.pman);
     view_common_set_hidden(state.popup_communication_error.blanket, 1);
 
     pman_init(&state.pman, (void *)p_model, touch_indev, controller_cb, clear_watcher, event_callback);
@@ -82,10 +91,31 @@ void view_init(model_t *p_model, pman_user_msg_cb_t controller_cb, lv_display_fl
 
 
 void view_manage(model_t *model) {
-    view_common_set_hidden(state.popup_communication_error.blanket, !model->system.errore_comunicazione);
-    lv_label_set_text(state.popup_communication_error.lbl_msg,
-                      view_intl_get_string(model, STRINGS_ERRORE_DI_COMUNICAZIONE));
-    lv_label_set_text(state.popup_communication_error.lbl_retry, view_intl_get_string(model, STRINGS_RIPROVA));
+    // Reset the attempt counter every minute
+    if (state.communication_attempts > 0 && timestamp_is_expired(state.last_communication_attempt, 60000UL)) {
+        state.communication_attempts = 0;
+    }
+
+    if (model->system.errore_comunicazione && model->system.comunicazione_abilitata) {
+        // After 5 attempts allow the popup to disappear without retrying
+        if (state.communication_attempts >= 5 || model->prog.parmac.livello_accesso == CODICE_LVL_COSTRUTTORE) {
+            view_common_set_hidden(state.popup_communication_error.btn_disable, 0);
+            lv_obj_align(state.popup_communication_error.btn_disable, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+            lv_obj_align(state.popup_communication_error.btn_retry, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+        } else {
+            view_common_set_hidden(state.popup_communication_error.btn_disable, 1);
+            lv_obj_align(state.popup_communication_error.btn_retry, LV_ALIGN_BOTTOM_MID, 0, 0);
+        }
+
+        lv_label_set_text(state.popup_communication_error.lbl_msg,
+                          view_intl_get_string(model, STRINGS_ERRORE_DI_COMUNICAZIONE));
+        lv_label_set_text(state.popup_communication_error.lbl_retry, view_intl_get_string(model, STRINGS_RIPROVA));
+        lv_label_set_text(state.popup_communication_error.lbl_disable, view_intl_get_string(model, STRINGS_DISABILITA));
+
+        view_common_set_hidden(state.popup_communication_error.blanket, 0);
+    } else {
+        view_common_set_hidden(state.popup_communication_error.blanket, 1);
+    }
 
     watcher_watch(&state.watcher, timestamp_get());
 }
@@ -101,6 +131,7 @@ void view_display_flush_ready(void) {
         lv_display_flush_ready(state.display);
     }
 }
+
 
 void view_register_object_default_callback(lv_obj_t *obj, int id) {
     view_register_object_default_callback_with_number(obj, id, 0);
@@ -188,6 +219,15 @@ static void watcher_cb(void *old_value, const void *memory, uint16_t size, void 
 
 
 static void retry_communication_callback(lv_event_t *event) {
+    state.communication_attempts++;
+    state.last_communication_attempt = timestamp_get();
     state.protocol.retry_communication(lv_event_get_user_data(event));
+    view_common_set_hidden(state.popup_communication_error.blanket, 1);
+}
+
+
+static void ignore_communication_error_callback(lv_event_t *event) {
+    mut_model_t *model                    = view_get_model(lv_event_get_user_data(event));
+    model->system.comunicazione_abilitata = 0;
     view_common_set_hidden(state.popup_communication_error.blanket, 1);
 }

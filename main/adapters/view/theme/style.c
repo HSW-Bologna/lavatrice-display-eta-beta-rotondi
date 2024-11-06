@@ -57,11 +57,27 @@ LV_STYLE_CONST_INIT(style_black_icon, (void *)style_black_icon_props);
 
 
 lv_style_t style_work_button = {0};
+lv_style_t style_tall_button = {0};
 
 
 void style_init(void) {
     lv_style_init(&style_work_button);
-    lv_style_set_border_width(&style_work_button, 4);
+    lv_style_set_border_width(&style_work_button, 0);
     lv_style_set_border_color(&style_work_button, VIEW_STYLE_PRIMARY);
     lv_style_set_bg_color(&style_work_button, VIEW_STYLE_COLOR_WHITE);
+
+    lv_style_init(&style_tall_button);
+    lv_style_set_radius(&style_tall_button, 0);
+    lv_style_set_text_color(&style_tall_button, VIEW_STYLE_COLOR_BLACK);
+    lv_style_set_bg_color(&style_tall_button, VIEW_STYLE_COLOR_WHITE);
+    lv_style_set_border_width(&style_tall_button, 2);
+    lv_style_set_border_color(&style_tall_button, lv_color_darken(VIEW_STYLE_COLOR_BACKGROUND, LV_OPA_20));
+
+    /*
+            lv_obj_set_style_bg_color(button, STYLE_COLOR_WHITE, LV_STATE_CHECKED);
+            lv_obj_set_style_pad_bottom(button, 0, LV_STATE_CHECKED);
+            lv_obj_set_style_border_width(button, 10, LV_STATE_CHECKED);
+            lv_obj_set_style_border_color(button, STYLE_COLOR_TEXT, LV_STATE_CHECKED);
+            lv_obj_set_style_text_color(button, STYLE_COLOR_TEXT, LV_STATE_CHECKED);
+            */
 }

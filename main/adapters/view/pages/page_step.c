@@ -7,7 +7,7 @@
 #include "config/app_config.h"
 #include "src/widgets/led/lv_led.h"
 #include "../intl/intl.h"
-#include "model/parmac.h"
+#include "model/parlav.h"
 
 
 struct page_data {
@@ -17,10 +17,11 @@ struct page_data {
 
     pman_timer_t *timer;
 
-    uint16_t parameter;
-    uint16_t num_parameters;
-    uint8_t  livello_accesso;
-    int      par_to_save;
+    parametri_step_t *step;
+    uint16_t          parameter;
+    uint16_t          num_parameters;
+    uint8_t           livello_accesso;
+    int               par_to_save;
 };
 
 
@@ -37,12 +38,12 @@ static void update_page(model_t *model, struct page_data *pdata);
 
 
 static void *create_page(pman_handle_t handle, void *extra) {
-    (void)extra;
-
     model_t *model = view_get_model(handle);
 
     struct page_data *pdata = lv_malloc(sizeof(struct page_data));
     assert(pdata != NULL);
+
+    pdata->step = extra;
 
     pdata->par_to_save = 0;
     if (model->run.livello_accesso_temporaneo > 0) {
@@ -52,6 +53,8 @@ static void *create_page(pman_handle_t handle, void *extra) {
         pdata->livello_accesso = model->prog.parmac.livello_accesso;
     }
     pdata->timer = PMAN_REGISTER_TIMER_ID(handle, APP_CONFIG_PAGE_TIMEOUT, 0);
+
+    parlav_init(&model->prog.parmac, pdata->step);
 
     return pdata;
 }
@@ -63,7 +66,7 @@ static void open_page(pman_handle_t handle, void *state) {
     model_t *model = view_get_model(handle);
 
     view_title_t title =
-        view_common_create_title(lv_scr_act(), view_intl_get_string(model, STRINGS_PARAMETRI), BTN_BACK_ID, -1);
+        view_common_create_title(lv_scr_act(), view_common_step2str(model, pdata->step->tipo), BTN_BACK_ID, -1);
 
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
     lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES - 56);
@@ -72,7 +75,7 @@ static void open_page(pman_handle_t handle, void *state) {
     pman_timer_reset(pdata->timer);
     pman_timer_resume(pdata->timer);
 
-    pdata->num_parameters = parmac_get_tot_parameters(pdata->livello_accesso);
+    pdata->num_parameters = parlav_get_tot_parameters(pdata->livello_accesso);
     pdata->parameter      = 0;
 
     pdata->label_number = title.label_title;
@@ -198,13 +201,13 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             break;
 
                         case BTN_MINUS_ID:
-                            parmac_operation(model, pdata->parameter, -1, pdata->livello_accesso);
+                            parlav_operation(model, pdata->parameter, -1, pdata->livello_accesso);
                             update_page(model, pdata);
                             pdata->par_to_save = 1;
                             break;
 
                         case BTN_PLUS_ID:
-                            parmac_operation(model, pdata->parameter, +1, pdata->livello_accesso);
+                            parlav_operation(model, pdata->parameter, +1, pdata->livello_accesso);
                             update_page(model, pdata);
                             pdata->par_to_save = 1;
                             break;
@@ -231,13 +234,13 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             break;
 
                         case BTN_MINUS_ID:
-                            parmac_operation(model, pdata->parameter, -10, pdata->livello_accesso);
+                            parlav_operation(model, pdata->parameter, -10, pdata->livello_accesso);
                             update_page(model, pdata);
                             pdata->par_to_save = 1;
                             break;
 
                         case BTN_PLUS_ID:
-                            parmac_operation(model, pdata->parameter, +10, pdata->livello_accesso);
+                            parlav_operation(model, pdata->parameter, +10, pdata->livello_accesso);
                             update_page(model, pdata);
                             pdata->par_to_save = 1;
                             break;
@@ -265,11 +268,11 @@ static void update_page(model_t *model, struct page_data *pdata) {
     lv_label_set_text_fmt(pdata->label_number, "Param. %2" PRIuLEAST16 "/%" PRIuLEAST16, pdata->parameter + 1,
                           pdata->num_parameters);
 
-    const char *description = parmac_get_description(model, pdata->parameter, pdata->livello_accesso);
+    const char *description = parlav_get_description(model, pdata->parameter, pdata->livello_accesso);
     if (strcmp(lv_label_get_text(pdata->label_description), description)) {
         lv_label_set_text(pdata->label_description, description);
     }
-    parmac_format_value(model, string, pdata->parameter, pdata->livello_accesso);
+    parlav_format_value(model, string, pdata->parameter, pdata->livello_accesso);
     lv_label_set_text(pdata->label_value, string);
 }
 
@@ -289,7 +292,7 @@ static void close_page(void *state) {
 }
 
 
-const pman_page_t page_parmac = {
+const pman_page_t page_step = {
     .create        = create_page,
     .destroy       = destroy_page,
     .open          = open_page,

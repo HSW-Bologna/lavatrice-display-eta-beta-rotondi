@@ -46,7 +46,7 @@
 
 #define EVENT_LOG_CHUNK 50
 
-#define NUM_LINGUE 5
+#define NUM_LINGUE 2
 
 #define RESISTORS_OUTPUT_INDEX 0
 
@@ -484,5 +484,7 @@ void         model_test_outputs_clear(mut_model_t *model);
 uint8_t      model_should_clear_test_outputs(mut_model_t *model);
 void         model_reset_storage_operation(mut_model_t *model);
 uint8_t      model_swap_programs(model_t *model, size_t first, size_t second);
+unsigned int model_get_total_remaining(model_t *model);
+void         model_reset_configuration_to_default(model_t *model);
 
 #endif

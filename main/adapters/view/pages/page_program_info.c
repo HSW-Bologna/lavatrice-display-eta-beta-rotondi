@@ -10,6 +10,8 @@
 
 struct page_data {
     uint16_t program_selected;
+
+    lv_obj_t *dropdown;
 };
 
 
@@ -39,8 +41,8 @@ static void *create_page(pman_handle_t handle, void *extra) {
 static void open_page(pman_handle_t handle, void *state) {
     struct page_data *pdata = state;
 
-    model_t                   *model   = view_get_model(handle);
-    const programma_preview_t *preview = model_get_preview(model, pdata->program_selected);
+    model_t               *model   = view_get_model(handle);
+    programma_lavatrice_t *program = model_get_program(model);
 
     view_common_create_title(lv_scr_act(), view_intl_get_string(model, STRINGS_INFORMAZIONI), BTN_BACK_ID, -1);
 
@@ -49,49 +51,98 @@ static void open_page(pman_handle_t handle, void *state) {
     lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES - 56);
     lv_obj_set_layout(cont, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(cont, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_flex_align(cont, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_flex_align(cont, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_align(cont, LV_ALIGN_BOTTOM_MID, 0, 0);
 
     {
-        lv_obj_t *obj = lv_btn_create(cont);
+        lv_obj_t *obj = lv_obj_create(cont);
         lv_obj_set_size(obj, LV_PCT(100), 64);
         lv_obj_add_style(obj, &style_transparent_cont, LV_STATE_DEFAULT);
 
         lv_obj_t *label_name = lv_label_create(obj);
-        lv_label_set_text(label_name, preview->name);
-        lv_obj_align(label_name, LV_ALIGN_LEFT_MID, 0, 0);
+        lv_obj_set_style_text_font(label_name, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        lv_label_set_long_mode(label_name, LV_LABEL_LONG_SCROLL_CIRCULAR);
+        lv_obj_set_width(label_name, 220);
+        lv_label_set_text(label_name, program->nomi[model->prog.parmac.lingua]);
+        lv_obj_align(label_name, LV_ALIGN_LEFT_MID, 8, 0);
 
-        lv_obj_t *button = lv_button_create(cont);
-        lv_obj_set_size(button, 64, 64);
+        lv_obj_t *button = lv_button_create(obj);
+        lv_obj_set_size(button, 48, 48);
         lv_obj_t *label_edit = lv_label_create(button);
         lv_label_set_text(label_edit, LV_SYMBOL_EDIT);
+        lv_obj_center(label_edit);
         lv_obj_align(button, LV_ALIGN_RIGHT_MID, 0, 0);
 
         view_register_object_default_callback(button, BTN_NAME_ID);
     }
 
     {
+        lv_obj_t *obj = lv_obj_create(cont);
+        lv_obj_set_size(obj, LV_PCT(100), 64);
+        lv_obj_add_style(obj, &style_transparent_cont, LV_STATE_DEFAULT);
+
+        lv_obj_t *label_price = lv_label_create(obj);
+        lv_obj_set_style_text_font(label_price, STYLE_FONT_MEDIUM, LV_STATE_DEFAULT);
+        lv_label_set_long_mode(label_price, LV_LABEL_LONG_SCROLL_CIRCULAR);
+        lv_obj_set_width(label_price, 230);
+
+        char string[32] = {0};
+        model_formatta_prezzo(string, model, model_get_program(model)->prezzo);
+        lv_label_set_text(label_price, string);
+        lv_obj_align(label_price, LV_ALIGN_LEFT_MID, 8, 0);
+
+        lv_obj_t *button = lv_button_create(obj);
+        lv_obj_set_size(button, 48, 48);
+        lv_obj_t *label_edit = lv_label_create(button);
+        lv_label_set_text(label_edit, LV_SYMBOL_EDIT);
+        lv_obj_center(label_edit);
+        lv_obj_align(button, LV_ALIGN_RIGHT_MID, 0, 0);
+
+        view_register_object_default_callback(button, BTN_PRICE_ID);
+    }
+
+    {
+        const size_t max_length = 1024;
+        char        *string     = malloc(max_length);
+        assert(string);
+
+        const strings_t wash_types[] = {
+            STRINGS_MOLTO_SPORCHI_CON_PRELAVAGGIO,
+            STRINGS_MEDIO_SPORCHI_CON_PRELAVAGGIO,
+            STRINGS_MOLTO_SPORCHI,
+            STRINGS_MEDIO_SPORCHI,
+            STRINGS_COLORATI,
+            STRINGS_SINTETICI,
+            STRINGS_PIUMONI,
+            STRINGS_DELICATI_A_FREDDO,
+            STRINGS_LANA,
+            STRINGS_LINO_E_TENDAGGI,
+            STRINGS_SOLO_CENTRIFUGA_1000_GIRI,
+            STRINGS_SOLO_CENTRIFUGA_600_GIRI,
+            STRINGS_SANIFICAZIONE,
+            STRINGS_AMMOLLO,
+            STRINGS_PRELAVAGGIO_CON_CENTRIFUGA,
+            STRINGS_RISCIACQUO_CON_CENTRIFUGA,
+        };
+        memset(string, 0, max_length);
+        for (int i = 0; i < NUM_TIPI_PROGRAMMA; i++) {
+            const char *string_wash_type = view_intl_get_string(model, wash_types[i]);
+            assert(strlen(string) + strlen(string_wash_type) < max_length);
+            strcat(string, string_wash_type);
+            string[strlen(string)] = '\n';
+        }
+        string[strlen(string) - 1] = '\0';
+
         lv_obj_t *dropdown = lv_dropdown_create(cont);
+        lv_dropdown_set_options(dropdown, string);
+        lv_obj_t *list = lv_dropdown_get_list(dropdown);
+        lv_obj_set_style_text_font(dropdown, STYLE_FONT_SMALL, LV_PART_MAIN);
+        lv_obj_set_style_text_font(list, STYLE_FONT_SMALL, LV_PART_MAIN);
+        lv_obj_set_style_max_height(list, 100, LV_PART_MAIN);
+        lv_dropdown_set_dir(dropdown, LV_DIR_TOP);
         lv_obj_set_width(dropdown, LV_PCT(100));
         view_register_object_default_callback(dropdown, DROPDOWN_TYPE_ID);
-    }
-
-    {
-        lv_obj_t *obj = lv_btn_create(cont);
-        lv_obj_set_size(obj, LV_PCT(100), 64);
-        lv_obj_add_style(obj, &style_transparent_cont, LV_STATE_DEFAULT);
-
-        lv_obj_t *label_name = lv_label_create(obj);
-        lv_label_set_text(label_name, preview->name);
-        lv_obj_align(label_name, LV_ALIGN_LEFT_MID, 0, 0);
-
-        lv_obj_t *button = lv_button_create(cont);
-        lv_obj_set_size(button, 64, 64);
-        lv_obj_t *label_edit = lv_label_create(button);
-        lv_label_set_text(label_edit, LV_SYMBOL_EDIT);
-        lv_obj_align(button, LV_ALIGN_RIGHT_MID, 0, 0);
-
-        view_register_object_default_callback(button, BTN_NAME_ID);
+        pdata->dropdown = dropdown;
     }
 
     update_page(model, pdata);
@@ -134,6 +185,25 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                         case BTN_BACK_ID:
                             msg.stack_msg = PMAN_STACK_MSG_BACK();
                             break;
+
+                        case BTN_NAME_ID:
+                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE_EXTRA(
+                                &page_keyboard, model_get_program(model)->nomi[model->prog.parmac.lingua]);
+                            break;
+
+                        case BTN_PRICE_ID:
+                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_price);
+                            break;
+                    }
+                    break;
+                }
+
+                case LV_EVENT_VALUE_CHANGED: {
+                    switch (obj_data->id) {
+                        case DROPDOWN_TYPE_ID:
+                            model_get_program(model)->tipo = lv_dropdown_get_selected(pdata->dropdown);
+                            update_page(model, pdata);
+                            break;
                     }
                     break;
                 }
@@ -153,8 +223,8 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
 
 static void update_page(model_t *model, struct page_data *pdata) {
-    (void)model;
-    (void)pdata;
+    programma_lavatrice_t *program = model_get_program(model);
+    lv_dropdown_set_selected(pdata->dropdown, program->tipo);
 }
 
 

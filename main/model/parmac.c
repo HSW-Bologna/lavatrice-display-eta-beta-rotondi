@@ -36,7 +36,7 @@ void parmac_init(model_t *pmodel, int reset) {
     char *fmt_rpm     = "%i rpm";
 
     // clang-format off
-    ps[i++] = PARAMETER(&p->lingua, 0, NUM_LINGUE - 1, 0, FOPT(PARS_DESCRIPTIONS_LINGUA, pars_lingue), BIT_UTENTE);
+    ps[i++] = PARAMETER(&p->lingua, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_LINGUA, pars_lingue), BIT_UTENTE);
     ps[i++] = PARAMETER(&p->logo, 0, 5, 0, FOPT(PARS_DESCRIPTIONS_LOGO, pars_loghi), BIT_UTENTE);
     ps[i++] = PARAMETER(&p->codice_nodo_macchina, 0, 255, 0, FINT(PARS_DESCRIPTIONS_NODO_MACCHINA), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->livello_accesso, 0, 3, 0, FOPT(PARS_DESCRIPTIONS_LIVELLO_ACCESSO, pars_livello_accesso), BIT_TECNICO);

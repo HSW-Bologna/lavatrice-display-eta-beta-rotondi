@@ -53,6 +53,7 @@ typedef struct {
     void (*pressure_calibration)(pman_handle_t handle);
     void (*import_configuration)(pman_handle_t handle, const char *name);
     int (*load_program)(pman_handle_t handle, size_t number);
+    void (*save_program)(pman_handle_t handle);
     void (*save_parmac)(pman_handle_t handle);
     void (*start_program)(pman_handle_t handle);
     void (*stop_program)(pman_handle_t handle);
@@ -87,7 +88,8 @@ view_protocol_t *view_get_protocol(pman_handle_t handle);
 extern const pman_page_t page_main, page_password, page_menu, page_test_inputs, page_test_outputs, page_test_drum,
     page_test_level, page_test_temperature, page_test_coins_digital, page_test_coins_mechanical, page_test_led,
     page_test_lock, page_archiving, page_drive, page_import_configuration, page_choice, page_parmac, page_washing,
-    page_programs, page_program, page_program_info;
+    page_programs, page_program, page_program_info, page_main_self, page_washing_self, page_choice_self, page_advanced,
+    page_keyboard, page_price;
 
 
 #endif
