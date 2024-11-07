@@ -18,6 +18,7 @@ static void set_output(pman_handle_t handle, uint16_t output, uint8_t level);
 static void clear_outputs(pman_handle_t handle);
 static void set_test_mode(pman_handle_t handle, uint8_t test_mode);
 static void import_configuration(pman_handle_t handle, const char *name);
+static void export_configuration(pman_handle_t handle, const char *name);
 static void pressure_calibration(pman_handle_t handle);
 static int  load_program(pman_handle_t handle, size_t number);
 static void save_parmac(pman_handle_t handle);
@@ -29,7 +30,7 @@ static void lock_porthole(pman_handle_t handle);
 static void unlock_porthole(pman_handle_t handle, uint8_t force);
 static void toggle_lock(pman_handle_t handle);
 static void clear_coin_count(pman_handle_t handle);
-static void save_programs(pman_handle_t handle);
+static void save_program_index(pman_handle_t handle);
 static void beep(void);
 static void digital_coin_reader_enable(pman_handle_t handle, uint8_t enable);
 static void create_new_program(pman_handle_t handle, uint16_t program_index);
@@ -47,6 +48,7 @@ view_protocol_t controller_gui_protocol = {
     .set_test_mode              = set_test_mode,
     .pressure_calibration       = pressure_calibration,
     .import_configuration       = import_configuration,
+    .export_configuration       = export_configuration,
     .load_program               = load_program,
     .save_program               = save_program,
     .save_parmac                = save_parmac,
@@ -57,7 +59,7 @@ view_protocol_t controller_gui_protocol = {
     .unlock_porthole            = unlock_porthole,
     .lock_porthole              = lock_porthole,
     .toggle_lock                = toggle_lock,
-    .save_programs              = save_programs,
+    .save_program_index         = save_program_index,
     .create_new_program         = create_new_program,
     .delete_program             = delete_program,
     .clone_program              = clone_program,
@@ -129,6 +131,14 @@ static void import_configuration(pman_handle_t handle, const char *name) {
 
     model->system.storage_status = STORAGE_STATUS_LOADING;
     msc_extract_archive(name);
+}
+
+
+static void export_configuration(pman_handle_t handle, const char *name) {
+    mut_model_t *model = view_get_model(handle);
+
+    model->system.storage_status = STORAGE_STATUS_LOADING;
+    msc_save_archive(name);
 }
 
 
@@ -220,7 +230,7 @@ static void digital_coin_reader_enable(pman_handle_t handle, uint8_t enable) {
 }
 
 
-static void save_programs(pman_handle_t handle) {
+static void save_program_index(pman_handle_t handle) {
     mut_model_t *model = view_get_model(handle);
     configuration_update_index(model->prog.preview_programmi, model->prog.num_programmi);
 }

@@ -10,12 +10,22 @@
 
 struct page_data {
     lv_obj_t *btn_drive;
+
+    lv_obj_t *button_ok;
+
+    lv_obj_t *spinner;
+
+    lv_obj_t *obj_buttons;
+
+    lv_obj_t *label_status;
 };
 
 
 enum {
     BTN_BACK_ID,
     BTN_IMPORT_CONFIGURATION_ID,
+    BTN_EXPORT_CONFIGURATION_ID,
+    BTN_OK_ID,
 };
 
 
@@ -41,13 +51,20 @@ static void open_page(pman_handle_t handle, void *state) {
 
     view_common_create_title(lv_scr_act(), view_intl_get_string(model, STRINGS_CHIAVETTA), BTN_BACK_ID, -1);
 
-    lv_obj_t *cont = lv_obj_create(lv_scr_act());
+    lv_obj_t *background = lv_obj_create(lv_screen_active());
+    lv_obj_set_size(background, LV_HOR_RES, LV_VER_RES - 56);
+    lv_obj_align(background, LV_ALIGN_BOTTOM_MID, 0, 0);
+    lv_obj_remove_flag(background, LV_OBJ_FLAG_SCROLLABLE);
+
+    lv_obj_t *cont = lv_obj_create(background);
+    lv_obj_add_style(cont, &style_transparent_cont, LV_STATE_DEFAULT);
     lv_obj_set_style_pad_column(cont, 16, LV_STATE_DEFAULT);
     lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES - 56);
     lv_obj_set_layout(cont, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(cont, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(cont, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_align(cont, LV_ALIGN_BOTTOM_MID, 0, 0);
+    pdata->obj_buttons = cont;
 
     {
         lv_obj_t *btn = lv_btn_create(cont);
@@ -62,6 +79,45 @@ static void open_page(pman_handle_t handle, void *state) {
 
         pdata->btn_drive = btn;
     }
+
+    {
+        lv_obj_t *btn = lv_btn_create(cont);
+        lv_obj_t *lbl = lv_label_create(btn);
+        lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_ESPORTA_LA_CONFIGURAZIONE));
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_MEDIUM, LV_STATE_DEFAULT);
+        lv_label_set_long_mode(lbl, LV_LABEL_LONG_WRAP);
+        lv_obj_set_style_text_align(lbl, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);
+        lv_obj_set_width(lbl, 260);
+        lv_obj_center(lbl);
+        view_register_object_default_callback(btn, BTN_EXPORT_CONFIGURATION_ID);
+
+        pdata->btn_drive = btn;
+    }
+
+    lv_obj_t *label = lv_label_create(background);
+    lv_obj_set_style_text_font(label, STYLE_FONT_MEDIUM, LV_STATE_DEFAULT);
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(label, LV_PCT(90));
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);
+    lv_obj_center(label);
+    pdata->label_status = label;
+
+    {
+        lv_obj_t *button = lv_button_create(background);
+        lv_obj_t *label  = lv_label_create(button);
+        lv_label_set_text(label, LV_SYMBOL_OK);
+        lv_obj_center(label);
+        lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, 0);
+        view_register_object_default_callback(button, BTN_OK_ID);
+        pdata->button_ok = button;
+    }
+
+    lv_obj_t *spinner = lv_spinner_create(background);
+    lv_obj_center(spinner);
+    pdata->spinner = spinner;
+
+    VIEW_ADD_WATCHED_VARIABLE(&model->system.removable_drive_state, 0);
+    VIEW_ADD_WATCHED_VARIABLE(&model->system.storage_status, 0);
 
     update_page(model, pdata);
 }
@@ -105,8 +161,18 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             break;
 
                         case BTN_IMPORT_CONFIGURATION_ID:
-                             msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_import_configuration);
+                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_import_configuration);
                             break;
+
+                        case BTN_EXPORT_CONFIGURATION_ID:
+                            view_get_protocol(handle)->export_configuration(handle, model->prog.parmac.nome);
+                            update_page(model, pdata);
+                            break;
+
+                        case BTN_OK_ID: {
+                            model_reset_storage_operation(model);
+                            update_page(model, pdata);
+                        }
                     }
                     break;
                 }
@@ -130,6 +196,43 @@ static void update_page(model_t *model, struct page_data *pdata) {
         lv_obj_add_state(pdata->btn_drive, LV_STATE_DISABLED);
     } else {
         lv_obj_clear_state(pdata->btn_drive, LV_STATE_DISABLED);
+    }
+
+    switch (model->system.storage_status) {
+        case STORAGE_STATUS_READY: {
+            view_common_set_hidden(pdata->spinner, 1);
+            view_common_set_hidden(pdata->button_ok, 1);
+            view_common_set_hidden(pdata->label_status, 1);
+            view_common_set_hidden(pdata->obj_buttons, 0);
+            break;
+        }
+
+        case STORAGE_STATUS_LOADING: {
+            view_common_set_hidden(pdata->spinner, 0);
+            view_common_set_hidden(pdata->obj_buttons, 1);
+            view_common_set_hidden(pdata->label_status, 1);
+            view_common_set_hidden(pdata->button_ok, 1);
+            break;
+        }
+
+        case STORAGE_STATUS_DONE: {
+            view_common_set_hidden(pdata->spinner, 1);
+            view_common_set_hidden(pdata->obj_buttons, 1);
+            view_common_set_hidden(pdata->label_status, 0);
+            lv_label_set_text(pdata->label_status,
+                              view_intl_get_string(model, STRINGS_OPERAZIONE_CONCLUSA_CON_SUCCESSO));
+            view_common_set_hidden(pdata->button_ok, 0);
+            break;
+        }
+
+        case STORAGE_STATUS_ERROR: {
+            view_common_set_hidden(pdata->spinner, 1);
+            view_common_set_hidden(pdata->obj_buttons, 1);
+            view_common_set_hidden(pdata->label_status, 0);
+            lv_label_set_text(pdata->label_status, view_intl_get_string(model, STRINGS_OPERAZIONE_FALLITA));
+            view_common_set_hidden(pdata->button_ok, 0);
+            break;
+        }
     }
 }
 

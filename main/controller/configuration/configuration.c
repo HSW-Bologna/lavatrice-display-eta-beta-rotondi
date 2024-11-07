@@ -433,7 +433,7 @@ int configuration_load_programs_preview(model_t *pmodel, programma_preview_t *pr
     ESP_LOGI(TAG, "%i programs found", num);
 
     uint8_t *buffer = malloc(MAX_PROGRAM_SIZE);
-    for (size_t i = 0; i < num; i++) {
+    for (size_t i = 0; i < (uint16_t)num; i++) {
         sprintf(path, "%s/%s", PROGRAMS_PATH, previews[i].filename);
 
         if (is_file(path)) {

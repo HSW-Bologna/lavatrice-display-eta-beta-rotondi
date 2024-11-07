@@ -61,6 +61,7 @@ void               view_common_alarm_popup_update(popup_t *alarm_popup, uint16_t
 const pman_page_t *view_common_main_page(model_t *model);
 const pman_page_t *view_common_choice_page(model_t *model);
 const pman_page_t *view_common_washing_page(model_t *model);
+lv_obj_t          *view_common_icon_button_create(lv_obj_t *parent, const char *icon, int id);
 
 
 #endif

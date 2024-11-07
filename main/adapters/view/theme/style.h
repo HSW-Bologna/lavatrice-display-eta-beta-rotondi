@@ -5,7 +5,7 @@
 
 
 #define STYLE_FONT_SMALL  (&lv_font_montserrat_16)
-#define STYLE_FONT_MEDIUM (&lv_font_montserrat_22)
+#define STYLE_FONT_MEDIUM (&lv_font_montserrat_20)
 #define STYLE_FONT_BIG    (&lv_font_montserrat_32)
 #define STYLE_FONT_HUGE   (&lv_font_montserrat_48)
 
@@ -29,6 +29,7 @@ extern const lv_style_t style_black_border;
 extern const lv_style_t style_config_btn;
 extern const lv_style_t style_white_icon;
 extern const lv_style_t style_black_icon;
+extern const lv_style_t style_icon_button;
 extern lv_style_t       style_work_button;
 extern lv_style_t       style_tall_button;
 

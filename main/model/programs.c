@@ -42,21 +42,21 @@ void update_program_type(programma_lavatrice_t *p, unsigned char type) {
 }
 
 
-void program_add_step(programma_lavatrice_t *p, int tipo) {
-    program_insert_step(p, tipo, p->num_steps);
+void program_add_step(programma_lavatrice_t *p, int tipo, uint8_t delicate) {
+    program_insert_step(p, tipo, p->num_steps, delicate);
 }
 
 
-void program_insert_step(programma_lavatrice_t *p, int tipo, size_t index) {
+void program_insert_step(programma_lavatrice_t *p, int tipo, size_t index, uint8_t delicate) {
     if (p->num_steps < MAX_STEPS && index <= p->num_steps) {
         for (int i = (int)p->num_steps - 1; i >= (int)index; i--) {
             p->steps[i + 1] = p->steps[i];
         }
 
-        p->steps[index] = default_step(tipo, DELICATO);
+        p->steps[index] = default_step(tipo, delicate ? DELICATO : ENERGICO);
         p->num_steps++;
     } else if (index > p->num_steps) {
-        program_add_step(p, tipo);
+        program_add_step(p, tipo, delicate);
     }
 }
 

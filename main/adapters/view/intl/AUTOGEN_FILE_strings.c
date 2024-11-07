@@ -1,4 +1,4 @@
-const char *strings[134][2] = {
+const char *strings[138][2] = {
     {"Diagnosi", "Test", },
     {"Ingressi", "Inputs", },
     {"Uscite", "Outputs", },
@@ -47,6 +47,7 @@ const char *strings[134][2] = {
     {"Errore di comunicazione", "Communication error", },
     {"Riprova", "Retry", },
     {"Importa una configurazione", "Import configuration", },
+    {"Esporta la configurazione", "Export configuration", },
     {"Nessuna configurazione trovata", "No configuration found", },
     {"Operazione fallita", "Operation failed", },
     {"Operazione conclusa con successo", "Operation successful", },
@@ -133,5 +134,8 @@ const char *strings[134][2] = {
     {"Sanificazione", "Sanification", },
     {"Prelavaggio con centrifuga", "Prewash with centrifuge", },
     {"Risciacquo con centrifuga", "Flushing with centrifuge", },
+    {"Nuovo passo", "New step", },
+    {"Delicato", "Delicate", },
+    {"Energico", "Energetic", },
 };
 

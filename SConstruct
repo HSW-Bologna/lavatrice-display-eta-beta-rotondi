@@ -114,6 +114,12 @@ def main():
         f'{COMPONENTS}/c-parameter/SConscript', exports=['c_parameter_env'])
     env['CPPPATH'] += [include]
 
+    i2c_env = env
+    i2c_selected = ["dummy", "rtc/RX8010"]
+    (i2c, include) = SConscript(
+        f'{COMPONENTS}/c-i2c-drivers/SConscript', exports=['i2c_env', 'i2c_selected'])
+    env['CPPPATH'] += [include]
+
     sources = Glob(f'{SIMULATOR}/*.c')
     sources += Glob(f'{SIMULATOR}/port/*.c')
     sources += [File(filename) for filename in Path('main/model').rglob('*.c')]
@@ -130,7 +136,7 @@ def main():
     sources += [File(f'{B64}/encode.c'),
                 File(f'{B64}/decode.c'), File(f'{B64}/buffer.c')]
 
-    prog = env.Program(PROGRAM, sdkconfig + sources + freertos + pman + watcher + parameter)
+    prog = env.Program(PROGRAM, sdkconfig + sources + freertos + pman + watcher + parameter + i2c)
 
     env.Depends(prog, translations)
     PhonyTargets("run", f"./{PROGRAM}", prog, env)

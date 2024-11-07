@@ -66,14 +66,8 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_label_set_text(label_name, program->nomi[model->prog.parmac.lingua]);
         lv_obj_align(label_name, LV_ALIGN_LEFT_MID, 8, 0);
 
-        lv_obj_t *button = lv_button_create(obj);
-        lv_obj_set_size(button, 48, 48);
-        lv_obj_t *label_edit = lv_label_create(button);
-        lv_label_set_text(label_edit, LV_SYMBOL_EDIT);
-        lv_obj_center(label_edit);
+        lv_obj_t *button = view_common_icon_button_create(obj, LV_SYMBOL_EDIT, BTN_NAME_ID);
         lv_obj_align(button, LV_ALIGN_RIGHT_MID, 0, 0);
-
-        view_register_object_default_callback(button, BTN_NAME_ID);
     }
 
     {
@@ -91,11 +85,7 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_label_set_text(label_price, string);
         lv_obj_align(label_price, LV_ALIGN_LEFT_MID, 8, 0);
 
-        lv_obj_t *button = lv_button_create(obj);
-        lv_obj_set_size(button, 48, 48);
-        lv_obj_t *label_edit = lv_label_create(button);
-        lv_label_set_text(label_edit, LV_SYMBOL_EDIT);
-        lv_obj_center(label_edit);
+        lv_obj_t *button = view_common_icon_button_create(obj, LV_SYMBOL_EDIT, BTN_PRICE_ID);
         lv_obj_align(button, LV_ALIGN_RIGHT_MID, 0, 0);
 
         view_register_object_default_callback(button, BTN_PRICE_ID);

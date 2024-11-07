@@ -69,6 +69,15 @@ void msc_extract_archive(const char *archive) {
 }
 
 
+void msc_save_archive(const name_t archive) {
+    msc_response_t response = {.code = MSC_RESPONSE_CODE_ARCHIVE_SAVING_COMPLETE};
+    response.error          = archive_management_save_configuration(MOUNTPOINT, archive);
+    xQueueSend(response_queue, &response, portMAX_DELAY);
+}
+
+
+
+
 int msc_get_response(msc_response_t *response) {
     return xQueueReceive(response_queue, response, 0) == pdTRUE;
 }

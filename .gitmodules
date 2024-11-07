@@ -34,3 +34,6 @@
 [submodule "simulator/b64"]
 	path = simulator/b64
 	url = https://github.com/jwerle/b64.c.git
+[submodule "components/c-i2c-drivers"]
+	path = components/c-i2c-drivers
+	url = https://github.com/Maldus512/c-i2c-drivers.git

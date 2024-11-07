@@ -567,7 +567,7 @@ static void update_page(model_t *model, struct page_data *pdata) {
         view_common_set_hidden(pdata->alarm_popup.blanket, 1);
     }
 
-    const lv_image_dsc_t *icons_language[NUM_LINGUE] = {&img_italiano, &img_english};
+    const lv_image_dsc_t *icons_language[NUM_LINGUE] = {&img_italiano, &img_english, &img_english, &img_english, &img_english};
     lv_image_set_src(pdata->image_language, icons_language[model->run.lingua]);
 }
 

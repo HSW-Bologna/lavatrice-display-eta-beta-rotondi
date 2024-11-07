@@ -26,10 +26,10 @@ struct page_data {
     lv_obj_t *button_copy;
     lv_obj_t *button_new;
 
+    lv_obj_t *obj_delete;
+
     lv_obj_t *label_names[PROGRAM_WINDOW_SIZE];
     lv_obj_t *label_numbers[PROGRAM_WINDOW_SIZE];
-
-    popup_t popup;
 
     uint8_t delete_program;
 
@@ -110,60 +110,25 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_set_flex_align(obj_button_bar, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
         lv_obj_align(obj_button_bar, LV_ALIGN_TOP_MID, 0, 0);
 
-        {
-            lv_obj_t *button = lv_button_create(obj_button_bar);
-            lv_obj_set_style_radius(button, LV_RADIUS_CIRCLE, LV_STATE_DEFAULT);
-            lv_obj_set_size(button, button_height, button_height);
-
-            lv_obj_t *label = lv_label_create(button);
-            lv_label_set_text(label, LV_SYMBOL_UP);
-            lv_obj_center(label);
-
-            view_register_object_default_callback(button, BTN_UP_ID);
-            pdata->button_up = button;
-        }
+        pdata->button_up     = view_common_icon_button_create(obj_button_bar, LV_SYMBOL_UP, BTN_UP_ID);
+        pdata->button_copy   = view_common_icon_button_create(obj_button_bar, LV_SYMBOL_COPY, BTN_COPY_ID);
+        pdata->button_delete = view_common_icon_button_create(obj_button_bar, LV_SYMBOL_TRASH, BTN_DELETE_ID);
 
         {
             lv_obj_t *button = lv_button_create(obj_button_bar);
-            lv_obj_set_style_radius(button, LV_RADIUS_CIRCLE, LV_STATE_DEFAULT);
-            lv_obj_set_size(button, button_height, button_height);
-
-            lv_obj_t *label = lv_label_create(button);
-            lv_label_set_text(label, LV_SYMBOL_COPY);
-            lv_obj_center(label);
-
-            view_register_object_default_callback(button, BTN_COPY_ID);
-            pdata->button_copy = button;
-        }
-
-        {
-            lv_obj_t *button = lv_button_create(obj_button_bar);
-            lv_obj_set_style_radius(button, LV_RADIUS_CIRCLE, LV_STATE_DEFAULT);
-            lv_obj_set_size(button, button_height, button_height);
-
-            lv_obj_t *label = lv_label_create(button);
-            lv_label_set_text(label, LV_SYMBOL_TRASH);
-            lv_obj_center(label);
-
-            view_register_object_default_callback(button, BTN_DELETE_ID);
-            pdata->button_delete = button;
-        }
-
-        {
-            lv_obj_t *button = lv_button_create(obj_button_bar);
-            lv_obj_set_style_radius(button, LV_RADIUS_CIRCLE, LV_STATE_DEFAULT);
+            lv_obj_add_style(button, &style_icon_button, LV_STATE_DEFAULT);
             lv_obj_set_size(button, button_height, button_height);
 
             {
                 lv_obj_t *label = lv_label_create(button);
                 lv_label_set_text(label, LV_SYMBOL_UP);
-                lv_obj_align(label, LV_ALIGN_CENTER, 0, -8);
+                lv_obj_align(label, LV_ALIGN_CENTER, 0, -6);
             }
 
             {
                 lv_obj_t *label = lv_label_create(button);
                 lv_label_set_text(label, LV_SYMBOL_UP);
-                lv_obj_align(label, LV_ALIGN_CENTER, 0, +8);
+                lv_obj_align(label, LV_ALIGN_CENTER, 0, +6);
             }
 
             view_register_object_default_callback(button, BTN_MOVE_UP_ID);
@@ -183,60 +148,25 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_set_flex_align(obj_button_bar, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
         lv_obj_align(obj_button_bar, LV_ALIGN_BOTTOM_MID, 0, 0);
 
-        {
-            lv_obj_t *button = lv_button_create(obj_button_bar);
-            lv_obj_set_style_radius(button, LV_RADIUS_CIRCLE, LV_STATE_DEFAULT);
-            lv_obj_set_size(button, button_height, button_height);
-
-            lv_obj_t *label = lv_label_create(button);
-            lv_label_set_text(label, LV_SYMBOL_DOWN);
-            lv_obj_center(label);
-
-            view_register_object_default_callback(button, BTN_DOWN_ID);
-            pdata->button_down = button;
-        }
+        pdata->button_down   = view_common_icon_button_create(obj_button_bar, LV_SYMBOL_DOWN, BTN_DOWN_ID);
+        pdata->button_new    = view_common_icon_button_create(obj_button_bar, LV_SYMBOL_PLUS, BTN_NEW_ID);
+        pdata->button_modify = view_common_icon_button_create(obj_button_bar, LV_SYMBOL_EDIT, BTN_MODIFY_ID);
 
         {
             lv_obj_t *button = lv_button_create(obj_button_bar);
-            lv_obj_set_style_radius(button, LV_RADIUS_CIRCLE, LV_STATE_DEFAULT);
-            lv_obj_set_size(button, button_height, button_height);
-
-            lv_obj_t *label = lv_label_create(button);
-            lv_label_set_text(label, LV_SYMBOL_PLUS);
-            lv_obj_center(label);
-
-            view_register_object_default_callback(button, BTN_NEW_ID);
-            pdata->button_new = button;
-        }
-
-        {
-            lv_obj_t *button = lv_button_create(obj_button_bar);
-            lv_obj_set_style_radius(button, LV_RADIUS_CIRCLE, LV_STATE_DEFAULT);
-            lv_obj_set_size(button, button_height, button_height);
-
-            lv_obj_t *label = lv_label_create(button);
-            lv_label_set_text(label, LV_SYMBOL_EDIT);
-            lv_obj_center(label);
-
-            view_register_object_default_callback(button, BTN_MODIFY_ID);
-            pdata->button_modify = button;
-        }
-
-        {
-            lv_obj_t *button = lv_button_create(obj_button_bar);
-            lv_obj_set_style_radius(button, LV_RADIUS_CIRCLE, LV_STATE_DEFAULT);
+            lv_obj_add_style(button, &style_icon_button, LV_STATE_DEFAULT);
             lv_obj_set_size(button, button_height, button_height);
 
             {
                 lv_obj_t *label = lv_label_create(button);
                 lv_label_set_text(label, LV_SYMBOL_DOWN);
-                lv_obj_align(label, LV_ALIGN_CENTER, 0, -8);
+                lv_obj_align(label, LV_ALIGN_CENTER, 0, -6);
             }
 
             {
                 lv_obj_t *label = lv_label_create(button);
                 lv_label_set_text(label, LV_SYMBOL_DOWN);
-                lv_obj_align(label, LV_ALIGN_CENTER, 0, +8);
+                lv_obj_align(label, LV_ALIGN_CENTER, 0, +6);
             }
 
             view_register_object_default_callback(button, BTN_MOVE_DOWN_ID);
@@ -279,9 +209,41 @@ static void open_page(pman_handle_t handle, void *state) {
         }
     }
 
-    pdata->popup =
-        view_common_popup_create(lv_screen_active(), view_intl_get_string(model, STRINGS_CANCELLARE_IL_PROGRAMMA),
-                                 POPUP_CONFIRM_ID, POPUP_CANCEL_ID);
+    {
+        lv_obj_t *obj_delete = lv_obj_create(cont);
+        lv_obj_set_size(obj_delete, LV_PCT(100), LV_HOR_RES - 56 - button_height * 2 - 30);
+        lv_obj_clear_flag(obj_delete, LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_add_style(obj_delete, &style_transparent_cont, LV_STATE_DEFAULT);
+        lv_obj_align(obj_delete, LV_ALIGN_CENTER, 0, -2);
+
+        lv_obj_t *label = lv_label_create(obj_delete);
+        lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+        lv_obj_set_width(label, 300);
+        lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);
+        lv_obj_set_style_text_font(label, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        lv_label_set_text(label, view_intl_get_string(model, STRINGS_CANCELLARE_IL_PROGRAMMA));
+        lv_obj_align(label, LV_ALIGN_CENTER, 0, -32);
+
+        lv_obj_t *button_cancel = lv_button_create(obj_delete);
+        lv_obj_set_size(button_cancel, 64, 48);
+        lv_obj_t *lbl = lv_label_create(button_cancel);
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_MEDIUM, LV_STATE_DEFAULT);
+        lv_label_set_text(lbl, LV_SYMBOL_CLOSE);
+        lv_obj_center(lbl);
+        lv_obj_align(button_cancel, LV_ALIGN_BOTTOM_LEFT, 32, -16);
+        view_register_object_default_callback(button_cancel, POPUP_CANCEL_ID);
+
+        lv_obj_t *button_ok = lv_button_create(obj_delete);
+        lv_obj_set_size(button_ok, 64, 48);
+        lbl = lv_label_create(button_ok);
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_MEDIUM, LV_STATE_DEFAULT);
+        lv_label_set_text(lbl, LV_SYMBOL_OK);
+        lv_obj_center(lbl);
+        lv_obj_align(button_ok, LV_ALIGN_BOTTOM_RIGHT, -32, -16);
+        view_register_object_default_callback(button_ok, POPUP_CONFIRM_ID);
+
+        pdata->obj_delete = obj_delete;
+    }
 
     pman_timer_reset(pdata->timer);
     pman_timer_resume(pdata->timer);
@@ -399,14 +361,25 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             break;
                         }
 
-                        case BTN_NEW_ID:
-                            view_get_protocol(handle)->create_new_program(handle, pdata->selected_program >= 0
-                                                                                      ? pdata->selected_program + 1
-                                                                                      : pdata->program_window_index *
-                                                                                            PROGRAM_WINDOW_SIZE);
+                        case BTN_NEW_ID: {
+                            if (pdata->selected_program >= 0) {
+                                uint16_t absolute_index = absolute_program_index(pdata);
+                                view_get_protocol(handle)->create_new_program(handle, absolute_index + 1);
+                                if (pdata->selected_program < (int)model->prog.num_programmi) {
+                                    pdata->selected_program++;
+                                    if (pdata->selected_program >= PROGRAM_WINDOW_SIZE) {
+                                        move_window_down(model, pdata);
+                                        pdata->selected_program = 0;
+                                    }
+                                }
+                            } else {
+                                view_get_protocol(handle)->create_new_program(handle, 0);
+                                pdata->selected_program = 0;
+                            }
                             pdata->changed = 1;
                             update_page(model, pdata);
                             break;
+                        }
 
                         case BTN_DELETE_ID:
                             if (pdata->selected_program >= 0) {
@@ -433,17 +406,15 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             }
                             break;
 
-                        case POPUP_CONFIRM_ID:
-                            view_get_protocol(handle)->delete_program(handle, pdata->selected_program);
-                            if (model->prog.num_programmi == 0) {
-                                pdata->selected_program = -1;
-                            } else if (pdata->selected_program >= (uint16_t)model->prog.num_programmi) {
-                                pdata->selected_program = model->prog.num_programmi - 1;
-                            }
-                            pdata->changed        = 1;
-                            pdata->delete_program = 0;
+                        case POPUP_CONFIRM_ID: {
+                            uint16_t absolute_index = absolute_program_index(pdata);
+                            view_get_protocol(handle)->delete_program(handle, absolute_index);
+                            pdata->selected_program = -1;
+                            pdata->changed          = 1;
+                            pdata->delete_program   = 0;
                             update_page(model, pdata);
                             break;
+                        }
 
                         case POPUP_CANCEL_ID:
                             pdata->delete_program = 0;
@@ -471,7 +442,7 @@ static void update_page(model_t *model, struct page_data *pdata) {
     for (uint16_t i = 0; i < PROGRAM_WINDOW_SIZE; i++) {
         uint16_t absolute_index = pdata->program_window_index * PROGRAM_WINDOW_SIZE + i;
 
-        if (absolute_index < model->prog.num_programmi) {
+        if (absolute_index < model->prog.num_programmi && !pdata->delete_program) {
             const programma_preview_t *preview = model_get_preview(model, absolute_index);
 
             if (pdata->selected_program == i) {
@@ -491,35 +462,62 @@ static void update_page(model_t *model, struct page_data *pdata) {
         }
     }
 
-    if (pdata->selected_program >= 0) {
+    if (pdata->delete_program) {
+        lv_obj_add_state(pdata->button_up, LV_STATE_DISABLED);
+        lv_obj_add_state(pdata->button_down, LV_STATE_DISABLED);
+        lv_obj_add_state(pdata->button_move_up, LV_STATE_DISABLED);
+        lv_obj_add_state(pdata->button_move_down, LV_STATE_DISABLED);
+        lv_obj_add_state(pdata->button_modify, LV_STATE_DISABLED);
+        lv_obj_add_state(pdata->button_copy, LV_STATE_DISABLED);
+        lv_obj_add_state(pdata->button_delete, LV_STATE_DISABLED);
+        lv_obj_add_state(pdata->button_new, LV_STATE_DISABLED);
+    } else if (pdata->selected_program >= 0) {
+        lv_obj_clear_state(pdata->button_up, LV_STATE_DISABLED);
+        lv_obj_clear_state(pdata->button_down, LV_STATE_DISABLED);
         lv_obj_clear_state(pdata->button_move_up, LV_STATE_DISABLED);
         lv_obj_clear_state(pdata->button_move_down, LV_STATE_DISABLED);
         lv_obj_clear_state(pdata->button_modify, LV_STATE_DISABLED);
         lv_obj_clear_state(pdata->button_copy, LV_STATE_DISABLED);
         lv_obj_clear_state(pdata->button_delete, LV_STATE_DISABLED);
+
+        if (model->prog.num_programmi < PROGRAM_WINDOW_SIZE) {
+            lv_obj_add_state(pdata->button_up, LV_STATE_DISABLED);
+            lv_obj_add_state(pdata->button_down, LV_STATE_DISABLED);
+        } else {
+            lv_obj_clear_state(pdata->button_up, LV_STATE_DISABLED);
+            lv_obj_clear_state(pdata->button_down, LV_STATE_DISABLED);
+        }
+
+        if (model->prog.num_programmi < MAX_PROGRAMMI) {
+            lv_obj_clear_state(pdata->button_new, LV_STATE_DISABLED);
+        } else {
+            lv_obj_add_state(pdata->button_new, LV_STATE_DISABLED);
+        }
     } else {
         lv_obj_add_state(pdata->button_move_up, LV_STATE_DISABLED);
         lv_obj_add_state(pdata->button_move_down, LV_STATE_DISABLED);
         lv_obj_add_state(pdata->button_modify, LV_STATE_DISABLED);
         lv_obj_add_state(pdata->button_copy, LV_STATE_DISABLED);
         lv_obj_add_state(pdata->button_delete, LV_STATE_DISABLED);
-    }
-
-    if (model->prog.num_programmi < PROGRAM_WINDOW_SIZE) {
-        lv_obj_add_state(pdata->button_up, LV_STATE_DISABLED);
-        lv_obj_add_state(pdata->button_down, LV_STATE_DISABLED);
-    } else {
         lv_obj_clear_state(pdata->button_up, LV_STATE_DISABLED);
         lv_obj_clear_state(pdata->button_down, LV_STATE_DISABLED);
+
+        if (model->prog.num_programmi == 0) {
+            lv_obj_clear_state(pdata->button_new, LV_STATE_DISABLED);
+        } else {
+            lv_obj_add_state(pdata->button_new, LV_STATE_DISABLED);
+        }
+
+        if (model->prog.num_programmi < PROGRAM_WINDOW_SIZE) {
+            lv_obj_add_state(pdata->button_up, LV_STATE_DISABLED);
+            lv_obj_add_state(pdata->button_down, LV_STATE_DISABLED);
+        } else {
+            lv_obj_clear_state(pdata->button_up, LV_STATE_DISABLED);
+            lv_obj_clear_state(pdata->button_down, LV_STATE_DISABLED);
+        }
     }
 
-    if (model->prog.num_programmi < MAX_PROGRAMMI) {
-        lv_obj_clear_state(pdata->button_new, LV_STATE_DISABLED);
-    } else {
-        lv_obj_add_state(pdata->button_new, LV_STATE_DISABLED);
-    }
-
-    view_common_set_hidden(pdata->popup.blanket, !pdata->delete_program);
+    view_common_set_hidden(pdata->obj_delete, !pdata->delete_program);
 }
 
 
@@ -540,7 +538,7 @@ static void close_page(void *state) {
 
 static void move_window_down(model_t *model, struct page_data *pdata) {
     pdata->program_window_index++;
-    if (pdata->program_window_index * PROGRAM_WINDOW_SIZE > model->prog.num_programmi) {
+    if (pdata->program_window_index * PROGRAM_WINDOW_SIZE >= model->prog.num_programmi) {
         pdata->program_window_index = 0;
     }
 }

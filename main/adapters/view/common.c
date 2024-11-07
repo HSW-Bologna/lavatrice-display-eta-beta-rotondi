@@ -49,9 +49,11 @@ view_title_t view_common_create_title(lv_obj_t *root, const char *text, int back
 
     btn = lv_button_create(cont);
     lv_obj_add_style(btn, (lv_style_t *)&style_config_btn, LV_STATE_DEFAULT);
+    lv_obj_add_style(btn, (lv_style_t *)&style_icon_button, LV_STATE_DEFAULT);
     lv_obj_set_size(btn, SQUARE_BUTTON_SIZE, SQUARE_BUTTON_SIZE);
     lv_obj_t *img = lv_image_create(btn);
     lv_image_set_src(img, &img_door);
+    lv_image_set_scale(img, 220);
     lv_obj_add_style(img, &style_white_icon, LV_STATE_DEFAULT);
     lv_obj_center(img);
     lv_obj_align(btn, LV_ALIGN_LEFT_MID, 4, 0);
@@ -62,9 +64,9 @@ view_title_t view_common_create_title(lv_obj_t *root, const char *text, int back
     if (next_id >= 0) {
         btn = lv_button_create(cont);
         lv_obj_add_style(btn, (lv_style_t *)&style_config_btn, LV_STATE_DEFAULT);
+        lv_obj_add_style(btn, (lv_style_t *)&style_icon_button, LV_STATE_DEFAULT);
         lv_obj_set_size(btn, SQUARE_BUTTON_SIZE, SQUARE_BUTTON_SIZE);
         lbl = lv_label_create(btn);
-        lv_obj_set_style_text_font(lbl, STYLE_FONT_BIG, LV_STATE_DEFAULT);
         lv_label_set_text(lbl, LV_SYMBOL_RIGHT);
         lv_obj_center(lbl);
         lv_obj_align(btn, LV_ALIGN_RIGHT_MID, -4, 0);
@@ -183,13 +185,13 @@ communication_error_popup_t view_common_communication_error_popup(lv_obj_t *pare
     lv_obj_align(lbl_msg, LV_ALIGN_TOP_MID, 0, 0);
 
     lv_obj_t *btn = lv_button_create(cont);
-    lv_obj_set_size(btn, 96, 48);
+    lv_obj_set_size(btn, 104, 48);
     lv_obj_t *lbl_retry = lv_label_create(btn);
     lv_obj_center(lbl_retry);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, 0);
 
     lv_obj_t *btn_disable = lv_button_create(cont);
-    lv_obj_set_size(btn_disable, 96, 48);
+    lv_obj_set_size(btn_disable, 104, 48);
     lv_obj_t *lbl_disable = lv_label_create(btn_disable);
     lv_obj_center(lbl_disable);
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, 0);
@@ -287,6 +289,22 @@ const pman_page_t *view_common_choice_page(model_t *model) {
 const pman_page_t *view_common_washing_page(model_t *model) {
     (void)model;
     return &page_washing_self;
+}
+
+
+lv_obj_t *view_common_icon_button_create(lv_obj_t *parent, const char *icon, int id) {
+    const int32_t button_height = 48;
+
+    lv_obj_t *button = lv_button_create(parent);
+    lv_obj_add_style(button, &style_icon_button, LV_STATE_DEFAULT);
+    lv_obj_set_size(button, button_height, button_height);
+
+    lv_obj_t *label = lv_label_create(button);
+    lv_label_set_text(label, icon);
+    lv_obj_center(label);
+
+    view_register_object_default_callback(button, id);
+    return button;
 }
 
 
