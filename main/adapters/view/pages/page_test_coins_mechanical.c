@@ -31,6 +31,7 @@ static const char *TAG = "PageTestCoinsMechanical";
 static void *create_page(pman_handle_t handle, void *extra) {
     (void)handle;
     (void)extra;
+    (void)TAG;
 
     struct page_data *pdata = lv_malloc(sizeof(struct page_data));
     assert(pdata != NULL);

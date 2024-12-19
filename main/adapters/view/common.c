@@ -308,6 +308,27 @@ lv_obj_t *view_common_icon_button_create(lv_obj_t *parent, const char *icon, int
 }
 
 
+lv_obj_t *view_common_alarm_led_create(lv_obj_t *parent, lv_obj_t **led, const char *text) {
+    lv_obj_t *obj = lv_obj_create(parent);
+    lv_obj_remove_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_bg_color(obj, lv_obj_get_style_border_color(obj, LV_STATE_DEFAULT), LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(obj, 4, LV_STATE_DEFAULT);
+    lv_obj_set_size(obj, 64, 48);
+
+    *led = lv_led_create(obj);
+    lv_led_set_color(*led, VIEW_STYLE_COLOR_RED);
+    lv_obj_set_size(*led, 28, 28);
+    lv_obj_center(*led);
+
+    lv_obj_t *lbl = lv_label_create(obj);
+    lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+    lv_label_set_text(lbl, text);
+    lv_obj_center(lbl);
+
+    return obj;
+}
+
+
 static const char *get_alarm_description(uint16_t alarm_code, uint16_t language) {
     switch (alarm_code) {
         case 1:

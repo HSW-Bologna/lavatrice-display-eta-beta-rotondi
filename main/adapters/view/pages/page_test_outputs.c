@@ -55,19 +55,18 @@ static void open_page(pman_handle_t handle, void *state) {
 
     for (size_t i = 0; i < NUM_OUTPUTS; i++) {
         lv_obj_t *btn = lv_btn_create(cont);
-        lv_obj_clear_flag(btn, LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_remove_flag(btn, LV_OBJ_FLAG_SCROLLABLE);
         lv_obj_set_style_radius(btn, 4, LV_STATE_DEFAULT);
         lv_obj_set_size(btn, 52, 52);
         view_register_object_default_callback_with_number(btn, BTN_OUTPUT_ID, i);
 
         lv_obj_t *led = lv_led_create(btn);
         lv_obj_add_flag(led, LV_OBJ_FLAG_EVENT_BUBBLE);
-        lv_led_set_color(led, VIEW_STYLE_COLOR_GREEN);
+        lv_led_set_color(led, VIEW_STYLE_COLOR_BLUE);
         lv_obj_set_size(led, 32, 32);
         lv_obj_center(led);
 
         lv_obj_t *lbl = lv_label_create(btn);
-        lv_obj_set_style_text_color(lbl, VIEW_STYLE_COLOR_BLACK, LV_STATE_DEFAULT);
         lv_obj_add_flag(lbl, LV_OBJ_FLAG_EVENT_BUBBLE);
         lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
         lv_label_set_text_fmt(lbl, "%02zu", i + 1);
@@ -124,7 +123,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             break;
 
                         case BTN_OUTPUT_ID:
-                            if (obj_data->number == model->run.test_output_active) {
+                            if (model_is_test_output_active(model, obj_data->number)) {
                                 view_get_protocol(handle)->clear_outputs(handle);
                             } else {
                                 view_get_protocol(handle)->set_output(handle, obj_data->number, 1);
@@ -160,7 +159,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
 static void update_page(model_t *model, struct page_data *pdata) {
     for (int16_t i = 0; i < NUM_OUTPUTS; i++) {
-        if (model->run.test_output_active == i) {
+        if (model_is_test_output_active(model, i)) {
             lv_led_on(pdata->led_outputs[i]);
         } else {
             lv_led_off(pdata->led_outputs[i]);

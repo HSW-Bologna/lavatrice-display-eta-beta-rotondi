@@ -28,7 +28,6 @@
 #define EVENT_DEVICE_ADDRESS_MASK 0xFF0
 #define EVENT_DRIVE_READY         0x1000
 #define EVENT_DRIVE_FAILED        0x2000
-#define MOUNTPOINT                "/usb"
 
 
 typedef enum {
@@ -103,7 +102,7 @@ void msc_init(void) {
     const usb_host_config_t host_config = {.intr_flags = ESP_INTR_FLAG_LOWMED};
     ESP_ERROR_CHECK(usb_host_install(&host_config));
 
-    xTaskCreate(handle_usb_events, TAG, 3072, NULL, 2, NULL);
+    xTaskCreate(handle_usb_events, TAG, 4096, NULL, 2, NULL);
     xTaskCreate(msc_task, TAG, 3072, NULL, 2, NULL);
 
     const msc_host_driver_config_t msc_config = {
@@ -136,7 +135,7 @@ removable_drive_state_t msc_is_device_mounted(void) {
 
 void msc_extract_archive(const name_t archive) {
     char string[128] = {0};
-    snprintf(string, sizeof(string), "%s/%s%s", MOUNTPOINT, archive, ARCHIVE_SUFFIX);
+    snprintf(string, sizeof(string), "%s/%s%s", MSC_USB_MOUNTPOINT, archive, ARCHIVE_SUFFIX);
     msc_response_t response = {.code = MSC_RESPONSE_CODE_ARCHIVE_EXTRACTION_COMPLETE};
     response.error          = archive_management_extract_configuration(string);
     xQueueSend(response_queue, &response, portMAX_DELAY);
@@ -167,7 +166,7 @@ size_t msc_read_archives(model_t *pmodel) {
 
 void msc_save_archive(const name_t archive) {
     msc_response_t response = {.code = MSC_RESPONSE_CODE_ARCHIVE_SAVING_COMPLETE};
-    response.error          = archive_management_save_configuration(MOUNTPOINT, archive);
+    response.error          = archive_management_save_configuration(MSC_USB_MOUNTPOINT, archive);
     xQueueSend(response_queue, &response, portMAX_DELAY);
 
     /*
@@ -284,10 +283,10 @@ static void msc_task(void *args) {
                 //msc_host_print_descriptors(msc_device);
                 ESP_ERROR_CHECK(msc_host_get_device_info(msc_device, &info));
 
-                esp_err_t err = msc_host_vfs_register(msc_device, MOUNTPOINT, &mount_config, &vfs_handle);
+                esp_err_t err = msc_host_vfs_register(msc_device, MSC_USB_MOUNTPOINT, &mount_config, &vfs_handle);
                 if (err == ESP_OK) {
                     char **strings = NULL;
-                    int    res     = archive_management_list_archives(MOUNTPOINT, &strings);
+                    int    res     = archive_management_list_archives(MSC_USB_MOUNTPOINT, &strings);
 
                     xSemaphoreTake(sem, portMAX_DELAY);
                     utils_free_string_list(listed_archives, listed_archives_num);
@@ -323,7 +322,7 @@ static void msc_task(void *args) {
             switch (message.code) {
                 case TASK_MESSAGE_CODE_LOAD_ARCHIVE: {
                     char string[128] = {0};
-                    snprintf(string, sizeof(string), "%s/%s%s", MOUNTPOINT, message.archive_name, ARCHIVE_SUFFIX);
+                    snprintf(string, sizeof(string), "%s/%s%s", MSC_USB_MOUNTPOINT, message.archive_name, ARCHIVE_SUFFIX);
                     msc_response_t response = {.code = MSC_RESPONSE_CODE_ARCHIVE_EXTRACTION_COMPLETE};
                     response.error          = archive_management_extract_configuration(string);
                     xQueueSend(response_queue, &response, portMAX_DELAY);
@@ -332,7 +331,7 @@ static void msc_task(void *args) {
 
                 case TASK_MESSAGE_CODE_SAVE_ARCHIVE: {
                     msc_response_t response = {.code = MSC_RESPONSE_CODE_ARCHIVE_SAVING_COMPLETE};
-                    response.error          = archive_management_save_configuration(MOUNTPOINT, message.archive_name);
+                    response.error          = archive_management_save_configuration(MSC_USB_MOUNTPOINT, message.archive_name);
                     xQueueSend(response_queue, &response, portMAX_DELAY);
                     break;
                 }

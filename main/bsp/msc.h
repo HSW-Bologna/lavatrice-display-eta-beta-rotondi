@@ -6,6 +6,9 @@
 #include "model/model.h"
 
 
+#define MSC_USB_MOUNTPOINT "/usb"
+
+
 typedef enum {
     MSC_RESPONSE_CODE_ARCHIVE_EXTRACTION_COMPLETE,
     MSC_RESPONSE_CODE_ARCHIVE_SAVING_COMPLETE,

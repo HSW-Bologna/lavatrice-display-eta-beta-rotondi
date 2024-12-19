@@ -56,12 +56,13 @@ static void open_page(pman_handle_t handle, void *state) {
 
     for (size_t i = 0; i < NUM_INPUTS; i++) {
         lv_obj_t *obj = lv_obj_create(cont);
-        lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_remove_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_set_style_bg_color(obj, lv_obj_get_style_border_color(obj, LV_STATE_DEFAULT), LV_STATE_DEFAULT);
         lv_obj_set_style_radius(obj, 4, LV_STATE_DEFAULT);
         lv_obj_set_size(obj, 52, 52);
 
         lv_obj_t *led = lv_led_create(obj);
-        lv_led_set_color(led, VIEW_STYLE_COLOR_GREEN);
+        lv_led_set_color(led, VIEW_STYLE_COLOR_BLUE);
         lv_obj_set_size(led, 32, 32);
         lv_obj_center(led);
 

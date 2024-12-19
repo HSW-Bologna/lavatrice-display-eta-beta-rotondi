@@ -1,8 +1,9 @@
-const char *pars_tipo_serratura[4][5] = {
+const char *pars_tipo_serratura[5][5] = {
     {"Nuova/3/livello", "New/1/level", "Nuevo/3/nivel", "Nouveau/3/niveau", "Neu/3/Stufe", },
     {"Bobina/1/livello", "Reel/1/level", "Bobina/1/nivel", "Bobine/1/niveau", "Spule/1/Stufe", },
     {"Nuova/3/no livello", "New/3/no level", "Nuevo/3/sin nivel", "Nouveau/3/sans niveau", "Neu/3/keine Stufe", },
     {"Bobina/1/no livello", "Reel/1/no level", "Bobina/1/sin nivel", "Bobine/1/niveau", "Spule/1/keine Stufe", },
+    {"Doppio impulso", "Double pulse", "Double pulse", "Double pulse", "Double pulse", },
 };
 
 const char *pars_accelerometro[6][5] = {
@@ -206,7 +207,7 @@ const char *pars_descriptions[169][5] = {
     {"Movimento", "Motion", "Movimiento", "Mouvement", "Bewegung", },
     {"Recupero", "Recovery", "Recuperación", "Récupération", "Erholung", },
     {"Tempo preparazione", "Preparation time", "Tiempo de preparación", "Temps de préparation", "Vorbereitungszeit", },
-    {"Preparation speed", "Preparation speed", "Velocidad de preparación", "Vitesse de préparation", "Geschwindigkeit der Vorbereitung", },
+    {"Velocita' preparazione", "Preparation speed", "Velocidad de preparación", "Vitesse de préparation", "Geschwindigkeit der Vorbereitung", },
     {"Tipo scarico", "Drain type", "Tipo de descarga", "Type de décharge", "Art der Entleerung", },
     {"Velocita' cen. 1", "Cen. speed 1", "Velocidad de centrifugado 1", "Vitesse de centrifugation 1", "Zentrifugengeschwindigkeit 1", },
     {"Tempo rampa 1", "Ramp time 1", "Tiempo de rampa 1", "Temps de rampe 1", "Rampenzeit 1", },

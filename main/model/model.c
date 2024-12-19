@@ -23,13 +23,45 @@ void model_init(model_t *pmodel) {
     pmodel->system.num_archivi             = 0;
     pmodel->run.maybe_programma            = 0;
     pmodel->run.f_richiedi_scarico         = 0;
-    pmodel->run.test_output_active         = -1;
+    pmodel->run.test_outputs_map           = 0;
     pmodel->prog.contrast                  = 0x1A;
 
     pmodel->run.digital_coin_reader_test_override = TEST_OVERRIDE_NONE;
+    pmodel->run.firmware_update_state             = FIRMWARE_UPDATE_STATE_NONE;
 
     strcpy(pmodel->prog.parmac.nome, "Pluto");
 }
+
+
+void model_cancella_lavaggio_programmato(model_t *model) {
+    model->prog.programmed_wash.configured = 0;
+}
+
+
+int model_lavaggio_programmato_impostato(model_t *model, int *lavaggio) {
+    time_t now;
+    time(&now);
+    if (model->prog.programmed_wash.configured) {
+        if (lavaggio) {
+            *lavaggio = model->prog.programmed_wash.program_index;
+        }
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+
+int model_lavaggio_programmato_minuti_rimanenti(model_t *model) {
+    time_t now;
+    time(&now);
+    if (model_lavaggio_programmato_impostato(model, NULL)) {
+        return (model->prog.programmed_wash.start - now) / 60;
+    } else {
+        return 0;
+    }
+}
+
 
 
 void model_set_drive_mounted(model_t *pmodel, removable_drive_state_t drive_mounted) {
@@ -60,7 +92,7 @@ uint16_t model_program_remaining(model_t *pmodel) {
     programma_lavatrice_t *p      = model_get_program(pmodel);
     unsigned int           totale = 0;
 
-    for (size_t i = model_get_current_step_number(pmodel); i < p->num_steps; i++) {
+    for (size_t i = model_get_current_step_number(pmodel) + 1; i < p->num_steps; i++) {
         const parametri_step_t *s = &p->steps[i];
         totale += s->durata;
 
@@ -80,19 +112,19 @@ uint16_t model_program_remaining(model_t *pmodel) {
         }
     }
 
-    return totale;
+    return totale + pmodel->run.macchina.rimanente;
 }
 
 
 void model_sync_program_preview(model_t *pmodel) {
     assert(pmodel != NULL);
 
-    programma_lavatrice_t *pr = model_get_program(pmodel);
-    programma_preview_t   *pv = &pmodel->prog.preview_programmi[model_get_program_num(pmodel)];
-    strcpy(pv->filename, pr->filename);
-    strcpy(pv->name, pr->nomi[model_get_language(pmodel)]);
-    pv->prezzo = pr->prezzo;
-    pv->tipo   = pv->tipo;
+    programma_lavatrice_t *program = model_get_program(pmodel);
+    programma_preview_t   *preview = &pmodel->prog.preview_programmi[model_get_program_num(pmodel)];
+    strcpy(preview->filename, program->filename);
+    strcpy(preview->name, program->nomi[model_get_language(pmodel)]);
+    preview->prezzo = program->prezzo;
+    preview->tipo   = program->tipo;
 }
 
 
@@ -1053,6 +1085,39 @@ size_t model_pack_parametri_macchina(uint8_t *buffer, parmac_t *p) {
 }
 
 
+void model_clear_test_data(mut_model_t *model) {
+    assert(model);
+    model->test.min_proximity_interval = 0;
+    model->test.max_proximity_interval = 0;
+}
+
+
+void model_update_test_data(model_t *model, test_data_t test) {
+    assert(model);
+
+    model->test.inputs       = test.inputs;
+    model->test.inputs_exp   = test.inputs_exp;
+    model->test.adc_temp     = test.adc_temp;
+    model->test.adc_press    = test.adc_press;
+    model->test.offset_press = test.offset_press;
+
+    if (model->test.min_proximity_interval == 0 || model->test.min_proximity_interval > test.pmin) {
+        model->test.min_proximity_interval = test.pmin;
+    }
+    if (model->test.max_proximity_interval < test.pmax) {
+        model->test.max_proximity_interval = test.pmax;
+    }
+    model->test.gettoniera_impulsi_abilitata = test.gettoniera_impulsi_abilitata;
+    memcpy(model->test.minp, test.minp, sizeof(model->test.minp));
+    memcpy(model->test.maxp, test.maxp, sizeof(model->test.maxp));
+    model->test.accelerometro_ok = test.accelerometro_ok;
+
+    model->test.log_accelerometro[model->test.log_index][0] = test.accelerometer_axis[0];
+    model->test.log_accelerometro[model->test.log_index][1] = test.accelerometer_axis[1];
+    model->test.log_accelerometro[model->test.log_index][2] = test.accelerometer_axis[2];
+
+    model->test.log_index = (model->test.log_index + 1) % MAX_LOG_ACCELEROMETRO;
+}
 
 
 void model_unpack_test(test_data_t *test, uint8_t *buffer) {
@@ -1074,9 +1139,10 @@ void model_unpack_test(test_data_t *test, uint8_t *buffer) {
     i += deserialize_uint16_be(&y, &buffer[i]);
     i += deserialize_uint16_be(&z, &buffer[i]);
     i += deserialize_uint8(&test->accelerometro_ok, &buffer[i]);
-    test->log_accelerometro[0] = x;
-    test->log_accelerometro[1] = y;
-    test->log_accelerometro[2] = z;
+
+    test->accelerometer_axis[0] = x;
+    test->accelerometer_axis[1] = y;
+    test->accelerometer_axis[2] = z;
 
     // Proximity
     i += deserialize_uint32_be(&min, &buffer[i]);
@@ -1232,24 +1298,40 @@ void program_deserialize_preview(model_t *pmodel, programma_preview_t *p, uint8_
 }
 
 
-void model_test_output_activate(mut_model_t *model, uint16_t output) {
+void model_test_output_set(mut_model_t *model, uint16_t output, uint8_t value) {
     assert(model != NULL);
     if (output == RESISTORS_OUTPUT_INDEX) {
         model->run.resistors_ts = timestamp_get();
     }
-    model->run.test_output_active = output;
+    if (value) {
+        model->run.test_outputs_map |= 1 << output;
+    } else {
+        model->run.test_outputs_map &= ~(1 << output);
+    }
 }
 
 
 void model_test_outputs_clear(mut_model_t *model) {
     assert(model != NULL);
-    model->run.test_output_active = -1;
+    model->run.test_outputs_map = 0;
 }
 
 
-uint8_t model_should_clear_test_outputs(mut_model_t *model) {
+uint8_t model_is_test_output_active(model_t *model, uint16_t output) {
     assert(model != NULL);
-    return model->run.test_mode && model->run.test_output_active == RESISTORS_OUTPUT_INDEX &&
+    return (model->run.test_outputs_map & (1 << output)) > 0;
+}
+
+
+void model_test_outputs_clear_resistors(mut_model_t *model) {
+    assert(model != NULL);
+    model->run.test_outputs_map &= ~(1 << RESISTORS_OUTPUT_INDEX);
+}
+
+
+uint8_t model_should_clear_test_resistors(mut_model_t *model) {
+    assert(model != NULL);
+    return model->run.test_mode && ((model->run.test_outputs_map & (1 << RESISTORS_OUTPUT_INDEX)) > 0) &&
            timestamp_is_expired(model->run.resistors_ts, 15000UL);
 }
 
@@ -1310,4 +1392,15 @@ unsigned int model_get_total_remaining(model_t *model) {
     }
 
     return totale;
+}
+
+
+uint8_t model_is_emergency_ok(model_t *model) {
+    return (model->test.inputs & 0x01) > 0;
+}
+
+
+uint8_t model_test_cesto_in_sicurezza(model_t *model) {
+    return model_oblo_chiuso(model) && model_get_livello_centimetri(model) == 0 && model_is_emergency_ok(model) &&
+           (model->test.inputs & 0x02) && (model->test.inputs & (1 << 10));
 }

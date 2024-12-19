@@ -131,7 +131,7 @@ void bsp_tft_display_init(void (*display_flush_ready_cb)(void), size_t buffer_si
     ESP_ERROR_CHECK(esp_lcd_panel_reset(lcd_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_init(lcd_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_invert_color(lcd_handle, true));
-    //ESP_ERROR_CHECK(esp_lcd_panel_swap_xy(lcd_handle, false));
+    // ESP_ERROR_CHECK(esp_lcd_panel_swap_xy(lcd_handle, false));
     ESP_ERROR_CHECK(esp_lcd_panel_mirror(lcd_handle, false, false));
     ESP_ERROR_CHECK(esp_lcd_panel_set_gap(lcd_handle, 0, 0));
 #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
@@ -204,7 +204,7 @@ static esp_err_t panel_ili9488_custom_init(esp_lcd_panel_t *panel) {
          15},
         {ILI9488_POWER_CTL_ONE, {0x14, 0x14}, 2},
         {ILI9488_POWER_CTL_TWO, {0x45}, 1},
-        {ILI9488_POWER_CTL_THREE, {0x00, 0x55, 0x80}, 3},
+        {ILI9488_POWER_CTL_THREE, {0xFF, 0xFF /*0x55*/, 0x80}, 3},
         {LCD_CMD_MADCTL, {0x8}, 1},
         {LCD_CMD_COLMOD, {0x66}, 1},
         {ILI9488_INTRFC_MODE_CTL, {ILI9488_INTERFACE_MODE_USE_SDO}, 1},

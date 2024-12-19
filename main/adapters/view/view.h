@@ -47,6 +47,7 @@ typedef struct {
     void (*retry_communication)(pman_handle_t handle);
     void (*set_output)(pman_handle_t handle, uint16_t output, uint8_t level);
     void (*clear_outputs)(pman_handle_t handle);
+    void (*set_output_overlapping)(pman_handle_t handle, uint16_t output, uint8_t level);
     void (*clear_coin_count)(pman_handle_t handle);
     void (*digital_coin_reader_enable)(pman_handle_t handle, uint8_t enable);
     void (*set_test_mode)(pman_handle_t handle, uint8_t test_mode);
@@ -68,7 +69,10 @@ typedef struct {
     void (*clone_program)(pman_handle_t handle, uint16_t source_program_index, uint16_t destination_program_index);
     void (*delete_program)(pman_handle_t handle, uint16_t program_index);
     void (*save_program_index)(pman_handle_t handle);
+    void (*update_firmware)(pman_handle_t handle);
+    void (*reset)(pman_handle_t handle);
     void (*beep)(void);
+    void (*set_time)(pman_handle_t handle, struct tm new_time);
 } view_protocol_t;
 
 
@@ -88,9 +92,9 @@ view_protocol_t *view_get_protocol(pman_handle_t handle);
 
 extern const pman_page_t page_main, page_password, page_menu, page_test_inputs, page_test_outputs, page_test_drum,
     page_test_level, page_test_temperature, page_test_coins_digital, page_test_coins_mechanical, page_test_led,
-    page_test_lock, page_archiving, page_drive, page_import_configuration, page_choice, page_parmac, page_washing,
-    page_programs, page_program, page_program_info, page_main_self, page_washing_self, page_choice_self, page_advanced,
-    page_keyboard, page_price, page_step;
+    page_test_lock, page_drive, page_import_configuration, page_choice, page_parmac, page_washing, page_programs,
+    page_program, page_program_info, page_main_self, page_washing_self, page_choice_self, page_advanced, page_keyboard,
+    page_price, page_step, page_datetime, page_pick_program;
 
 
 #endif

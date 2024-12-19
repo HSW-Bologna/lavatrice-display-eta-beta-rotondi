@@ -20,8 +20,7 @@
 #define SETTINGS_DRAWER_HEIGHT 96
 #define SETTINGS_BTN_WIDTH     64
 
-#define ALARM_NONE     0
-#define ALARM_PORTHOLE 4
+#define ALARM_NONE 0
 
 
 LV_IMG_DECLARE(img_lavaggio);
@@ -49,8 +48,10 @@ LV_IMG_DECLARE(img_marble_english);
 
 
 enum {
-    BTN_PROGRAM_ID,
     OBJ_SETTINGS_ID,
+    BTN_PROGRAM_ID,
+    BTN_ALARM_ID,
+    BTN_MESSAGE_ID,
     BTN_LEFT_ID,
     BTN_RIGHT_ID,
     BTN_PADLOCK_ID,
@@ -78,11 +79,18 @@ struct page_data {
     pman_timer_t *timer_change_page;
     pman_timer_t *timer_restore_language;
 
+    popup_t alarm_popup;
+    popup_t message_popup;
+
     uint16_t program_window_index;
+    uint8_t  alarm_pacified;
+    int16_t  last_alarm;
 };
 
 
-static void update_page(model_t *model, struct page_data *pdata);
+static void    update_page(model_t *model, struct page_data *pdata);
+static uint8_t should_display_alarm(model_t *model, struct page_data *pdata);
+static void    handle_alarm(model_t *model, struct page_data *pdata);
 
 
 static const char *TAG = "PageMainSelf";
@@ -121,6 +129,8 @@ static void *create_page(pman_handle_t handle, void *extra) {
     lv_style_transition_dsc_init(&tr, tr_prop, lv_anim_path_linear, 100, 0, NULL);
 
     pdata->program_window_index = 0;
+    pdata->alarm_pacified       = 0;
+    pdata->last_alarm           = 0;
 
     pdata->timer_change_page      = pman_timer_create(handle, 250, (void *)(uintptr_t)TIMER_CHANGE_PAGE_ID);
     pdata->timer_restore_language = pman_timer_create(handle, 10000, (void *)(uintptr_t)TIMER_RESTORE_LANGUAGE_ID);
@@ -305,6 +315,13 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_align(btn, LV_ALIGN_CENTER, 0, 0);
     }
 
+    pdata->message_popup = view_common_popup_create(
+        cont, view_intl_get_string(model, STRINGS_LAVAGGIO_CONCLUSO_APRIRE_OBLO), BTN_MESSAGE_ID, -1);
+    lv_obj_set_size(pdata->message_popup.blanket, LV_HOR_RES, LV_VER_RES);
+
+    pdata->alarm_popup = view_common_alarm_popup_create(cont, BTN_ALARM_ID);
+    lv_obj_set_size(pdata->alarm_popup.blanket, LV_HOR_RES, LV_VER_RES);
+
     VIEW_ADD_WATCHED_VARIABLE(&model->run.macchina.stato, WATCH_STATE_ID);
     VIEW_ADD_WATCHED_VARIABLE(&model->run.macchina.sottostato, WATCH_STATE_ID);
     VIEW_ADD_WATCHED_VARIABLE(&model->run.macchina.sottostato_step, WATCH_STATE_ID);
@@ -328,6 +345,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
     switch (event.tag) {
         case PMAN_EVENT_TAG_OPEN: {
+            handle_alarm(model, pdata);
             update_page(model, pdata);
 
             if (!model_macchina_in_stop(model)) {
@@ -348,6 +366,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             break;
 
                         case WATCH_INFO_ID:
+                            handle_alarm(model, pdata);
                             update_page(model, pdata);
                             break;
 
@@ -355,7 +374,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             break;
                     }
 
-                    if (!model_macchina_in_stop(model)) {
+                    if (!model_macchina_in_stop(model) && !model->run.f_richiedi_scarico) {
                         msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(view_common_washing_page(model));
                     }
                     break;
@@ -460,7 +479,8 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                 case LV_EVENT_CLICKED: {
                     switch (obj_data->id) {
                         case BTN_PROGRAM_ID: {
-                            if (view_get_protocol(handle)->load_program(handle, obj_data->number) == ALARM_NONE) {
+                            uint16_t absolute_index = pdata->program_window_index * MAX_IMAGES + obj_data->number;
+                            if (view_get_protocol(handle)->load_program(handle, absolute_index) == ALARM_NONE) {
                                 msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE_EXTRA(
                                     view_common_choice_page(model), (void *)(uintptr_t)model_get_program_num(model));
                             }
@@ -469,6 +489,23 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
                         case BTN_LANGUAGE_ID: {
                             model->run.lingua = (model->run.lingua + 1) % 2;
+                            update_page(model, pdata);
+                            break;
+                        }
+
+                        case BTN_MESSAGE_ID:
+                            model->run.done = 0;
+                            update_page(model, pdata);
+                            break;
+
+                        case BTN_ALARM_ID: {
+                            if (model_alarm_code(model) == ALARM_NONE) {
+                                pdata->alarm_pacified = 0;
+                                pdata->last_alarm     = model_alarm_code(model);
+                            } else {
+                                pdata->alarm_pacified = 1;
+                            }
+
                             update_page(model, pdata);
                             break;
                         }
@@ -499,6 +536,10 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             update_page(model, pdata);
                             break;
                         }
+
+                        case BTN_PADLOCK_ID:
+                            view_get_protocol(handle)->toggle_lock(handle);
+                            break;
 
                         default:
                             break;
@@ -531,9 +572,9 @@ static void update_page(model_t *model, struct page_data *pdata) {
             const programma_preview_t *preview = model_get_preview(model, program_index);
 
             if (preview->tipo < sizeof(icons) / sizeof(icons[0])) {
-                lv_img_set_src(pdata->images[i], icons[preview->tipo]);
+                lv_image_set_src(pdata->images[i], icons[preview->tipo]);
             } else {
-                lv_img_set_src(pdata->images[i], &img_lavaggio);
+                lv_image_set_src(pdata->images[i], &img_lavaggio);
             }
 
             lv_label_set_text_fmt(pdata->labels[i], "%i°", preview->temperatura);
@@ -543,6 +584,15 @@ static void update_page(model_t *model, struct page_data *pdata) {
             view_common_set_hidden(pdata->buttons[i], 1);
         }
     }
+
+    if (should_display_alarm(model, pdata)) {
+        view_common_set_hidden(pdata->alarm_popup.blanket, 0);
+        view_common_alarm_popup_update(&pdata->alarm_popup, model->run.lingua, pdata->last_alarm);
+    } else {
+        view_common_set_hidden(pdata->alarm_popup.blanket, 1);
+    }
+
+    view_common_set_hidden(pdata->message_popup.blanket, !model->run.done);
 
     const lv_img_dsc_t *language_icons[2] = {&img_marble_italiano, &img_marble_english};
     lv_img_set_src(pdata->image_language, language_icons[model_get_temporary_language(model)]);
@@ -563,6 +613,30 @@ static void close_page(void *state) {
     pman_timer_pause(pdata->timer_change_page);
     pman_timer_pause(pdata->timer_restore_language);
     lv_obj_clean(lv_screen_active());
+}
+
+
+static uint8_t should_display_alarm(model_t *model, struct page_data *pdata) {
+    (void)model;
+    if (pdata->last_alarm != ALARM_NONE) {
+        return !pdata->alarm_pacified;
+    } else {
+        return 0;
+    }
+}
+
+
+static void handle_alarm(model_t *model, struct page_data *pdata) {
+    ESP_LOGI(TAG, "Alarm %i %i %i", pdata->last_alarm, model_alarm_code(model), pdata->alarm_pacified);
+
+    if (pdata->alarm_pacified && (model_alarm_code(model) == ALARM_NONE)) {
+        pdata->last_alarm = model_alarm_code(model);
+    } else if (pdata->last_alarm != model_alarm_code(model)) {
+        pdata->alarm_pacified = 0;
+    }
+    if (model_alarm_code(model) != ALARM_NONE) {
+        pdata->last_alarm = model_alarm_code(model);
+    }
 }
 
 

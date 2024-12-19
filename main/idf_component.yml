@@ -1,6 +1,6 @@
 ## IDF Component Manager Manifest File
 dependencies:
-  espressif/usb_host_msc: "*"
+  espressif/usb_host_msc: "^1.1.3"
   espressif/zlib: "*"
   joltwallet/littlefs: "^1.14.8"
   espressif/esp_lcd_touch_gt1151: "^1.0.5~1"

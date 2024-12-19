@@ -46,17 +46,19 @@
 
 
 struct page_data {
-    uint8_t placeholder;
+    lv_obj_t *btn_drive;
 };
 
 
 enum {
     BTN_BACK_ID,
     BTN_TEST_ID,
-    BTN_ARCHIVING_ID,
+    BTN_DRIVE_ID,
     BTN_PARMAC_ID,
     BTN_PROGRAMS_ID,
     BTN_ADVANCED_ID,
+    BTN_DATETIME_ID,
+    BTN_PROGRAMMED_WASH_ID,
 };
 
 
@@ -126,7 +128,8 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_ARCHIVIAZIONE));
         lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
         lv_obj_center(lbl);
-        view_register_object_default_callback(btn, BTN_ARCHIVING_ID);
+        view_register_object_default_callback(btn, BTN_DRIVE_ID);
+        pdata->btn_drive = btn;
     }
 
     {
@@ -138,6 +141,31 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_center(lbl);
         view_register_object_default_callback(btn, BTN_ADVANCED_ID);
     }
+
+    {
+        lv_obj_t *btn = lv_btn_create(cont);
+        lv_obj_set_width(btn, 140);
+        lv_obj_t *lbl = lv_label_create(btn);
+        lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_ORA_DATA));
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        lv_obj_center(lbl);
+        view_register_object_default_callback(btn, BTN_DATETIME_ID);
+    }
+
+    if (model->prog.parmac.abilitazione_lavaggio_programmato) {
+        lv_obj_t *btn = lv_btn_create(cont);
+        lv_obj_set_width(btn, 280);
+        lv_obj_t *lbl = lv_label_create(btn);
+        lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_LAVAGGIO_PROGRAMMATO));
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        lv_obj_center(lbl);
+        view_register_object_default_callback(btn, BTN_PROGRAMMED_WASH_ID);
+    }
+
+    lv_obj_t *label_machine_name = lv_label_create(lv_screen_active());
+    lv_obj_set_style_text_font(label_machine_name, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+    lv_obj_align(label_machine_name, LV_ALIGN_TOP_MID, 0, 64);
+    lv_label_set_text(label_machine_name, model->prog.parmac.nome);
 
     lv_obj_t *label_machine_version = lv_label_create(lv_screen_active());
     lv_obj_set_style_text_font(label_machine_version, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
@@ -155,6 +183,8 @@ static void open_page(pman_handle_t handle, void *state) {
                           APP_CONFIG_FIRMWARE_VERSION_MINOR, APP_CONFIG_FIRMWARE_VERSION_PATCH, COMPUTE_BUILD_DAY,
                           COMPUTE_BUILD_MONTH, COMPUTE_BUILD_YEAR);
     lv_obj_align(label_display_version, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+
+    VIEW_ADD_WATCHED_VARIABLE(&model->system.removable_drive_state, 0);
 
     update_page(model, pdata);
 }
@@ -201,8 +231,8 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_test_inputs);
                             break;
 
-                        case BTN_ARCHIVING_ID:
-                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_archiving);
+                        case BTN_DRIVE_ID:
+                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_drive);
                             break;
 
                         case BTN_PARMAC_ID:
@@ -215,6 +245,14 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
                         case BTN_ADVANCED_ID:
                             msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_advanced);
+                            break;
+
+                        case BTN_DATETIME_ID:
+                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE_EXTRA(&page_datetime, (void *)(uintptr_t)0);
+                            break;
+
+                        case BTN_PROGRAMMED_WASH_ID:
+                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_pick_program);
                             break;
                     }
                     break;
@@ -235,8 +273,11 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
 
 static void update_page(model_t *model, struct page_data *pdata) {
-    (void)model;
-    (void)pdata;
+    if (model->system.removable_drive_state != REMOVABLE_DRIVE_STATE_MOUNTED) {
+        lv_obj_add_state(pdata->btn_drive, LV_STATE_DISABLED);
+    } else {
+        lv_obj_clear_state(pdata->btn_drive, LV_STATE_DISABLED);
+    }
 }
 
 

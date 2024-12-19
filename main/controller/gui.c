@@ -1,12 +1,17 @@
+#include "bsp/i2c_devices.h"
+#include "i2c_devices/rtc/RX8010/rx8010.h"
 #include "model/model.h"
 #include "adapters/view/view.h"
 #include "controller.h"
 #include "esp_log.h"
 #include "services/timestamp.h"
+#include "services/system_time.h"
+#include "services/fup.h"
 #include "controller/com/machine.h"
 #include "controller/configuration/configuration.h"
 #include "bsp/msc.h"
 #include "bsp/buzzer.h"
+#include "bsp/system.h"
 #include "lvgl.h"
 
 
@@ -15,6 +20,7 @@ static const char *TAG = "Gui";
 
 static void retry_communication(pman_handle_t handle);
 static void set_output(pman_handle_t handle, uint16_t output, uint8_t level);
+static void set_output_overlapping(pman_handle_t handle, uint16_t output, uint8_t level);
 static void clear_outputs(pman_handle_t handle);
 static void set_test_mode(pman_handle_t handle, uint8_t test_mode);
 static void import_configuration(pman_handle_t handle, const char *name);
@@ -37,11 +43,15 @@ static void create_new_program(pman_handle_t handle, uint16_t program_index);
 static void delete_program(pman_handle_t handle, uint16_t program_index);
 static void clone_program(pman_handle_t handle, uint16_t source_program_index, uint16_t destination_program_index);
 static void save_program(pman_handle_t handle);
+static void reset(pman_handle_t handle);
+static void update_firmware(pman_handle_t handle);
+static void set_time(pman_handle_t handle, struct tm new_time);
 
 
 view_protocol_t controller_gui_protocol = {
     .retry_communication        = retry_communication,
     .set_output                 = set_output,
+    .set_output_overlapping     = set_output_overlapping,
     .clear_outputs              = clear_outputs,
     .digital_coin_reader_enable = digital_coin_reader_enable,
     .clear_coin_count           = clear_coin_count,
@@ -64,6 +74,9 @@ view_protocol_t controller_gui_protocol = {
     .delete_program             = delete_program,
     .clone_program              = clone_program,
     .beep                       = beep,
+    .reset                      = reset,
+    .update_firmware            = update_firmware,
+    .set_time                   = set_time,
 };
 
 
@@ -96,10 +109,19 @@ static void retry_communication(pman_handle_t handle) {
 }
 
 
+static void set_output_overlapping(pman_handle_t handle, uint16_t output, uint8_t level) {
+    mut_model_t *model = view_get_model(handle);
+
+    model_test_output_set(model, output, level);
+    machine_imposta_uscita_multipla(output, level);
+}
+
+
 static void set_output(pman_handle_t handle, uint16_t output, uint8_t level) {
     mut_model_t *model = view_get_model(handle);
 
-    model_test_output_activate(model, output);
+    model_test_outputs_clear(model);
+    model_test_output_set(model, output, level);
     machine_imposta_uscita_singola(output, level);
 }
 
@@ -163,7 +185,8 @@ static void save_parmac(pman_handle_t handle) {
 
 
 static void start_program(pman_handle_t handle) {
-    mut_model_t *model = view_get_model(handle);
+    mut_model_t *model            = view_get_model(handle);
+    model->run.f_richiedi_scarico = 0;
     controller_start_program(model);
 }
 
@@ -279,4 +302,26 @@ static void save_program(pman_handle_t handle) {
     mut_model_t *model = view_get_model(handle);
     configuration_update_program(model_get_program(model));
     model_sync_program_preview(model);
+}
+
+
+static void update_firmware(pman_handle_t handle) {
+    (void)handle;
+    fup_proceed();
+}
+
+
+static void reset(pman_handle_t handle) {
+    (void)handle;
+    bsp_system_reset();
+}
+
+
+static void set_time(pman_handle_t handle, struct tm new_time) {
+    (void)handle;
+    rtc_time_t rtc_time = rx8010_rtc_from_tm(new_time);
+    if (rx8010_set_time(bsp_rtc_driver, rtc_time)) {
+        ESP_LOGW(TAG, "Unable to set RTC time!");
+    }
+    system_time_set(&new_time);
 }

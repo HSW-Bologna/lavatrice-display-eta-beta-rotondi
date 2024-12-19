@@ -15,8 +15,6 @@ struct page_data {
     lv_obj_t *label_description;
     lv_obj_t *label_value;
 
-    pman_timer_t *timer;
-
     uint16_t parameter;
     uint16_t num_parameters;
     uint8_t  livello_accesso;
@@ -51,7 +49,6 @@ static void *create_page(pman_handle_t handle, void *extra) {
     } else {
         pdata->livello_accesso = model->prog.parmac.livello_accesso;
     }
-    pdata->timer = PMAN_REGISTER_TIMER_ID(handle, APP_CONFIG_PAGE_TIMEOUT, 0);
 
     return pdata;
 }
@@ -68,9 +65,6 @@ static void open_page(pman_handle_t handle, void *state) {
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
     lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES - 56);
     lv_obj_align(cont, LV_ALIGN_BOTTOM_MID, 0, 0);
-
-    pman_timer_reset(pdata->timer);
-    pman_timer_resume(pdata->timer);
 
     pdata->num_parameters = parmac_get_tot_parameters(pdata->livello_accesso);
     pdata->parameter      = 0;
@@ -173,8 +167,6 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
             switch (lv_event_get_code(event.as.lvgl)) {
                 case LV_EVENT_CLICKED: {
-                    pman_timer_reset(pdata->timer);
-
                     switch (obj_data->id) {
                         case BTN_BACK_ID:
                             if (pdata->par_to_save) {
@@ -213,8 +205,6 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                 }
 
                 case LV_EVENT_LONG_PRESSED_REPEAT: {
-                    pman_timer_reset(pdata->timer);
-
                     switch (obj_data->id) {
                         case BTN_LEFT_ID:
                             if (pdata->parameter > 0) {
@@ -277,14 +267,13 @@ static void update_page(model_t *model, struct page_data *pdata) {
 static void destroy_page(void *state, void *extra) {
     struct page_data *pdata = state;
     (void)extra;
-    pman_timer_delete(pdata->timer);
     lv_free(pdata);
 }
 
 
 static void close_page(void *state) {
     struct page_data *pdata = state;
-    pman_timer_pause(pdata->timer);
+    (void)pdata;
     lv_obj_clean(lv_scr_act());
 }
 

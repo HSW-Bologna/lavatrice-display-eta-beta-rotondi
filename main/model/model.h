@@ -39,7 +39,7 @@
 #define LINEA_1_GETTONIERA_IMPULSI  6
 #define LINEA_GETTONIERA_CASSA      8
 
-#define MAX_LOG_ACCELEROMETRO 40
+#define MAX_LOG_ACCELEROMETRO 20
 
 #define LIMITE_SALVATAGGIO 5
 #define PARMAC_SIZE        279
@@ -50,9 +50,25 @@
 
 #define RESISTORS_OUTPUT_INDEX 0
 
+#define SCALA_ACCELEROMETRO_2G_OFFSET 0
+#define SCALA_ACCELEROMETRO_4G_OFFSET 1
+#define SCALA_ACCELEROMETRO_8G_OFFSET 2
+#define SCALA_ACCELEROMETRO_2G        3
+#define SCALA_ACCELEROMETRO_4G        4
+#define SCALA_ACCELEROMETRO_8G        5
+
 #if NUM_LINGUE > MAX_LINGUE
 #error "Too many languages!"
 #endif
+
+
+typedef enum {
+    FIRMWARE_UPDATE_STATE_NONE = 0,
+    FIRMWARE_UPDATE_STATE_AVAILABLE,
+    FIRMWARE_UPDATE_STATE_UPDATING,
+    FIRMWARE_UPDATE_STATE_SUCCESS,
+    FIRMWARE_UPDATE_STATE_FAILURE,
+} firmware_update_state_t;
 
 
 typedef enum {
@@ -342,7 +358,7 @@ typedef struct {
     uint8_t      gettoniera_impulsi_abilitata;
     uint32_t     minp[3], maxp[3];
     uint8_t      accelerometro_ok;
-    unsigned int log_accelerometro[3];
+    unsigned int accelerometer_axis[3];
 } test_data_t;
 
 
@@ -355,13 +371,31 @@ typedef enum {
 
 typedef struct {
     statistics_t stats;
-    test_data_t  test;     // Informazioni relative alle schermate di test
+    struct {
+        uint16_t inputs;
+        uint8_t  inputs_exp;
+        uint16_t adc_temp, adc_press;
+        uint16_t offset_press;
+        uint32_t min_proximity_interval, max_proximity_interval;
+        uint8_t  gettoniera_impulsi_abilitata;
+        uint32_t minp[3], maxp[3];
+        uint8_t  accelerometro_ok;
+
+        uint16_t     log_index;
+        unsigned int log_accelerometro[MAX_LOG_ACCELEROMETRO][3];
+    } test;     // Informazioni relative alle schermate di test
 
     struct {
         parmac_t            parmac;
         size_t              num_programmi;
         programma_preview_t preview_programmi[MAX_PROGRAMMI];
         uint8_t             contrast;
+
+        struct {
+            uint8_t configured;
+            size_t  program_index;
+            time_t  start;
+        } programmed_wash;
     } prog;     // Programmazione (parametri e lavaggi)
 
     struct {
@@ -378,12 +412,6 @@ typedef struct {
         uint16_t         credito;
         stato_macchina_t macchina;
 
-        struct {
-            int    attivo;
-            size_t lavaggio;
-            time_t start;
-        } lavaggio_programmato;
-
         size_t  event_log_number;
         size_t  total_event_log_number;
         event_t event_log_chunk[EVENT_LOG_CHUNK];
@@ -393,8 +421,10 @@ typedef struct {
 
         test_override_t digital_coin_reader_test_override;
         uint8_t         test_mode;
-        int16_t         test_output_active;
+        uint32_t         test_outputs_map;
         unsigned long   resistors_ts;
+
+        firmware_update_state_t firmware_update_state;
     } run;     // Informazioni relative all'esecuzione attuale (sia della scheda quadro che dell'applicazione)
 
     struct {
@@ -479,12 +509,22 @@ int                        model_get_velocita_corretta(model_t *model);
 void         program_deserialize_preview(model_t *pmodel, programma_preview_t *p, uint8_t *buffer, uint16_t lingua);
 int          model_gettoniera_digitale_abilitata(model_t *pmodel);
 unsigned int model_get_credito_gettoniera_digitale(model_t *model);
-void         model_test_output_activate(mut_model_t *model, uint16_t output);
 void         model_test_outputs_clear(mut_model_t *model);
-uint8_t      model_should_clear_test_outputs(mut_model_t *model);
+uint8_t      model_should_clear_test_resistors(mut_model_t *model);
+void         model_test_outputs_clear_resistors(mut_model_t *model);
 void         model_reset_storage_operation(mut_model_t *model);
 uint8_t      model_swap_programs(model_t *model, size_t first, size_t second);
 unsigned int model_get_total_remaining(model_t *model);
 void         model_reset_configuration_to_default(model_t *model);
+void         model_update_test_data(model_t *model, test_data_t test);
+void         model_clear_test_data(mut_model_t *model);
+uint8_t      model_test_cesto_in_sicurezza(model_t *model);
+uint8_t      model_is_test_output_active(model_t *model, uint16_t output);
+uint8_t      model_is_emergency_ok(model_t *model);
+int          model_lavaggio_programmato_minuti_rimanenti(model_t *model);
+int          model_lavaggio_programmato_impostato(model_t *model, int *lavaggio);
+void         model_cancella_lavaggio_programmato(model_t *model);
+int          model_lavaggio_programmato_minuti_rimanenti(model_t *model);
+void         model_test_output_set(mut_model_t *model, uint16_t output, uint8_t value);
 
 #endif

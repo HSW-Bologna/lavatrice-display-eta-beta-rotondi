@@ -6,9 +6,10 @@ typedef enum {
     PARS_TIPO_SERRATURA_BOBINA_UN_MICRO_LIVELLO,
     PARS_TIPO_SERRATURA_NUOVA_TRE_MICRO_NO_LIVELLO,
     PARS_TIPO_SERRATURA_BOBINA_UN_MICRO_NO_LIVELLO,
+    PARS_TIPO_SERRATURA_DOPPIO_IMPULSO,
 } pars_tipo_serratura_t;
 
-extern const char *pars_tipo_serratura[4][5];
+extern const char *pars_tipo_serratura[5][5];
 typedef enum {
     PARS_ACCELEROMETRO_DISABILITATO = 0,
     PARS_ACCELEROMETRO_UNA_VELOCITA,

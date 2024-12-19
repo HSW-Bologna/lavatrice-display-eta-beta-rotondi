@@ -9,7 +9,9 @@
 
 
 struct page_data {
-    lv_obj_t *btn_drive;
+    lv_obj_t *btn_import;
+    lv_obj_t *btn_export;
+    lv_obj_t *btn_fup;
 
     lv_obj_t *button_ok;
 
@@ -25,6 +27,7 @@ enum {
     BTN_BACK_ID,
     BTN_IMPORT_CONFIGURATION_ID,
     BTN_EXPORT_CONFIGURATION_ID,
+    BTN_FUP_ID,
     BTN_OK_ID,
 };
 
@@ -77,7 +80,7 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_center(lbl);
         view_register_object_default_callback(btn, BTN_IMPORT_CONFIGURATION_ID);
 
-        pdata->btn_drive = btn;
+        pdata->btn_import = btn;
     }
 
     {
@@ -91,7 +94,21 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_center(lbl);
         view_register_object_default_callback(btn, BTN_EXPORT_CONFIGURATION_ID);
 
-        pdata->btn_drive = btn;
+        pdata->btn_export = btn;
+    }
+
+    {
+        lv_obj_t *btn = lv_btn_create(cont);
+        lv_obj_t *lbl = lv_label_create(btn);
+        lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_AGGIORNA));
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_MEDIUM, LV_STATE_DEFAULT);
+        lv_label_set_long_mode(lbl, LV_LABEL_LONG_WRAP);
+        lv_obj_set_style_text_align(lbl, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);
+        lv_obj_set_width(lbl, 260);
+        lv_obj_center(lbl);
+        view_register_object_default_callback(btn, BTN_FUP_ID);
+
+        pdata->btn_fup = btn;
     }
 
     lv_obj_t *label = lv_label_create(background);
@@ -99,7 +116,7 @@ static void open_page(pman_handle_t handle, void *state) {
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
     lv_obj_set_width(label, LV_PCT(90));
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);
-    lv_obj_center(label);
+    lv_obj_align(label, LV_ALIGN_CENTER, 0, -64);
     pdata->label_status = label;
 
     {
@@ -113,11 +130,13 @@ static void open_page(pman_handle_t handle, void *state) {
     }
 
     lv_obj_t *spinner = lv_spinner_create(background);
-    lv_obj_center(spinner);
+    lv_obj_set_size(spinner, 64, 64);
+    lv_obj_align(spinner, LV_ALIGN_CENTER, 0, 64);
     pdata->spinner = spinner;
 
     VIEW_ADD_WATCHED_VARIABLE(&model->system.removable_drive_state, 0);
     VIEW_ADD_WATCHED_VARIABLE(&model->system.storage_status, 0);
+    VIEW_ADD_WATCHED_VARIABLE(&model->run.firmware_update_state, 0);
 
     update_page(model, pdata);
 }
@@ -169,9 +188,18 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             update_page(model, pdata);
                             break;
 
+                        case BTN_FUP_ID:
+                            view_get_protocol(handle)->update_firmware(handle);
+                            break;
+
                         case BTN_OK_ID: {
-                            model_reset_storage_operation(model);
-                            update_page(model, pdata);
+                            if (model->run.firmware_update_state == FIRMWARE_UPDATE_STATE_SUCCESS) {
+                                view_get_protocol(handle)->reset(handle);
+                            } else {
+                                model_reset_storage_operation(model);
+                                update_page(model, pdata);
+                            }
+                            break;
                         }
                     }
                     break;
@@ -193,44 +221,90 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
 static void update_page(model_t *model, struct page_data *pdata) {
     if (model->system.removable_drive_state != REMOVABLE_DRIVE_STATE_MOUNTED) {
-        lv_obj_add_state(pdata->btn_drive, LV_STATE_DISABLED);
+        lv_obj_add_state(pdata->btn_import, LV_STATE_DISABLED);
+        lv_obj_add_state(pdata->btn_export, LV_STATE_DISABLED);
+        lv_obj_add_state(pdata->btn_fup, LV_STATE_DISABLED);
     } else {
-        lv_obj_clear_state(pdata->btn_drive, LV_STATE_DISABLED);
+        lv_obj_remove_state(pdata->btn_import, LV_STATE_DISABLED);
+        lv_obj_remove_state(pdata->btn_export, LV_STATE_DISABLED);
+        lv_obj_remove_state(pdata->btn_fup, LV_STATE_DISABLED);
     }
 
-    switch (model->system.storage_status) {
-        case STORAGE_STATUS_READY: {
+    switch (model->run.firmware_update_state) {
+        case FIRMWARE_UPDATE_STATE_AVAILABLE:
+            lv_obj_remove_state(pdata->btn_fup, LV_STATE_DISABLED);
             view_common_set_hidden(pdata->spinner, 1);
             view_common_set_hidden(pdata->button_ok, 1);
             view_common_set_hidden(pdata->label_status, 1);
             view_common_set_hidden(pdata->obj_buttons, 0);
             break;
-        }
 
-        case STORAGE_STATUS_LOADING: {
-            view_common_set_hidden(pdata->spinner, 0);
-            view_common_set_hidden(pdata->obj_buttons, 1);
-            view_common_set_hidden(pdata->label_status, 1);
-            view_common_set_hidden(pdata->button_ok, 1);
-            break;
-        }
-
-        case STORAGE_STATUS_DONE: {
+        case FIRMWARE_UPDATE_STATE_SUCCESS:
             view_common_set_hidden(pdata->spinner, 1);
+            view_common_set_hidden(pdata->button_ok, 0);
+            view_common_set_hidden(pdata->label_status, 0);
+            lv_label_set_text(
+                pdata->label_status,
+                view_intl_get_string(model, STRINGS_AGGIORNAMENTO_FIRMWARE_CONCLUSO_RESETTARE_IL_DISPOSITIVO));
             view_common_set_hidden(pdata->obj_buttons, 1);
+            break;
+
+        case FIRMWARE_UPDATE_STATE_UPDATING:
+            view_common_set_hidden(pdata->spinner, 0);
+            view_common_set_hidden(pdata->button_ok, 1);
             view_common_set_hidden(pdata->label_status, 0);
             lv_label_set_text(pdata->label_status,
-                              view_intl_get_string(model, STRINGS_OPERAZIONE_CONCLUSA_CON_SUCCESSO));
-            view_common_set_hidden(pdata->button_ok, 0);
-            break;
-        }
-
-        case STORAGE_STATUS_ERROR: {
-            view_common_set_hidden(pdata->spinner, 1);
+                              view_intl_get_string(model, STRINGS_AGGIORNAMENTO_FIRMWARE_IN_CORSO));
             view_common_set_hidden(pdata->obj_buttons, 1);
-            view_common_set_hidden(pdata->label_status, 0);
-            lv_label_set_text(pdata->label_status, view_intl_get_string(model, STRINGS_OPERAZIONE_FALLITA));
+            break;
+
+        case FIRMWARE_UPDATE_STATE_FAILURE:
+            view_common_set_hidden(pdata->spinner, 1);
             view_common_set_hidden(pdata->button_ok, 0);
+            view_common_set_hidden(pdata->label_status, 0);
+            lv_label_set_text(pdata->label_status, view_intl_get_string(model, STRINGS_AGGIORNAMENTO_FIRMWARE_FALLITO));
+            view_common_set_hidden(pdata->obj_buttons, 1);
+            break;
+
+        case FIRMWARE_UPDATE_STATE_NONE: {
+            lv_obj_add_state(pdata->btn_fup, LV_STATE_DISABLED);
+
+            switch (model->system.storage_status) {
+                case STORAGE_STATUS_READY: {
+                    view_common_set_hidden(pdata->spinner, 1);
+                    view_common_set_hidden(pdata->button_ok, 1);
+                    view_common_set_hidden(pdata->label_status, 1);
+                    view_common_set_hidden(pdata->obj_buttons, 0);
+                    break;
+                }
+
+                case STORAGE_STATUS_LOADING: {
+                    view_common_set_hidden(pdata->spinner, 0);
+                    view_common_set_hidden(pdata->obj_buttons, 1);
+                    view_common_set_hidden(pdata->label_status, 1);
+                    view_common_set_hidden(pdata->button_ok, 1);
+                    break;
+                }
+
+                case STORAGE_STATUS_DONE: {
+                    view_common_set_hidden(pdata->spinner, 1);
+                    view_common_set_hidden(pdata->obj_buttons, 1);
+                    view_common_set_hidden(pdata->label_status, 0);
+                    lv_label_set_text(pdata->label_status,
+                                      view_intl_get_string(model, STRINGS_OPERAZIONE_CONCLUSA_CON_SUCCESSO));
+                    view_common_set_hidden(pdata->button_ok, 0);
+                    break;
+                }
+
+                case STORAGE_STATUS_ERROR: {
+                    view_common_set_hidden(pdata->spinner, 1);
+                    view_common_set_hidden(pdata->obj_buttons, 1);
+                    view_common_set_hidden(pdata->label_status, 0);
+                    lv_label_set_text(pdata->label_status, view_intl_get_string(model, STRINGS_OPERAZIONE_FALLITA));
+                    view_common_set_hidden(pdata->button_ok, 0);
+                    break;
+                }
+            }
             break;
         }
     }

@@ -133,7 +133,7 @@ void parmac_init(model_t *pmodel, int reset) {
     ps[i++] = PARAMETER(&p->tempo_massimo_rampa, 3, 1000, 90, FTIME(PARS_DESCRIPTIONS_TEMPO_MASSIMO_RAMPA), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->nro_max_sbilanciamenti, 1, 60, 35, FINT(PARS_DESCRIPTIONS_NUMERO_MAX_SBILANCIAMENTI), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->abilitazione_min_sec, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_MIN_SEC, pars_abilitazione), BIT_COSTRUTTORE);
-    ps[i++] = PARAMETER(&p->tipo_serratura, 0, 3, 0, FOPT(PARS_DESCRIPTIONS_TIPO_SERRATURA, pars_tipo_serratura), BIT_COSTRUTTORE);
+    ps[i++] = PARAMETER(&p->tipo_serratura, 0, 4, 0, FOPT(PARS_DESCRIPTIONS_TIPO_SERRATURA, pars_tipo_serratura), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->durata_impulso_serratura, 1, 30, 8, FFINT(PARS_DESCRIPTIONS_DURATA_IMPULSO_SERRATURA, fmt_sec), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->inibizione_allarmi, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_INIBIZIONE_ALLARMI, pars_abilitazione), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->abilitazione_loop_prog, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_RIPETIZIONE_CICLO, pars_abilitazione), BIT_COSTRUTTORE);

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
 #include "lvgl.h"
@@ -51,6 +52,8 @@ enum {
     BTN_START_ID,
     BTN_STOP_ID,
     BTN_LANGUAGE_ID,
+    TIMER_BACK_ID,
+    TIMER_MINUTES_ID,
 };
 
 
@@ -68,6 +71,7 @@ struct page_data {
     lv_obj_t *image_language;
 
     pman_timer_t *timer;
+    pman_timer_t *timer_minutes;
 
     uint8_t  scarico_fallito;
     uint16_t number;
@@ -110,7 +114,8 @@ static void *create_page(pman_handle_t handle, void *extra) {
     pdata->number          = (uint16_t)(uintptr_t)extra;
     pdata->scarico_fallito = 0;
     pdata->allarme         = -1;
-    pdata->timer           = PMAN_REGISTER_TIMER_ID(handle, model->prog.parmac.tempo_out_pagine * 1000UL, 0);
+    pdata->timer         = PMAN_REGISTER_TIMER_ID(handle, model->prog.parmac.tempo_out_pagine * 1000UL, TIMER_BACK_ID);
+    pdata->timer_minutes = PMAN_REGISTER_TIMER_ID(handle, 30UL * 1000UL, TIMER_MINUTES_ID);
 
     return pdata;
 }
@@ -121,6 +126,8 @@ static void open_page(pman_handle_t handle, void *state) {
     struct page_data *pdata = state;
     pman_timer_reset(pdata->timer);
     pman_timer_resume(pdata->timer);
+
+    pman_timer_resume(pdata->timer_minutes);
 
     const programma_preview_t *preview = model_get_preview(model, model_get_program_num(model));
 
@@ -222,8 +229,20 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
     switch (event.tag) {
         case PMAN_EVENT_TAG_TIMER: {
-            msg.stack_msg = PMAN_STACK_MSG_BACK();
-            break;
+            int timer_id = (int)(uintptr_t)event.as.timer->user_data;
+
+            switch (timer_id) {
+                case TIMER_BACK_ID:
+                    if (!model_lavaggio_programmato_impostato(model, NULL)) {
+                        msg.stack_msg = PMAN_STACK_MSG_REBASE(view_common_main_page(model));
+                    }
+                    break;
+                case TIMER_MINUTES_ID:
+                    update_page(model, pdata);
+                    break;
+                default:
+                    break;
+            }
         }
 
         case PMAN_EVENT_TAG_USER: {
@@ -266,7 +285,10 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                         }
 
                         case BTN_STOP_ID: {
-                            msg.stack_msg = PMAN_STACK_MSG_BACK();
+                            if (model_lavaggio_programmato_impostato(model, NULL)) {
+                                model_cancella_lavaggio_programmato(model);
+                            }
+                            msg.stack_msg = PMAN_STACK_MSG_REBASE(view_common_main_page(model));
                             break;
                         }
 
@@ -300,6 +322,17 @@ static void update_page(model_t *model, struct page_data *pdata) {
 
     const char *status_string =
         view_intl_get_string_in_language(model_get_temporary_language(model), STRINGS_SCELTA_PROGRAMMA);
+
+    if (model_lavaggio_programmato_impostato(model, NULL)) {
+        char programmed_wash_string[128] = {0};
+        int  rimanenti                   = model_lavaggio_programmato_minuti_rimanenti(model);
+
+        snprintf(programmed_wash_string, sizeof(programmed_wash_string), "%s: %02i:%02i",
+                 view_intl_get_string_in_language(model_get_temporary_language(model), STRINGS_LAVAGGIO_PROGRAMMATO),
+                 rimanenti / 60, rimanenti % 60);
+        status_string = programmed_wash_string;
+    }
+
     if (model_alarm_code(model) > 0) {
         if (pdata->allarme != model_alarm_code(model)) {
             pdata->allarme = model_alarm_code(model);
@@ -310,7 +343,6 @@ static void update_page(model_t *model, struct page_data *pdata) {
         view_common_set_hidden(pdata->button_start, 0);
     } else if (model_lavaggio_pagato(model, pdata->number)) {
         pdata->allarme = model_alarm_code(model);
-        status_string = view_intl_get_string_in_language(model_get_temporary_language(model), STRINGS_SCELTA_PROGRAMMA);
         view_common_set_hidden(pdata->label_credit, 1);
         view_common_set_hidden(pdata->label_price, 1);
         view_common_set_hidden(pdata->button_start, 0);
@@ -348,6 +380,7 @@ static void destroy_page(void *state, void *extra) {
     struct page_data *pdata = state;
     (void)extra;
     pman_timer_delete(pdata->timer);
+    pman_timer_delete(pdata->timer_minutes);
     lv_free(pdata);
 }
 
@@ -355,6 +388,7 @@ static void destroy_page(void *state, void *extra) {
 static void close_page(void *state) {
     struct page_data *pdata = state;
     pman_timer_pause(pdata->timer);
+    pman_timer_pause(pdata->timer_minutes);
     lv_obj_clean(lv_scr_act());
 }
 

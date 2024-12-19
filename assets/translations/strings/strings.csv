@@ -140,3 +140,17 @@ RISCIACQUO_CON_CENTRIFUGA, Risciacquo con centrifuga,Flushing with centrifuge
 NUOVO_PASSO, Nuovo passo, New step
 DELICATO, Delicato, Delicate
 ENERGICO, Energico, Energetic
+ACCELEROMETRO, Accelerometro, Accelerometer
+AGGIORNA, Aggiorna, Update
+AGGIORNAMENTO_FIRMWARE_CONCLUSO_RESETTARE_IL_DISPOSITIVO, "Aggiornamento firmware concluso, resettare il dispositivo", "Firmware update successful, reset the device"
+AGGIORNAMENTO_FIRMWARE_IN_CORSO, Aggiornamento firmware in corso, Firmware update in progress
+AGGIORNAMENTO_FIRMWARE_FALLITO, Aggiornamento firmware fallito, Firmware update failed 
+PREZZO, Prezzo, Price
+LAVAGGIO_CONCLUSO_APRIRE_OBLO, Lavaggio concluso: aprire l'oblo' e' recuperare gli indumenti, Washing cycle done: open the porthole and retrieve the clothes
+ORA_DATA, Ora/data, Time/date
+LAVAGGIO_PROGRAMMATO, Lavaggio programmato, Programmed wash cycle
+ORE, Ore, Hours
+MINUTI, Minuti, Minutes
+GIORNO, Giorno, Day
+MESE, Mese, Month
+ANNO, Anno, Year

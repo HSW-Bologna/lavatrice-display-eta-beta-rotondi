@@ -9,6 +9,7 @@
 #include "src/widgets/led/lv_led.h"
 #include "../intl/intl.h"
 #include "model/parmac.h"
+#include <esp_log.h>
 
 
 #define STEP_WINDOW_SIZE 3
@@ -36,8 +37,6 @@ struct page_data {
     lv_obj_t *label_numbers[STEP_WINDOW_SIZE];
     lv_obj_t *label_step_class;
 
-    pman_timer_t *timer;
-
     lv_obj_t *obj_delete;
     lv_obj_t *obj_new;
 
@@ -49,6 +48,8 @@ struct page_data {
     uint8_t      changed;
     uint8_t      delicate;
     page_state_t page_state;
+
+    step_modification_t step_modification;
 };
 
 
@@ -76,19 +77,23 @@ static void     move_window_up(model_t *model, struct page_data *pdata);
 static uint16_t absolute_step_index(struct page_data *pdata);
 
 
+static const char *TAG = __FILE_NAME__;
+
+
 static void *create_page(pman_handle_t handle, void *extra) {
-    (void)extra;
+    (void)handle;
+    (void)TAG;
 
     struct page_data *pdata = lv_malloc(sizeof(struct page_data));
     assert(pdata != NULL);
 
-    pdata->step_window_index = 0;
-    pdata->selected_program  = (uint16_t)(uintptr_t)extra;
-    pdata->selected_step     = -1;
-    pdata->page_state        = PAGE_STATE_SELECTION;
-    pdata->timer             = PMAN_REGISTER_TIMER_ID(handle, APP_CONFIG_PAGE_TIMEOUT, 0);
-    pdata->changed           = 0;
-    pdata->delicate          = 0;
+    pdata->step_window_index         = 0;
+    pdata->selected_program          = (uint16_t)(uintptr_t)extra;
+    pdata->selected_step             = -1;
+    pdata->page_state                = PAGE_STATE_SELECTION;
+    pdata->step_modification.changed = 0;
+    pdata->changed                   = 0;
+    pdata->delicate                  = 0;
 
     return pdata;
 }
@@ -96,6 +101,10 @@ static void *create_page(pman_handle_t handle, void *extra) {
 
 static void open_page(pman_handle_t handle, void *state) {
     struct page_data *pdata = state;
+
+    if (pdata->step_modification.changed) {
+        pdata->changed = 1;
+    }
 
     model_t *model = view_get_model(handle);
 
@@ -120,7 +129,7 @@ static void open_page(pman_handle_t handle, void *state) {
     {
         lv_obj_t *obj_button_bar = lv_obj_create(cont);
         lv_obj_set_size(obj_button_bar, LV_PCT(100), button_height + 4);
-        lv_obj_clear_flag(obj_button_bar, LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_remove_flag(obj_button_bar, LV_OBJ_FLAG_SCROLLABLE);
         lv_obj_add_style(obj_button_bar, &style_transparent_cont, LV_STATE_DEFAULT);
         lv_obj_set_style_pad_column(obj_button_bar, 12, LV_STATE_DEFAULT);
         lv_obj_set_style_pad_row(obj_button_bar, 12, LV_STATE_DEFAULT);
@@ -327,9 +336,6 @@ static void open_page(pman_handle_t handle, void *state) {
         pdata->obj_delete = obj_delete;
     }
 
-    pman_timer_reset(pdata->timer);
-    pman_timer_resume(pdata->timer);
-
     update_page(model, pdata);
 }
 
@@ -371,8 +377,6 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
             switch (lv_event_get_code(event.as.lvgl)) {
                 case LV_EVENT_CLICKED: {
-                    pman_timer_reset(pdata->timer);
-
                     switch (obj_data->id) {
                         case BTN_BACK_ID:
                             msg.stack_msg = PMAN_STACK_MSG_BACK();
@@ -393,9 +397,10 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
                         case BTN_MODIFY_ID: {
                             if (pdata->selected_step >= 0) {
-                                uint16_t absolute_index = absolute_step_index(pdata);
-                                msg.stack_msg           = PMAN_STACK_MSG_PUSH_PAGE_EXTRA(
-                                    &page_step, &model_get_program(model)->steps[absolute_index]);
+                                uint16_t absolute_index       = absolute_step_index(pdata);
+                                pdata->step_modification.step = &model_get_program(model)->steps[absolute_index];
+
+                                msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE_EXTRA(&page_step, &pdata->step_modification);
                             }
                             break;
                         }
@@ -456,9 +461,6 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                         }
 
                         case BTN_NEW_ID:
-                            // view_get_protocol(handle)->create_new_step( handle, pdata->selected_step >= 0 ?
-                            // pdata->selected_step + 1 : pdata->step_window_index * STEP_WINDOW_SIZE);
-                            // pdata->changed = 1;
                             pdata->page_state = PAGE_STATE_NEW;
                             update_page(model, pdata);
                             break;
@@ -481,8 +483,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             break;
 
                         case BTN_INFO_ID:
-                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE_EXTRA(&page_program_info,
-                                                                           (void *)(uintptr_t)pdata->selected_program);
+                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE_EXTRA(&page_program_info, (void *)&pdata->changed);
                             break;
 
                         case BTN_STEP_CLASS_ID:
@@ -492,13 +493,14 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
                         case POPUP_CONFIRM_ID: {
                             if (pdata->page_state == PAGE_STATE_DELETE) {
-                                programma_lavatrice_t *program = model_get_program(model);
-                                programs_remove_step(program, pdata->selected_step);
+                                uint16_t               absolute_index = absolute_step_index(pdata);
+                                programma_lavatrice_t *program        = model_get_program(model);
+                                programs_remove_step(program, absolute_index);
 
                                 if (program->num_steps == 0) {
                                     pdata->selected_step = -1;
-                                } else if (pdata->selected_step >= (uint16_t)program->num_steps) {
-                                    pdata->selected_step = program->num_steps - 1;
+                                } else if (absolute_index >= (uint16_t)program->num_steps) {
+                                    pdata->selected_step = (program->num_steps % STEP_WINDOW_SIZE) - 1;
                                 }
                             } else if (pdata->page_state == PAGE_STATE_NEW) {
                                 uint16_t step_type = lv_roller_get_selected(pdata->roller_step_type);
@@ -593,7 +595,7 @@ static void update_page(model_t *model, struct page_data *pdata) {
                 lv_obj_add_state(pdata->button_delete, LV_STATE_DISABLED);
             }
 
-            if (model->prog.num_programmi < STEP_WINDOW_SIZE) {
+            if (program->num_steps < STEP_WINDOW_SIZE) {
                 lv_obj_add_state(pdata->button_up, LV_STATE_DISABLED);
                 lv_obj_add_state(pdata->button_down, LV_STATE_DISABLED);
             } else {
@@ -601,7 +603,7 @@ static void update_page(model_t *model, struct page_data *pdata) {
                 lv_obj_clear_state(pdata->button_down, LV_STATE_DISABLED);
             }
 
-            if (model->prog.num_programmi < MAX_PROGRAMMI) {
+            if (program->num_steps < MAX_STEPS) {
                 lv_obj_clear_state(pdata->button_new, LV_STATE_DISABLED);
             } else {
                 lv_obj_add_state(pdata->button_new, LV_STATE_DISABLED);
@@ -651,35 +653,37 @@ static void update_page(model_t *model, struct page_data *pdata) {
 static void destroy_page(void *state, void *extra) {
     struct page_data *pdata = state;
     (void)extra;
-    pman_timer_delete(pdata->timer);
     lv_free(pdata);
 }
 
 
 static void close_page(void *state) {
     struct page_data *pdata = state;
-    pman_timer_pause(pdata->timer);
+    (void)pdata;
     lv_obj_clean(lv_scr_act());
 }
 
 
 static void move_window_down(model_t *model, struct page_data *pdata) {
+    programma_lavatrice_t *program = model_get_program(model);
     pdata->step_window_index++;
-    if (pdata->step_window_index * STEP_WINDOW_SIZE > model->prog.num_programmi) {
+    if (pdata->step_window_index * STEP_WINDOW_SIZE > program->num_steps) {
         pdata->step_window_index = 0;
     }
 }
 
 
 static void move_window_up(model_t *model, struct page_data *pdata) {
+    programma_lavatrice_t *program = model_get_program(model);
+
     if (pdata->step_window_index > 0) {
         pdata->step_window_index--;
     } else {
-        if (model->prog.num_programmi <= STEP_WINDOW_SIZE) {
+        if (program->num_steps <= STEP_WINDOW_SIZE) {
             pdata->step_window_index = 0;
         } else {
-            int16_t extra_index      = (model->prog.num_programmi % STEP_WINDOW_SIZE) != 0 ? 1 : 0;
-            pdata->step_window_index = (model->prog.num_programmi / STEP_WINDOW_SIZE) + extra_index - 1;
+            int16_t extra_index      = (program->num_steps % STEP_WINDOW_SIZE) != 0 ? 1 : 0;
+            pdata->step_window_index = (program->num_steps / STEP_WINDOW_SIZE) + extra_index - 1;
         }
     }
 }

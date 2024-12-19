@@ -7,8 +7,8 @@ static void theme_apply_cb(lv_theme_t *th, lv_obj_t *obj);
 
 void theme_init(lv_display_t *disp) {
     // lv_theme_t *th = lv_theme_basic_init(disp);
-    lv_theme_t *th = lv_theme_default_init(disp, STYLE_PRIMARY_DARKER, lv_color_make(20, 20, 60), 1,
-                                           &lv_font_montserrat_32);
+    lv_theme_t *th =
+        lv_theme_default_init(disp, STYLE_PRIMARY_DARKER, lv_color_make(20, 20, 60), 1, &lv_font_montserrat_32);
 
     /*Initialize the new theme from the current theme*/
     static lv_theme_t th_new;
@@ -28,5 +28,7 @@ static void theme_apply_cb(lv_theme_t *th, lv_obj_t *obj) {
 
     if (lv_obj_get_class(obj) == &lv_button_class) {
         lv_obj_set_style_radius(obj, 48, LV_STATE_DEFAULT);
+    } else if (lv_obj_get_class(obj) == &lv_obj_class) {
+        lv_obj_set_style_bg_color(obj, lv_color_make(0x43, 0x49, 0x4C), LV_STATE_DEFAULT);
     }
 }

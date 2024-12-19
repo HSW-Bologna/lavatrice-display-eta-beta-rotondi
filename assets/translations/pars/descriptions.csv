@@ -112,7 +112,7 @@ RITARDO_SAPONE_10,Ritardo sapone 10,Detergent delay 10,Retraso del jabón 10,Dé
 MOTO_FERMO, Movimento, Motion, Movimiento, Mouvement, Bewegung
 RECUPERO, Recupero, Recovery, Recuperación, Récupération, Erholung
 TEMPO_PREPARAZIONE, Tempo preparazione, Preparation time, Tiempo de preparación, Temps de préparation, Vorbereitungszeit
-VELOCITA_PREPARAZIONE, Preparation speed, Preparation speed, Velocidad de preparación, Vitesse de préparation, Geschwindigkeit der Vorbereitung
+VELOCITA_PREPARAZIONE, Velocita' preparazione, Preparation speed, Velocidad de preparación, Vitesse de préparation, Geschwindigkeit der Vorbereitung
 TIPO_SCARICO, Tipo scarico, Drain type, Tipo de descarga, Type de décharge, Art der Entleerung
 VELOCITA_CENTRIFUGA_1,Velocita' cen. 1,Cen. speed 1,Velocidad de centrifugado 1,Vitesse de centrifugation 1,Zentrifugengeschwindigkeit 1
 TEMPO_RAMPA_1,Tempo rampa 1,Ramp time 1,Tiempo de rampa 1,Temps de rampe 1,Rampenzeit 1

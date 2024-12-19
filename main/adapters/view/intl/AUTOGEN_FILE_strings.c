@@ -1,4 +1,4 @@
-const char *strings[138][2] = {
+const char *strings[152][2] = {
     {"Diagnosi", "Test", },
     {"Ingressi", "Inputs", },
     {"Uscite", "Outputs", },
@@ -137,5 +137,19 @@ const char *strings[138][2] = {
     {"Nuovo passo", "New step", },
     {"Delicato", "Delicate", },
     {"Energico", "Energetic", },
+    {"Accelerometro", "Accelerometer", },
+    {"Aggiorna", "Update", },
+    {"Aggiornamento firmware concluso, resettare il dispositivo", "Firmware update successful, reset the device", },
+    {"Aggiornamento firmware in corso", "Firmware update in progress", },
+    {"Aggiornamento firmware fallito", "Firmware update failed ", },
+    {"Prezzo", "Price", },
+    {"Lavaggio concluso: aprire l'oblo' e' recuperare gli indumenti", "Washing cycle done: open the porthole and retrieve the clothes", },
+    {"Ora/data", "Time/date", },
+    {"Lavaggio programmato", "Programmed wash cycle", },
+    {"Ore", "Hours", },
+    {"Minuti", "Minutes", },
+    {"Giorno", "Day", },
+    {"Mese", "Month", },
+    {"Anno", "Year", },
 };
 

@@ -10,6 +10,19 @@
 #define MENU_BUTTON_WIDTH LV_PCT(48);
 
 
+typedef enum {
+    VIEW_COMMON_PAGE_TEST_DRUM_TYPE_BACKWARD = 0,
+    VIEW_COMMON_PAGE_TEST_DRUM_TYPE_FORWARD,
+    VIEW_COMMON_PAGE_TEST_DRUM_TYPE_ACCELEROMETER,
+} view_common_page_test_drum_type_t;
+
+
+typedef struct {
+    parametri_step_t *step;
+    uint8_t           changed;
+} step_modification_t;
+
+
 typedef struct {
     const char      *password;
     pman_stack_msg_t msg;
@@ -62,6 +75,7 @@ const pman_page_t *view_common_main_page(model_t *model);
 const pman_page_t *view_common_choice_page(model_t *model);
 const pman_page_t *view_common_washing_page(model_t *model);
 lv_obj_t          *view_common_icon_button_create(lv_obj_t *parent, const char *icon, int id);
+lv_obj_t          *view_common_alarm_led_create(lv_obj_t *parent, lv_obj_t **led, const char *text);
 
 
 #endif

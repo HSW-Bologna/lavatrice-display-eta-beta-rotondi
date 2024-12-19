@@ -33,8 +33,6 @@ struct page_data {
 
     uint8_t delete_program;
 
-    pman_timer_t *timer;
-
     uint16_t program_window_index;
     int16_t  selected_program;
     uint8_t  changed;
@@ -68,6 +66,7 @@ static const char *TAG = "PagePrograms";
 
 static void *create_page(pman_handle_t handle, void *extra) {
     (void)extra;
+    (void)TAG;
 
     struct page_data *pdata = lv_malloc(sizeof(struct page_data));
     assert(pdata != NULL);
@@ -75,7 +74,6 @@ static void *create_page(pman_handle_t handle, void *extra) {
     pdata->program_window_index = 0;
     pdata->selected_program     = -1;
     pdata->delete_program       = 0;
-    pdata->timer                = PMAN_REGISTER_TIMER_ID(handle, APP_CONFIG_PAGE_TIMEOUT, 0);
     pdata->changed              = 0;
 
     return pdata;
@@ -245,9 +243,6 @@ static void open_page(pman_handle_t handle, void *state) {
         pdata->obj_delete = obj_delete;
     }
 
-    pman_timer_reset(pdata->timer);
-    pman_timer_resume(pdata->timer);
-
     update_page(model, pdata);
 }
 
@@ -289,13 +284,11 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
             switch (lv_event_get_code(event.as.lvgl)) {
                 case LV_EVENT_CLICKED: {
-                    pman_timer_reset(pdata->timer);
-
                     switch (obj_data->id) {
                         case BTN_BACK_ID:
                             msg.stack_msg = PMAN_STACK_MSG_BACK();
                             if (pdata->changed) {
-                                view_get_protocol(handle)->save_programs(handle);
+                                view_get_protocol(handle)->save_program_index(handle);
                             }
                             break;
 
@@ -524,14 +517,13 @@ static void update_page(model_t *model, struct page_data *pdata) {
 static void destroy_page(void *state, void *extra) {
     struct page_data *pdata = state;
     (void)extra;
-    pman_timer_delete(pdata->timer);
     lv_free(pdata);
 }
 
 
 static void close_page(void *state) {
     struct page_data *pdata = state;
-    pman_timer_pause(pdata->timer);
+    (void)pdata;
     lv_obj_clean(lv_scr_act());
 }
 

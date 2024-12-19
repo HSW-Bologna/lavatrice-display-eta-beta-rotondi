@@ -14,6 +14,7 @@
 #include "bsp/msc.h"
 #include "bsp/i2c_devices.h"
 #include "configuration/configuration.h"
+#include "services/fup.h"
 
 
 static const char *TAG                  = "Controller";
@@ -102,9 +103,9 @@ void controller_manage(mut_model_t *pmodel) {
         stato_ts = timestamp_get();
     }
 
-    if (model_should_clear_test_outputs(pmodel)) {
-        model_test_outputs_clear(pmodel);
-        machine_imposta_uscita_singola(0, 0);
+    if (model_should_clear_test_resistors(pmodel)) {
+        model_test_outputs_clear_resistors(pmodel);
+        machine_imposta_uscita_multipla(RESISTORS_OUTPUT_INDEX, 0);
     }
 
     if (machine_ricevi_risposta(&machine_response)) {
@@ -157,7 +158,7 @@ void controller_manage(mut_model_t *pmodel) {
                     if (stato != STATO_MACCHINA_STOP) {
                         uint8_t lavaggio = machine_response.presentazioni.nro_programma;
                         int     step     = machine_response.presentazioni.nro_step;
-                        ESP_LOGI(TAG, "Machine executing program %i, step %i", lavaggio, step);
+                        ESP_LOGI(TAG, "Machine in state %i, program %i, step %i", stato, lavaggio, step);
 
                         if (lavaggio < model_get_num_programs(pmodel)) {
                             configuration_load_program(pmodel, lavaggio);
@@ -181,7 +182,7 @@ void controller_manage(mut_model_t *pmodel) {
             }
 
             case MACHINE_RESPONSE_CODE_TEST:
-                pmodel->test = machine_response.test;
+                model_update_test_data(pmodel, machine_response.test);
                 break;
 
             case MACHINE_RESPONSE_CODE_STATO: {
@@ -215,11 +216,13 @@ void controller_manage(mut_model_t *pmodel) {
                 if (model_macchina_in_marcia(pmodel) && model_step_finito(pmodel)) {
                     if (model_lavaggio_finito(pmodel)) {
                         pending_state_change = 1;
+                        pmodel->run.done     = 1;
                         ESP_LOGI(TAG, "Program done");
                         machine_stop();
                     } else {
                         model_avanza_step(pmodel);
-                        ESP_LOGI(TAG, "Moving to step %i", model_get_current_step_number(pmodel));
+                        ESP_LOGI(TAG, "Moving to step %i (%i)", model_get_current_step_number(pmodel),
+                                 model_get_current_step(pmodel)->durata);
                         machine_esegui_step(model_get_current_step(pmodel), model_get_current_step_number(pmodel));
                     }
                 }
@@ -243,7 +246,22 @@ void controller_manage(mut_model_t *pmodel) {
         }
     }
 
+    {
+        int lavaggio = 0;
+        if (model_lavaggio_programmato_impostato(pmodel, &lavaggio)) {
+            if (model_lavaggio_programmato_minuti_rimanenti(pmodel) <= 0) {
+                configuration_load_program(pmodel, lavaggio);
+                model_cancella_lavaggio_programmato(pmodel);
+                pmodel->run.f_richiedi_scarico = 0;
+                controller_start_program(pmodel);
+            }
+        }
+    }
+
     controller_gui_manage(pmodel);
+    fup_manage();
+
+    pmodel->run.firmware_update_state = fup_get_state();
 }
 
 

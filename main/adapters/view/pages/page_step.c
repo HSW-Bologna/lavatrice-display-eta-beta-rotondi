@@ -15,13 +15,11 @@ struct page_data {
     lv_obj_t *label_description;
     lv_obj_t *label_value;
 
-    pman_timer_t *timer;
+    uint16_t parameter;
+    uint16_t num_parameters;
+    uint8_t  livello_accesso;
 
-    parametri_step_t *step;
-    uint16_t          parameter;
-    uint16_t          num_parameters;
-    uint8_t           livello_accesso;
-    int               par_to_save;
+    step_modification_t *step_modification;
 };
 
 
@@ -43,18 +41,16 @@ static void *create_page(pman_handle_t handle, void *extra) {
     struct page_data *pdata = lv_malloc(sizeof(struct page_data));
     assert(pdata != NULL);
 
-    pdata->step = extra;
+    pdata->step_modification = extra;
 
-    pdata->par_to_save = 0;
     if (model->run.livello_accesso_temporaneo > 0) {
         pdata->livello_accesso                = model->run.livello_accesso_temporaneo;
         model->run.livello_accesso_temporaneo = 0;
     } else {
         pdata->livello_accesso = model->prog.parmac.livello_accesso;
     }
-    pdata->timer = PMAN_REGISTER_TIMER_ID(handle, APP_CONFIG_PAGE_TIMEOUT, 0);
 
-    parlav_init(&model->prog.parmac, pdata->step);
+    parlav_init(&model->prog.parmac, pdata->step_modification->step);
 
     return pdata;
 }
@@ -65,15 +61,12 @@ static void open_page(pman_handle_t handle, void *state) {
 
     model_t *model = view_get_model(handle);
 
-    view_title_t title =
-        view_common_create_title(lv_scr_act(), view_common_step2str(model, pdata->step->tipo), BTN_BACK_ID, -1);
+    view_title_t title = view_common_create_title(
+        lv_scr_act(), view_common_step2str(model, pdata->step_modification->step->tipo), BTN_BACK_ID, -1);
 
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
     lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES - 56);
     lv_obj_align(cont, LV_ALIGN_BOTTOM_MID, 0, 0);
-
-    pman_timer_reset(pdata->timer);
-    pman_timer_resume(pdata->timer);
 
     pdata->num_parameters = parlav_get_tot_parameters(pdata->livello_accesso);
     pdata->parameter      = 0;
@@ -176,13 +169,8 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
             switch (lv_event_get_code(event.as.lvgl)) {
                 case LV_EVENT_CLICKED: {
-                    pman_timer_reset(pdata->timer);
-
                     switch (obj_data->id) {
                         case BTN_BACK_ID:
-                            if (pdata->par_to_save) {
-                                view_get_protocol(handle)->save_parmac(handle);
-                            }
                             msg.stack_msg = PMAN_STACK_MSG_BACK();
                             break;
 
@@ -203,21 +191,19 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                         case BTN_MINUS_ID:
                             parlav_operation(model, pdata->parameter, -1, pdata->livello_accesso);
                             update_page(model, pdata);
-                            pdata->par_to_save = 1;
+                            pdata->step_modification->changed = 1;
                             break;
 
                         case BTN_PLUS_ID:
                             parlav_operation(model, pdata->parameter, +1, pdata->livello_accesso);
                             update_page(model, pdata);
-                            pdata->par_to_save = 1;
+                            pdata->step_modification->changed = 1;
                             break;
                     }
                     break;
                 }
 
                 case LV_EVENT_LONG_PRESSED_REPEAT: {
-                    pman_timer_reset(pdata->timer);
-
                     switch (obj_data->id) {
                         case BTN_LEFT_ID:
                             if (pdata->parameter > 0) {
@@ -236,13 +222,13 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                         case BTN_MINUS_ID:
                             parlav_operation(model, pdata->parameter, -10, pdata->livello_accesso);
                             update_page(model, pdata);
-                            pdata->par_to_save = 1;
+                            pdata->step_modification->changed = 1;
                             break;
 
                         case BTN_PLUS_ID:
                             parlav_operation(model, pdata->parameter, +10, pdata->livello_accesso);
                             update_page(model, pdata);
-                            pdata->par_to_save = 1;
+                            pdata->step_modification->changed = 1;
                             break;
                     }
                     break;
@@ -280,14 +266,13 @@ static void update_page(model_t *model, struct page_data *pdata) {
 static void destroy_page(void *state, void *extra) {
     struct page_data *pdata = state;
     (void)extra;
-    pman_timer_delete(pdata->timer);
     lv_free(pdata);
 }
 
 
 static void close_page(void *state) {
     struct page_data *pdata = state;
-    pman_timer_pause(pdata->timer);
+    (void)pdata;
     lv_obj_clean(lv_scr_act());
 }
 

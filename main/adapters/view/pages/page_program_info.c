@@ -8,10 +8,32 @@
 #include "../intl/intl.h"
 
 
+LV_IMG_DECLARE(img_lavaggio);
+LV_IMG_DECLARE(img_colorati);
+LV_IMG_DECLARE(img_lavaggio_molto_sporchi);
+LV_IMG_DECLARE(img_lavaggio_sporchi);
+LV_IMG_DECLARE(img_normali);
+LV_IMG_DECLARE(img_molto_sporchi);
+LV_IMG_DECLARE(img_sintetici);
+LV_IMG_DECLARE(img_piumoni);
+LV_IMG_DECLARE(img_delicati);
+LV_IMG_DECLARE(img_freddo);
+LV_IMG_DECLARE(img_lana);
+LV_IMG_DECLARE(img_fibre_naturali);
+LV_IMG_DECLARE(img_solo_centrifuga);
+LV_IMG_DECLARE(img_centrifuga_delicati);
+LV_IMG_DECLARE(img_igienizza_cesto);
+LV_IMG_DECLARE(img_ammollo);
+LV_IMG_DECLARE(img_prelavaggio_centrifuga);
+LV_IMG_DECLARE(img_risciacquo_centrifuga);
+
+
 struct page_data {
-    uint16_t program_selected;
+    lv_obj_t *image_type;
 
     lv_obj_t *dropdown;
+
+    uint8_t *changed;
 };
 
 
@@ -20,6 +42,26 @@ enum {
     BTN_NAME_ID,
     BTN_PRICE_ID,
     DROPDOWN_TYPE_ID,
+};
+
+
+static const lv_img_dsc_t *icons[] = {
+    &img_lavaggio_molto_sporchi,
+    &img_lavaggio_sporchi,
+    &img_molto_sporchi,
+    &img_normali,
+    &img_colorati,
+    &img_sintetici,
+    &img_piumoni,
+    &img_freddo,
+    &img_lana,
+    &img_fibre_naturali,
+    &img_solo_centrifuga,
+    &img_centrifuga_delicati,
+    &img_igienizza_cesto,
+    &img_ammollo,
+    &img_prelavaggio_centrifuga,
+    &img_risciacquo_centrifuga,
 };
 
 
@@ -32,7 +74,7 @@ static void *create_page(pman_handle_t handle, void *extra) {
 
     struct page_data *pdata = lv_malloc(sizeof(struct page_data));
     assert(pdata != NULL);
-    pdata->program_selected = (uint16_t)(uintptr_t)extra;
+    pdata->changed = (uint8_t *)extra;
 
     return pdata;
 }
@@ -62,9 +104,9 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_t *label_name = lv_label_create(obj);
         lv_obj_set_style_text_font(label_name, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
         lv_label_set_long_mode(label_name, LV_LABEL_LONG_SCROLL_CIRCULAR);
-        lv_obj_set_width(label_name, 220);
+        lv_obj_set_width(label_name, 230);
         lv_label_set_text(label_name, program->nomi[model->prog.parmac.lingua]);
-        lv_obj_align(label_name, LV_ALIGN_LEFT_MID, 8, 0);
+        lv_obj_align(label_name, LV_ALIGN_LEFT_MID, 0, 0);
 
         lv_obj_t *button = view_common_icon_button_create(obj, LV_SYMBOL_EDIT, BTN_NAME_ID);
         lv_obj_align(button, LV_ALIGN_RIGHT_MID, 0, 0);
@@ -82,8 +124,8 @@ static void open_page(pman_handle_t handle, void *state) {
 
         char string[32] = {0};
         model_formatta_prezzo(string, model, model_get_program(model)->prezzo);
-        lv_label_set_text(label_price, string);
-        lv_obj_align(label_price, LV_ALIGN_LEFT_MID, 8, 0);
+        lv_label_set_text_fmt(label_price, "%s: %s", view_intl_get_string(model, STRINGS_PREZZO), string);
+        lv_obj_align(label_price, LV_ALIGN_LEFT_MID, 0, 0);
 
         lv_obj_t *button = view_common_icon_button_create(obj, LV_SYMBOL_EDIT, BTN_PRICE_ID);
         lv_obj_align(button, LV_ALIGN_RIGHT_MID, 0, 0);
@@ -133,6 +175,10 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_set_width(dropdown, LV_PCT(100));
         view_register_object_default_callback(dropdown, DROPDOWN_TYPE_ID);
         pdata->dropdown = dropdown;
+
+        lv_obj_t *image_type = lv_image_create(cont);
+        lv_obj_align(image_type, LV_ALIGN_BOTTOM_MID, 0, 0);
+        pdata->image_type = image_type;
     }
 
     update_page(model, pdata);
@@ -177,12 +223,14 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             break;
 
                         case BTN_NAME_ID:
-                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE_EXTRA(
+                            *pdata->changed = 1;
+                            msg.stack_msg   = PMAN_STACK_MSG_PUSH_PAGE_EXTRA(
                                 &page_keyboard, model_get_program(model)->nomi[model->prog.parmac.lingua]);
                             break;
 
                         case BTN_PRICE_ID:
-                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_price);
+                            *pdata->changed = 1;
+                            msg.stack_msg   = PMAN_STACK_MSG_PUSH_PAGE(&page_price);
                             break;
                     }
                     break;
@@ -191,6 +239,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                 case LV_EVENT_VALUE_CHANGED: {
                     switch (obj_data->id) {
                         case DROPDOWN_TYPE_ID:
+                            *pdata->changed                = 1;
                             model_get_program(model)->tipo = lv_dropdown_get_selected(pdata->dropdown);
                             update_page(model, pdata);
                             break;
@@ -215,6 +264,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 static void update_page(model_t *model, struct page_data *pdata) {
     programma_lavatrice_t *program = model_get_program(model);
     lv_dropdown_set_selected(pdata->dropdown, program->tipo);
+    lv_image_set_src(pdata->image_type, icons[program->tipo]);
 }
 
 

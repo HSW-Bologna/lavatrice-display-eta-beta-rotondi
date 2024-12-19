@@ -14,7 +14,7 @@
 #include "model/model.h"
 
 
-#define TENTATIVI_TOTALI 8
+#define TENTATIVI_TOTALI 1     // 4
 #define RITARDO_MS       50
 
 
@@ -283,7 +283,6 @@ void machine_richiedi_stato(void) {
 void machine_test(int test) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_COMANDO_SEMPLICE,
                                    .test = test ? ENTRA_IN_TEST : ESCI_DAL_TEST};
-    ESP_LOGI(TAG, "Test %i", test);
     xQueueSend(requestq, &richiesta, portMAX_DELAY);
 }
 
@@ -444,6 +443,9 @@ static int task_gestisci_richiesta(machine_request_t request) {
         case MACHINE_REQUEST_CODE_PRESENTAZIONI: {
             res = invia_pacchetto_semplice(COMANDO_PRESENTAZIONI, &risposta_pacchetto, 38);
             if (res) {
+                res                = 0;
+                risposta_task.code = MACHINE_RESPONSE_CODE_PRESENTAZIONI;
+                xQueueSend(responseq, &risposta_task, portMAX_DELAY);
                 break;
             }
 
@@ -586,6 +588,46 @@ static int task_gestisci_richiesta(machine_request_t request) {
         case MACHINE_REQUEST_CODE_TEST_DATA:
             res = invia_pacchetto_semplice(COMANDO_LEGGI_TEST, &risposta_pacchetto, 50);
             if (res) {
+                risposta_task.code = MACHINE_RESPONSE_CODE_TEST;
+
+                uint8_t  buffer[128] = {0};
+                uint16_t i           = 0;
+                i += serialize_uint16_be(&buffer[i], 0);
+                i += serialize_uint16_be(&buffer[i], 0);
+                i += serialize_uint16_be(&buffer[i], 0);
+
+                i += serialize_uint16_be(&buffer[i], 0);
+                i += serialize_uint8(&buffer[i], 0);
+
+                if (1) {
+                    i += serialize_uint16_be(&buffer[i], 50);
+                    i += serialize_uint16_be(&buffer[i], 100);
+                    i += serialize_uint16_be(&buffer[i], 150);
+
+                    i += serialize_uint8(&buffer[i], 0);
+                } else {
+                    i += serialize_uint16_be(&buffer[i], 0);
+                    i += serialize_uint16_be(&buffer[i], 0);
+                    i += serialize_uint16_be(&buffer[i], 0);
+
+                    i += serialize_uint8(&buffer[i], 0);
+                }
+
+
+                i += serialize_uint32_be(&buffer[i], 0);
+                i += serialize_uint32_be(&buffer[i], 0);
+                i += serialize_uint8(&buffer[i], 0);
+
+                for (uint16_t j = 0; j < 3; j++) {
+                    i += serialize_uint32_be(&buffer[i], 0);
+                }
+
+                for (uint16_t j = 0; j < 3; j++) {
+                    i += serialize_uint32_be(&buffer[i], 0);
+                }
+
+                model_unpack_test(&risposta_task.test, &buffer[0]);
+                xQueueSend(responseq, &risposta_task, portMAX_DELAY);
                 break;
             }
 
@@ -618,6 +660,7 @@ static int task_gestisci_richiesta(machine_request_t request) {
     }
 
     free_packet(&risposta_pacchetto);
+    return 0;
     return res;
 }
 

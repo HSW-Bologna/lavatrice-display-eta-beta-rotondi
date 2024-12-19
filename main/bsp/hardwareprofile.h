@@ -11,6 +11,7 @@
 
 #define BSP_HAP_SDA                      GPIO_NUM_1
 #define BSP_HAP_SCL                      GPIO_NUM_2
+#define BSP_HAP_IRQ                      GPIO_NUM_3
 #define BSP_HAP_RESET_T                  GPIO_NUM_4
 #define BSP_HAP_CS_D                     GPIO_NUM_5
 #define BSP_HAP_D                        GPIO_NUM_6
@@ -27,11 +28,5 @@
 #define BSP_HAP_RX                       GPIO_NUM_39
 #define BSP_HAP_SDA_CLK                  GPIO_NUM_42
 #define BSP_HAP_SCL_CLK                  GPIO_NUM_41
-
-#define BSP_HAP_SDA     GPIO_NUM_1
-#define BSP_HAP_SCL     GPIO_NUM_2
-#define BSP_HAP_IRQ     GPIO_NUM_3
-#define BSP_HAP_RESET_T GPIO_NUM_4
-
 
 #endif
