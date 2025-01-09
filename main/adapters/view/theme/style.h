@@ -12,10 +12,11 @@
 #define VIEW_STYLE_PRIMARY          (lv_color_darken(((lv_color_t)lv_color_make(0x9e, 0xc1, 0xe7)), LV_OPA_30))
 #define VIEW_STYLE_SECONDARY        ((lv_color_t)LV_COLOR_MAKE(0x0, 0x0, 0x0))
 #define VIEW_STYLE_COLOR_RED        ((lv_color_t)LV_COLOR_MAKE(0xFF, 0x0, 0x0))
+#define VIEW_STYLE_COLOR_ORANGE     ((lv_color_t)LV_COLOR_MAKE(0xFF, 0x5C, 0x0))
 #define VIEW_STYLE_COLOR_BLUE       ((lv_color_t)LV_COLOR_MAKE(0x00, 0x00, 0xFF))
 #define VIEW_STYLE_COLOR_BLACK      ((lv_color_t)LV_COLOR_MAKE(0x0, 0x0, 0x0))
 #define VIEW_STYLE_COLOR_WHITE      ((lv_color_t)LV_COLOR_MAKE(0xFF, 0xFF, 0xFF))
-#define VIEW_STYLE_COLOR_GREEN      ((lv_color_t)LV_COLOR_MAKE(0xA3, 0xA7, 0x39))
+#define VIEW_STYLE_COLOR_GREEN      ((lv_color_t)LV_COLOR_MAKE(0x00, 0xA0, 0x00))
 #define VIEW_STYLE_COLOR_START      ((lv_color_t)LV_COLOR_MAKE(0x2F, 0xBA, 0x74))
 #define VIEW_STYLE_COLOR_STOP       VIEW_STYLE_COLOR_RED
 #define VIEW_STYLE_COLOR_PAUSE      ((lv_color_t)LV_COLOR_MAKE(0xFF, 0xB3, 0x66))

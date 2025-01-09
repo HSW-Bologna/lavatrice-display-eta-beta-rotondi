@@ -243,6 +243,8 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                 default:
                     break;
             }
+
+            break;
         }
 
         case PMAN_EVENT_TAG_USER: {

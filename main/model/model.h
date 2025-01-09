@@ -357,7 +357,7 @@ typedef struct {
     uint32_t     pmin, pmax;
     uint8_t      gettoniera_impulsi_abilitata;
     uint32_t     minp[3], maxp[3];
-    uint8_t      accelerometro_ok;
+    uint8_t      errore_accelerometro;
     unsigned int accelerometer_axis[3];
 } test_data_t;
 

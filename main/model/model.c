@@ -1110,7 +1110,7 @@ void model_update_test_data(model_t *model, test_data_t test) {
     model->test.gettoniera_impulsi_abilitata = test.gettoniera_impulsi_abilitata;
     memcpy(model->test.minp, test.minp, sizeof(model->test.minp));
     memcpy(model->test.maxp, test.maxp, sizeof(model->test.maxp));
-    model->test.accelerometro_ok = test.accelerometro_ok;
+    model->test.accelerometro_ok = !test.errore_accelerometro;
 
     model->test.log_accelerometro[model->test.log_index][0] = test.accelerometer_axis[0];
     model->test.log_accelerometro[model->test.log_index][1] = test.accelerometer_axis[1];
@@ -1138,7 +1138,7 @@ void model_unpack_test(test_data_t *test, uint8_t *buffer) {
     i += deserialize_uint16_be(&x, &buffer[i]);
     i += deserialize_uint16_be(&y, &buffer[i]);
     i += deserialize_uint16_be(&z, &buffer[i]);
-    i += deserialize_uint8(&test->accelerometro_ok, &buffer[i]);
+    i += deserialize_uint8(&test->errore_accelerometro, &buffer[i]);
 
     test->accelerometer_axis[0] = x;
     test->accelerometer_axis[1] = y;
@@ -1401,6 +1401,6 @@ uint8_t model_is_emergency_ok(model_t *model) {
 
 
 uint8_t model_test_cesto_in_sicurezza(model_t *model) {
-    return model_oblo_chiuso(model) && model_get_livello_centimetri(model) == 0 && model_is_emergency_ok(model) &&
+    return model_oblo_serrato(model) && model_get_livello_centimetri(model) == 0 && model_is_emergency_ok(model) &&
            (model->test.inputs & 0x02) && (model->test.inputs & (1 << 10));
 }

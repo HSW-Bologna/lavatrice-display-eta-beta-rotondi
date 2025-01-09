@@ -78,10 +78,15 @@ static void open_page(pman_handle_t handle, void *state) {
     lv_obj_t *kb = lv_keyboard_create(cont);
     lv_keyboard_set_textarea(kb, ta);
     lv_keyboard_set_mode(kb, LV_KEYBOARD_MODE_NUMBER);
-    lv_obj_set_height(kb, 180);
+    lv_obj_set_size(kb, 320, 160);
     lv_obj_align(kb, LV_ALIGN_BOTTOM_MID, 0, 0);
     lv_obj_add_style(kb, (lv_style_t *)&style_config_btn, LV_PART_ITEMS);
     lv_obj_set_style_text_font(kb, STYLE_FONT_BIG, LV_PART_ITEMS);
+    lv_obj_set_style_pad_row(kb, 16, LV_PART_MAIN);
+    lv_obj_set_style_pad_column(kb, 16, LV_PART_MAIN);
+    lv_obj_set_style_pad_right(kb, 8, LV_PART_MAIN);
+    lv_obj_set_style_pad_left(kb, 8, LV_PART_MAIN);
+    lv_obj_set_style_pad_bottom(kb, 8, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(kb, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_keyboard_set_map(kb, LV_KEYBOARD_MODE_NUMBER, kbmap, ctrl_map);
     view_register_object_default_callback(kb, PASSWORD_KB_ID);
@@ -102,7 +107,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
         }
 
         case PMAN_EVENT_TAG_LVGL: {
-            lv_obj_t        *target   = lv_event_get_current_target_obj(event.as.lvgl);
+            lv_obj_t           *target   = lv_event_get_current_target_obj(event.as.lvgl);
             view_object_data_t *obj_data = lv_obj_get_user_data(target);
 
             switch (lv_event_get_code(event.as.lvgl)) {

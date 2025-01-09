@@ -73,6 +73,7 @@ typedef struct {
     void (*reset)(pman_handle_t handle);
     void (*beep)(void);
     void (*set_time)(pman_handle_t handle, struct tm new_time);
+    void (*clear_alarms)(pman_handle_t handle);
 } view_protocol_t;
 
 

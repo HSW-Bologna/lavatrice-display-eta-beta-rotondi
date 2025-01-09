@@ -21,6 +21,7 @@ struct page_data {
     lv_obj_t *label_level;
     lv_obj_t *label_control;
     lv_obj_t *label_proximity;
+    lv_obj_t *label_accelerometer_off;
 
     lv_obj_t *chart;
 
@@ -28,11 +29,13 @@ struct page_data {
 
     lv_obj_t *button_control;
     lv_obj_t *button_clear;
+    lv_obj_t *button_clear_alarms;
 
     lv_obj_t *led_porthole;
     lv_obj_t *led_inverter;
     lv_obj_t *led_lurching;
     lv_obj_t *led_emergency;
+    lv_obj_t *led_water;
 
     lv_chart_series_t *ser_x;
     lv_chart_series_t *ser_y;
@@ -51,11 +54,13 @@ enum {
     BTN_PLUS_ID,
     BTN_CONTROL_ID,
     BTN_CLEAR_ID,
+    BTN_CLEAR_ALARMS_ID,
     BTN_LOCK_ID,
 };
 
 
-static void update_page(model_t *model, struct page_data *pdata);
+static void      update_page(model_t *model, struct page_data *pdata);
+static lv_obj_t *alarm_led_create(lv_obj_t *parent, lv_obj_t **led, const char *text);
 
 
 static const char *TAG = "PageTestDrum";
@@ -169,6 +174,24 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_set_style_width(chart, 0, LV_PART_INDICATOR);
         lv_obj_set_style_height(chart, 0, LV_PART_INDICATOR);
 
+        lv_obj_t *label = lv_label_create(cont);
+        lv_obj_align(label, LV_ALIGN_CENTER, 0, -16);
+        lv_label_set_text(label, view_intl_get_string(model, STRINGS_ALLARME_ACCELEROMETRO));
+        lv_obj_set_style_text_font(label, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        pdata->label_accelerometer_off = label;
+
+        {
+            lv_obj_t *button = lv_button_create(cont);
+            lv_obj_set_size(button, 96, 48);
+            lv_obj_t *label = lv_label_create(button);
+            lv_obj_center(label);
+            lv_obj_set_style_text_font(label, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+            lv_label_set_text(label, view_intl_get_string(model, STRINGS_AZZERA));
+            lv_obj_align(button, LV_ALIGN_CENTER, 0, 24);
+            view_register_object_default_callback(button, BTN_CLEAR_ALARMS_ID);
+            pdata->button_clear_alarms = button;
+        }
+
         lv_obj_t *scale = lv_scale_create(cont);
         lv_scale_set_mode(scale, LV_SCALE_MODE_VERTICAL_LEFT);
         lv_obj_set_size(scale, 16, 120);
@@ -249,7 +272,7 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_t *bottom = lv_obj_create(cont);
         lv_obj_remove_flag(bottom, LV_OBJ_FLAG_SCROLLABLE);
         lv_obj_add_style(bottom, &style_transparent_cont, LV_STATE_DEFAULT);
-        lv_obj_set_style_pad_column(bottom, 16, LV_STATE_DEFAULT);
+        lv_obj_set_style_pad_column(bottom, 8, LV_STATE_DEFAULT);
         lv_obj_set_size(bottom, LV_HOR_RES, 52);
         lv_obj_set_layout(bottom, LV_LAYOUT_FLEX);
         lv_obj_set_flex_flow(bottom, LV_FLEX_FLOW_ROW);
@@ -262,7 +285,7 @@ static void open_page(pman_handle_t handle, void *state) {
             lv_obj_remove_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
             lv_obj_set_style_radius(obj, 4, LV_STATE_DEFAULT);
             view_register_object_default_callback(obj, BTN_LOCK_ID);
-            lv_obj_set_size(obj, 64, 48);
+            lv_obj_set_size(obj, 56, 48);
 
             lv_obj_t *led = lv_led_create(obj);
             lv_led_set_color(led, VIEW_STYLE_COLOR_RED);
@@ -272,13 +295,14 @@ static void open_page(pman_handle_t handle, void *state) {
 
             lv_obj_t *lbl = lv_label_create(obj);
             lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
-            lv_label_set_text(lbl, "OBLO'");
+            lv_label_set_text(lbl, "OBL.");
             lv_obj_center(lbl);
             pdata->led_porthole = led;
         }
-        view_common_alarm_led_create(bottom, &pdata->led_inverter, "INV.");
-        view_common_alarm_led_create(bottom, &pdata->led_lurching, "SBIL.");
-        view_common_alarm_led_create(bottom, &pdata->led_emergency, "EMER.");
+        alarm_led_create(bottom, &pdata->led_water, "H2O");
+        alarm_led_create(bottom, &pdata->led_inverter, "INV.");
+        alarm_led_create(bottom, &pdata->led_lurching, "SBL.");
+        alarm_led_create(bottom, &pdata->led_emergency, "EMR.");
     }
 
     VIEW_ADD_WATCHED_VARIABLE(&model->test, 0);
@@ -406,6 +430,11 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             break;
                         }
 
+                        case BTN_CLEAR_ALARMS_ID: {
+                            view_get_protocol(handle)->clear_alarms(handle);
+                            break;
+                        }
+
                         default:
                             break;
                     }
@@ -459,28 +488,39 @@ static void update_page(model_t *model, struct page_data *pdata) {
                           model->test.min_proximity_interval, model->test.max_proximity_interval,
                           model->run.macchina.velocita_rilevata);
 
+    lv_led_on(pdata->led_water);
+    if (model_get_livello_centimetri(model) > 0) {
+        lv_led_set_color(pdata->led_water, VIEW_STYLE_COLOR_GREEN);
+    } else {
+        lv_led_set_color(pdata->led_water, VIEW_STYLE_COLOR_ORANGE);
+    }
+
+    lv_led_on(pdata->led_emergency);
     if ((model->test.inputs & 1) > 0) {
-        lv_led_off(pdata->led_emergency);
+        lv_led_set_color(pdata->led_emergency, VIEW_STYLE_COLOR_GREEN);
     } else {
-        lv_led_on(pdata->led_emergency);
+        lv_led_set_color(pdata->led_emergency, VIEW_STYLE_COLOR_RED);
     }
 
+    lv_led_on(pdata->led_porthole);
     if (model_oblo_serrato(model)) {
-        lv_led_off(pdata->led_porthole);
+        lv_led_set_color(pdata->led_porthole, VIEW_STYLE_COLOR_GREEN);
     } else {
-        lv_led_on(pdata->led_porthole);
+        lv_led_set_color(pdata->led_porthole, VIEW_STYLE_COLOR_RED);
     }
 
+    lv_led_on(pdata->led_lurching);
     if ((model->test.inputs & 2) > 0) {
-        lv_led_off(pdata->led_lurching);
+        lv_led_set_color(pdata->led_lurching, VIEW_STYLE_COLOR_GREEN);
     } else {
-        lv_led_on(pdata->led_lurching);
+        lv_led_set_color(pdata->led_lurching, VIEW_STYLE_COLOR_RED);
     }
 
+    lv_led_on(pdata->led_inverter);
     if ((model->test.inputs & (1 << 10)) > 0) {
-        lv_led_off(pdata->led_inverter);
+        lv_led_set_color(pdata->led_inverter, VIEW_STYLE_COLOR_GREEN);
     } else {
-        lv_led_on(pdata->led_inverter);
+        lv_led_set_color(pdata->led_inverter, VIEW_STYLE_COLOR_RED);
     }
 
     lv_label_set_text_fmt(pdata->label_level, "%s: %s", view_intl_get_string(model, STRINGS_LIVELLO),
@@ -502,29 +542,61 @@ static void update_page(model_t *model, struct page_data *pdata) {
             view_common_set_hidden(pdata->chart, 1);
             view_common_set_hidden(pdata->scale, 1);
             view_common_set_hidden(pdata->button_clear, 0);
+            view_common_set_hidden(pdata->label_accelerometer_off, 1);
+            view_common_set_hidden(pdata->button_clear_alarms, 1);
             break;
         default: {
-            int32_t *ser_x_points = lv_chart_get_y_array(pdata->chart, pdata->ser_x);
-            int32_t *ser_y_points = lv_chart_get_y_array(pdata->chart, pdata->ser_y);
-            int32_t *ser_z_points = lv_chart_get_y_array(pdata->chart, pdata->ser_z);
-            for (uint16_t i = 0; i < MAX_LOG_ACCELEROMETRO; i++) {
-                uint16_t j      = (model->test.log_index + i) % MAX_LOG_ACCELEROMETRO;
-                ser_x_points[i] = model->test.log_accelerometro[j][0];
-                ser_y_points[i] = model->test.log_accelerometro[j][1];
-                ser_z_points[i] = model->test.log_accelerometro[j][2];
+            if (model->test.accelerometro_ok) {
+                view_common_set_hidden(pdata->chart, 0);
+                view_common_set_hidden(pdata->scale, 0);
+                view_common_set_hidden(pdata->label_accelerometer_off, 1);
+                view_common_set_hidden(pdata->button_clear_alarms, 1);
+                int32_t *ser_x_points = lv_chart_get_y_array(pdata->chart, pdata->ser_x);
+                int32_t *ser_y_points = lv_chart_get_y_array(pdata->chart, pdata->ser_y);
+                int32_t *ser_z_points = lv_chart_get_y_array(pdata->chart, pdata->ser_z);
+                for (uint16_t i = 0; i < MAX_LOG_ACCELEROMETRO; i++) {
+                    uint16_t j      = (model->test.log_index + i) % MAX_LOG_ACCELEROMETRO;
+                    ser_x_points[i] = model->test.log_accelerometro[j][0];
+                    ser_y_points[i] = model->test.log_accelerometro[j][1];
+                    ser_z_points[i] = model->test.log_accelerometro[j][2];
+                }
+                lv_chart_refresh(pdata->chart);
+            } else {
+                view_common_set_hidden(pdata->chart, 1);
+                view_common_set_hidden(pdata->scale, 1);
+                view_common_set_hidden(pdata->label_accelerometer_off, 0);
+                view_common_set_hidden(pdata->button_clear_alarms, 0);
             }
-            lv_chart_refresh(pdata->chart);
 
             view_common_set_hidden(pdata->label_signal, 1);
             view_common_set_hidden(pdata->label_run, 1);
             view_common_set_hidden(pdata->label_proximity, 1);
             view_common_set_hidden(pdata->label_level, 1);
-            view_common_set_hidden(pdata->chart, 0);
-            view_common_set_hidden(pdata->scale, 0);
             view_common_set_hidden(pdata->button_clear, 1);
             break;
         }
     }
+}
+
+
+static lv_obj_t *alarm_led_create(lv_obj_t *parent, lv_obj_t **led, const char *text) {
+    lv_obj_t *obj = lv_obj_create(parent);
+    lv_obj_remove_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_bg_color(obj, lv_obj_get_style_border_color(obj, LV_STATE_DEFAULT), LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(obj, 4, LV_STATE_DEFAULT);
+    lv_obj_set_size(obj, 50, 48);
+
+    *led = lv_led_create(obj);
+    lv_led_set_color(*led, VIEW_STYLE_COLOR_RED);
+    lv_obj_set_size(*led, 24, 24);
+    lv_obj_center(*led);
+
+    lv_obj_t *lbl = lv_label_create(obj);
+    lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+    lv_label_set_text(lbl, text);
+    lv_obj_center(lbl);
+
+    return obj;
 }
 
 

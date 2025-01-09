@@ -10,13 +10,14 @@
 
 #define OUTPUT_WARM_WATER 3
 #define OUTPUT_COLD_WATER 4
-#define OUTPUT_DRAIN      5
+#define OUTPUT_DRAIN      2
 
 
 struct page_data {
     lv_obj_t *label_data;
 
     lv_obj_t *button_calibration;
+    lv_obj_t *button_heating;
     lv_obj_t *button_warm_water;
     lv_obj_t *button_cold_water;
     lv_obj_t *button_drain;
@@ -71,6 +72,7 @@ static void open_page(pman_handle_t handle, void *state) {
         BTN_BACK_ID, BTN_NEXT_ID);
 
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
+    lv_obj_remove_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES - 56);
     lv_obj_align(cont, LV_ALIGN_BOTTOM_MID, 0, 0);
 
@@ -87,7 +89,7 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_CALIBRAZIONE));
         lv_obj_center(lbl);
         view_register_object_default_callback(btn, BTN_CALIBRATION_ID);
-        lv_obj_align(btn, LV_ALIGN_TOP_LEFT, 0, 56);
+        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 56);
         pdata->button_calibration = btn;
     }
 
@@ -97,6 +99,7 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_set_style_radius(btn, 4, LV_STATE_DEFAULT);
         view_register_object_default_callback(btn, BTN_HEATING_ID);
         lv_obj_set_size(btn, 128, 48);
+        pdata->button_heating = btn;
 
         lv_obj_t *led = lv_led_create(btn);
         lv_led_set_color(led, VIEW_STYLE_COLOR_RED);
@@ -110,7 +113,7 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_align(lbl, LV_ALIGN_LEFT_MID, 0, 0);
         pdata->led_heating = led;
 
-        lv_obj_align(btn, LV_ALIGN_TOP_RIGHT, 0, 56);
+        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 56);
     }
 
     {
@@ -123,7 +126,7 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_set_flex_flow(bottom, LV_FLEX_FLOW_ROW);
         lv_obj_set_flex_align(bottom, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
         lv_obj_set_style_pad_bottom(bottom, 2, LV_STATE_DEFAULT);
-        lv_obj_align(bottom, LV_ALIGN_BOTTOM_MID, 0, -56);
+        lv_obj_align(bottom, LV_ALIGN_BOTTOM_MID, 0, -48);
 
         {
             lv_obj_t *btn = lv_button_create(bottom);
@@ -181,7 +184,7 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_set_flex_flow(bottom, LV_FLEX_FLOW_ROW);
         lv_obj_set_flex_align(bottom, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
         lv_obj_set_style_pad_bottom(bottom, 2, LV_STATE_DEFAULT);
-        lv_obj_align(bottom, LV_ALIGN_BOTTOM_MID, 0, 0);
+        lv_obj_align(bottom, LV_ALIGN_BOTTOM_MID, 0, 8);
 
         {
             lv_obj_t *btn = lv_button_create(bottom);
@@ -367,9 +370,6 @@ static int test_resistenze_in_sicurezza(model_t *model, struct page_data *data) 
 
 
 static void update_page(model_t *model, struct page_data *pdata) {
-    (void)model;
-    (void)pdata;
-
     uint16_t adc = 0;
     if (model->test.adc_press > model->test.offset_press) {
         adc = model->test.adc_press - model->test.offset_press;
@@ -377,10 +377,12 @@ static void update_page(model_t *model, struct page_data *pdata) {
 
     if (pdata->test_temperature) {
         view_common_set_hidden(pdata->button_calibration, 1);
+        view_common_set_hidden(pdata->button_heating, 0);
         lv_label_set_text_fmt(pdata->label_data, "%s: %3i C [%04i]", view_intl_get_string(model, STRINGS_TEMPERATURA),
                               model->run.macchina.temperatura, model->test.adc_temp);
     } else {
         view_common_set_hidden(pdata->button_calibration, 0);
+        view_common_set_hidden(pdata->button_heating, 1);
         lv_label_set_text_fmt(pdata->label_data, "%s: %3i cm [%04i]\nOffset: %4i [%04i]",
                               view_intl_get_string(model, STRINGS_LIVELLO), model_get_livello_centimetri(model), adc,
                               model->test.offset_press, model->test.adc_press);
@@ -404,28 +406,32 @@ static void update_page(model_t *model, struct page_data *pdata) {
         lv_obj_remove_state(pdata->button_drain, LV_STATE_CHECKED);
     }
 
+    lv_led_on(pdata->led_emergency);
     if (model_is_emergency_ok(model)) {
-        lv_led_off(pdata->led_emergency);
+        lv_led_set_color(pdata->led_emergency, VIEW_STYLE_COLOR_GREEN);
     } else {
-        lv_led_on(pdata->led_emergency);
+        lv_led_set_color(pdata->led_emergency, VIEW_STYLE_COLOR_RED);
     }
 
+    lv_led_on(pdata->led_porthole);
     if (model_oblo_serrato(model)) {
-        lv_led_off(pdata->led_porthole);
+        lv_led_set_color(pdata->led_porthole, VIEW_STYLE_COLOR_GREEN);
     } else {
-        lv_led_on(pdata->led_porthole);
+        lv_led_set_color(pdata->led_porthole, VIEW_STYLE_COLOR_RED);
     }
 
+    lv_led_on(pdata->led_temperature);
     if (model->run.macchina.temperatura >= model->prog.parmac.temperatura_sicurezza) {
-        lv_led_off(pdata->led_temperature);
+        lv_led_set_color(pdata->led_temperature, VIEW_STYLE_COLOR_RED);
     } else {
-        lv_led_on(pdata->led_temperature);
+        lv_led_set_color(pdata->led_temperature, VIEW_STYLE_COLOR_GREEN);
     }
 
+    lv_led_on(pdata->led_warm_water);
     if (model_get_livello_centimetri(model) < model->prog.parmac.centimetri_max_livello) {
-        lv_led_off(pdata->led_warm_water);
+        lv_led_set_color(pdata->led_warm_water, VIEW_STYLE_COLOR_GREEN);
     } else {
-        lv_led_on(pdata->led_warm_water);
+        lv_led_set_color(pdata->led_warm_water, VIEW_STYLE_COLOR_RED);
     }
 
     if (model_is_test_output_active(model, RESISTORS_OUTPUT_INDEX)) {

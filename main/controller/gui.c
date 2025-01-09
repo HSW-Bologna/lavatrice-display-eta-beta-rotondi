@@ -46,6 +46,7 @@ static void save_program(pman_handle_t handle);
 static void reset(pman_handle_t handle);
 static void update_firmware(pman_handle_t handle);
 static void set_time(pman_handle_t handle, struct tm new_time);
+static void clear_alarms(pman_handle_t handle);
 
 
 view_protocol_t controller_gui_protocol = {
@@ -77,6 +78,7 @@ view_protocol_t controller_gui_protocol = {
     .reset                      = reset,
     .update_firmware            = update_firmware,
     .set_time                   = set_time,
+    .clear_alarms               = clear_alarms,
 };
 
 
@@ -314,6 +316,12 @@ static void update_firmware(pman_handle_t handle) {
 static void reset(pman_handle_t handle) {
     (void)handle;
     bsp_system_reset();
+}
+
+
+static void clear_alarms(pman_handle_t handle) {
+    (void)handle;
+    machine_azzera_allarmi();
 }
 
 
