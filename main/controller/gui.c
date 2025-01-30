@@ -333,3 +333,4 @@ static void set_time(pman_handle_t handle, struct tm new_time) {
     }
     system_time_set(&new_time);
 }
+

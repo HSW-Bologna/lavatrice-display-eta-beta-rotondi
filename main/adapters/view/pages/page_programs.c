@@ -91,7 +91,7 @@ static void open_page(pman_handle_t handle, void *state) {
     lv_obj_set_style_pad_ver(cont, 2, LV_STATE_DEFAULT);
     lv_obj_set_style_pad_hor(cont, 2, LV_STATE_DEFAULT);
     lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES - 56);
-    lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_remove_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_align(cont, LV_ALIGN_BOTTOM_MID, 0, 0);
 
     const int32_t button_height = 48;
@@ -99,7 +99,7 @@ static void open_page(pman_handle_t handle, void *state) {
     {
         lv_obj_t *obj_button_bar = lv_obj_create(cont);
         lv_obj_set_size(obj_button_bar, LV_PCT(100), button_height + 4);
-        lv_obj_clear_flag(obj_button_bar, LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_remove_flag(obj_button_bar, LV_OBJ_FLAG_SCROLLABLE);
         lv_obj_add_style(obj_button_bar, &style_transparent_cont, LV_STATE_DEFAULT);
         lv_obj_set_style_pad_column(obj_button_bar, 12, LV_STATE_DEFAULT);
         lv_obj_set_style_pad_row(obj_button_bar, 12, LV_STATE_DEFAULT);
@@ -137,7 +137,7 @@ static void open_page(pman_handle_t handle, void *state) {
     {
         lv_obj_t *obj_button_bar = lv_obj_create(cont);
         lv_obj_set_size(obj_button_bar, LV_PCT(100), button_height + 4);
-        lv_obj_clear_flag(obj_button_bar, LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_remove_flag(obj_button_bar, LV_OBJ_FLAG_SCROLLABLE);
         lv_obj_add_style(obj_button_bar, &style_transparent_cont, LV_STATE_DEFAULT);
         lv_obj_set_style_pad_column(obj_button_bar, 12, LV_STATE_DEFAULT);
         lv_obj_set_style_pad_row(obj_button_bar, 12, LV_STATE_DEFAULT);
@@ -175,7 +175,7 @@ static void open_page(pman_handle_t handle, void *state) {
     {
         lv_obj_t *obj_program_list = lv_obj_create(cont);
         lv_obj_set_size(obj_program_list, LV_PCT(100), LV_HOR_RES - 56 - button_height * 2 - 30);
-        lv_obj_clear_flag(obj_program_list, LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_remove_flag(obj_program_list, LV_OBJ_FLAG_SCROLLABLE);
         lv_obj_add_style(obj_program_list, &style_transparent_cont, LV_STATE_DEFAULT);
         lv_obj_set_style_pad_column(obj_program_list, 4, LV_STATE_DEFAULT);
         lv_obj_set_style_pad_ver(obj_program_list, 2, LV_STATE_DEFAULT);
@@ -210,7 +210,7 @@ static void open_page(pman_handle_t handle, void *state) {
     {
         lv_obj_t *obj_delete = lv_obj_create(cont);
         lv_obj_set_size(obj_delete, LV_PCT(100), LV_HOR_RES - 56 - button_height * 2 - 30);
-        lv_obj_clear_flag(obj_delete, LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_remove_flag(obj_delete, LV_OBJ_FLAG_SCROLLABLE);
         lv_obj_add_style(obj_delete, &style_transparent_cont, LV_STATE_DEFAULT);
         lv_obj_align(obj_delete, LV_ALIGN_CENTER, 0, -2);
 
@@ -441,7 +441,7 @@ static void update_page(model_t *model, struct page_data *pdata) {
             if (pdata->selected_program == i) {
                 lv_obj_add_state(pdata->button_programs[i], LV_STATE_CHECKED);
             } else {
-                lv_obj_clear_state(pdata->button_programs[i], LV_STATE_CHECKED);
+                lv_obj_remove_state(pdata->button_programs[i], LV_STATE_CHECKED);
             }
 
             if (strcmp(lv_label_get_text(pdata->label_names[i]), preview->name)) {
@@ -465,26 +465,27 @@ static void update_page(model_t *model, struct page_data *pdata) {
         lv_obj_add_state(pdata->button_delete, LV_STATE_DISABLED);
         lv_obj_add_state(pdata->button_new, LV_STATE_DISABLED);
     } else if (pdata->selected_program >= 0) {
-        lv_obj_clear_state(pdata->button_up, LV_STATE_DISABLED);
-        lv_obj_clear_state(pdata->button_down, LV_STATE_DISABLED);
-        lv_obj_clear_state(pdata->button_move_up, LV_STATE_DISABLED);
-        lv_obj_clear_state(pdata->button_move_down, LV_STATE_DISABLED);
-        lv_obj_clear_state(pdata->button_modify, LV_STATE_DISABLED);
-        lv_obj_clear_state(pdata->button_copy, LV_STATE_DISABLED);
-        lv_obj_clear_state(pdata->button_delete, LV_STATE_DISABLED);
+        lv_obj_remove_state(pdata->button_up, LV_STATE_DISABLED);
+        lv_obj_remove_state(pdata->button_down, LV_STATE_DISABLED);
+        lv_obj_remove_state(pdata->button_move_up, LV_STATE_DISABLED);
+        lv_obj_remove_state(pdata->button_move_down, LV_STATE_DISABLED);
+        lv_obj_remove_state(pdata->button_modify, LV_STATE_DISABLED);
+        lv_obj_remove_state(pdata->button_delete, LV_STATE_DISABLED);
 
         if (model->prog.num_programmi < PROGRAM_WINDOW_SIZE) {
             lv_obj_add_state(pdata->button_up, LV_STATE_DISABLED);
             lv_obj_add_state(pdata->button_down, LV_STATE_DISABLED);
         } else {
-            lv_obj_clear_state(pdata->button_up, LV_STATE_DISABLED);
-            lv_obj_clear_state(pdata->button_down, LV_STATE_DISABLED);
+            lv_obj_remove_state(pdata->button_up, LV_STATE_DISABLED);
+            lv_obj_remove_state(pdata->button_down, LV_STATE_DISABLED);
         }
 
         if (model->prog.num_programmi < MAX_PROGRAMMI) {
-            lv_obj_clear_state(pdata->button_new, LV_STATE_DISABLED);
+            lv_obj_remove_state(pdata->button_new, LV_STATE_DISABLED);
+            lv_obj_remove_state(pdata->button_copy, LV_STATE_DISABLED);
         } else {
             lv_obj_add_state(pdata->button_new, LV_STATE_DISABLED);
+            lv_obj_add_state(pdata->button_copy, LV_STATE_DISABLED);
         }
     } else {
         lv_obj_add_state(pdata->button_move_up, LV_STATE_DISABLED);
@@ -492,11 +493,11 @@ static void update_page(model_t *model, struct page_data *pdata) {
         lv_obj_add_state(pdata->button_modify, LV_STATE_DISABLED);
         lv_obj_add_state(pdata->button_copy, LV_STATE_DISABLED);
         lv_obj_add_state(pdata->button_delete, LV_STATE_DISABLED);
-        lv_obj_clear_state(pdata->button_up, LV_STATE_DISABLED);
-        lv_obj_clear_state(pdata->button_down, LV_STATE_DISABLED);
+        lv_obj_remove_state(pdata->button_up, LV_STATE_DISABLED);
+        lv_obj_remove_state(pdata->button_down, LV_STATE_DISABLED);
 
         if (model->prog.num_programmi == 0) {
-            lv_obj_clear_state(pdata->button_new, LV_STATE_DISABLED);
+            lv_obj_remove_state(pdata->button_new, LV_STATE_DISABLED);
         } else {
             lv_obj_add_state(pdata->button_new, LV_STATE_DISABLED);
         }
@@ -505,8 +506,8 @@ static void update_page(model_t *model, struct page_data *pdata) {
             lv_obj_add_state(pdata->button_up, LV_STATE_DISABLED);
             lv_obj_add_state(pdata->button_down, LV_STATE_DISABLED);
         } else {
-            lv_obj_clear_state(pdata->button_up, LV_STATE_DISABLED);
-            lv_obj_clear_state(pdata->button_down, LV_STATE_DISABLED);
+            lv_obj_remove_state(pdata->button_up, LV_STATE_DISABLED);
+            lv_obj_remove_state(pdata->button_down, LV_STATE_DISABLED);
         }
     }
 

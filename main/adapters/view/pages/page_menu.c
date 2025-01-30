@@ -276,7 +276,7 @@ static void update_page(model_t *model, struct page_data *pdata) {
     if (model->system.removable_drive_state != REMOVABLE_DRIVE_STATE_MOUNTED) {
         lv_obj_add_state(pdata->btn_drive, LV_STATE_DISABLED);
     } else {
-        lv_obj_clear_state(pdata->btn_drive, LV_STATE_DISABLED);
+        lv_obj_remove_state(pdata->btn_drive, LV_STATE_DISABLED);
     }
 }
 
