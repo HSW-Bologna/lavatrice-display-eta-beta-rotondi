@@ -14,7 +14,7 @@
 #include "model/model.h"
 
 
-#define TENTATIVI_TOTALI 1     // 4
+#define TENTATIVI_TOTALI 4
 #define RITARDO_MS       50
 
 
@@ -660,7 +660,6 @@ static int task_gestisci_richiesta(machine_request_t request) {
     }
 
     free_packet(&risposta_pacchetto);
-    return 0;
     return res;
 }
 
@@ -688,7 +687,7 @@ static int invia_pacchetto(int comando, uint8_t *dati, uint16_t lunghezza_dati, 
         int len = bsp_rs232_read(read_buffer, lunghezza_prevista);
         err     = elaborate_data(read_buffer, len, risposta, NULL);
         if (err) {
-            ESP_LOGW(TAG, "Risposta non valida al comando 0x%02X: %i (%i)", comando, err, len);
+            ESP_LOGW(TAG, "Risposta non valida al comando 0x%02X: %i (%i) (%i)", comando, err, len, tentativi);
             vTaskDelay(pdMS_TO_TICKS(RITARDO_MS));
             tentativi++;
         } else {
@@ -717,7 +716,6 @@ static int invia_pacchetto(int comando, uint8_t *dati, uint16_t lunghezza_dati, 
             return -1;
         }
     }
-
 
     return err;
 }

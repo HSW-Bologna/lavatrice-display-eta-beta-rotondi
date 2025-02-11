@@ -206,7 +206,7 @@ static void open_page(pman_handle_t handle, void *state) {
             case SCALA_ACCELEROMETRO_4G:
             case SCALA_ACCELEROMETRO_4G_OFFSET: {
                 lv_scale_set_total_tick_count(scale, 6);
-                static const char *ticks[] = {"", "5G", "4G", "3G", "2G", "1G", NULL};
+                static const char *ticks[] = {"", "1G", "2G", "3G", "4G", "5G", NULL};
                 lv_scale_set_text_src(scale, ticks);
                 break;
             }
@@ -222,7 +222,7 @@ static void open_page(pman_handle_t handle, void *state) {
             case SCALA_ACCELEROMETRO_8G:
             case SCALA_ACCELEROMETRO_8G_OFFSET: {
                 lv_scale_set_total_tick_count(scale, 6);
-                static const char *ticks[] = {"", "10G", "8G", "6G", "4G", "2G", NULL};
+                static const char *ticks[] = {"", "2G", "4G", "6G", "8G", "10G", NULL};
                 lv_scale_set_text_src(scale, ticks);
                 break;
             }
