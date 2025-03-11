@@ -288,6 +288,8 @@ static void delete_program(pman_handle_t handle, uint16_t program_index) {
 static void clone_program(pman_handle_t handle, uint16_t source_program_index, uint16_t destination_program_index) {
     mut_model_t *model = view_get_model(handle);
 
+    create_new_program(handle, destination_program_index);
+
     if (configuration_load_program(model, source_program_index)) {
         ESP_LOGW(TAG, "No program at %i", source_program_index);
         return;
@@ -333,4 +335,3 @@ static void set_time(pman_handle_t handle, struct tm new_time) {
     }
     system_time_set(&new_time);
 }
-

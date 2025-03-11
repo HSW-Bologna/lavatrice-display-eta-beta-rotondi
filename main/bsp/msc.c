@@ -62,20 +62,13 @@ static char            **listed_archives     = NULL;
 
 
 void msc_init(void) {
-    const gpio_config_t input_pin = {
-        .pin_bit_mask = BIT64(BSP_HAP_CHIAVETTA_ON) | BIT64(BSP_HAP_PRESENZA_USB_MASTER),
-        .mode         = GPIO_MODE_INPUT,
-        .pull_up_en   = GPIO_PULLUP_DISABLE,
-    };
-    ESP_ERROR_CHECK(gpio_config(&input_pin));
-
     const gpio_config_t output_pin = {
-        .pin_bit_mask = BIT64(BSP_HAP_ALIMENTAZIONE_CHIAVE_USB),
+        .pin_bit_mask = BIT64(BSP_HAP_USB_INT),
         .mode         = GPIO_MODE_OUTPUT,
         .pull_up_en   = GPIO_PULLUP_DISABLE,
     };
     ESP_ERROR_CHECK(gpio_config(&output_pin));
-    gpio_set_level(BSP_HAP_ALIMENTAZIONE_CHIAVE_USB, 0);
+    gpio_set_level(BSP_HAP_USB_INT, 1);
 
     assert(sem == NULL);
     static StaticSemaphore_t static_semaphore;
@@ -249,25 +242,8 @@ static void msc_task(void *args) {
         .allocation_unit_size   = 1024,
     };
 
-    uint8_t old_id = -1;
-
     for (;;) {
         uint8_t device_address = 0;
-
-        uint8_t current_id = gpio_get_level(BSP_HAP_CHIAVETTA_ON);
-        if (old_id != current_id) {
-            if (current_id == 0) {
-                // A usb drive has been connected, turn on
-                gpio_set_level(BSP_HAP_ALIMENTAZIONE_CHIAVE_USB, 0);
-                ESP_LOGI(TAG, "Chiavetta connessa");
-            } else {
-                // No drive connected, turn off
-                gpio_set_level(BSP_HAP_ALIMENTAZIONE_CHIAVE_USB, 1);
-                ESP_LOGI(TAG, "Chiavetta rimossa");
-            }
-            old_id = current_id;
-            vTaskDelay(pdMS_TO_TICKS(500));
-        }
 
         if (usb_connected && wait_for_event(EVENT_DEVICE_DISCONNECTED, 100)) {
             ESP_LOGI(TAG, "Device disconnected");
@@ -280,7 +256,7 @@ static void msc_task(void *args) {
             ESP_LOGI(TAG, "New USB device: %i", device_address);
             if (msc_host_install_device(device_address, &msc_device) == ESP_OK) {
 
-                //msc_host_print_descriptors(msc_device);
+                // msc_host_print_descriptors(msc_device);
                 ESP_ERROR_CHECK(msc_host_get_device_info(msc_device, &info));
 
                 esp_err_t err = msc_host_vfs_register(msc_device, MSC_USB_MOUNTPOINT, &mount_config, &vfs_handle);
@@ -322,8 +298,8 @@ static void msc_task(void *args) {
             switch (message.code) {
                 case TASK_MESSAGE_CODE_LOAD_ARCHIVE: {
                     char string[128] = {0};
-                    snprintf(string, sizeof(string), "%s/%s%s", MSC_USB_MOUNTPOINT, message.archive_name, ARCHIVE_SUFFIX);
-                    msc_response_t response = {.code = MSC_RESPONSE_CODE_ARCHIVE_EXTRACTION_COMPLETE};
+                    snprintf(string, sizeof(string), "%s/%s%s", MSC_USB_MOUNTPOINT, message.archive_name,
+        ARCHIVE_SUFFIX); msc_response_t response = {.code = MSC_RESPONSE_CODE_ARCHIVE_EXTRACTION_COMPLETE};
                     response.error          = archive_management_extract_configuration(string);
                     xQueueSend(response_queue, &response, portMAX_DELAY);
                     break;
@@ -331,9 +307,8 @@ static void msc_task(void *args) {
 
                 case TASK_MESSAGE_CODE_SAVE_ARCHIVE: {
                     msc_response_t response = {.code = MSC_RESPONSE_CODE_ARCHIVE_SAVING_COMPLETE};
-                    response.error          = archive_management_save_configuration(MSC_USB_MOUNTPOINT, message.archive_name);
-                    xQueueSend(response_queue, &response, portMAX_DELAY);
-                    break;
+                    response.error          = archive_management_save_configuration(MSC_USB_MOUNTPOINT,
+        message.archive_name); xQueueSend(response_queue, &response, portMAX_DELAY); break;
                 }
             }
         }

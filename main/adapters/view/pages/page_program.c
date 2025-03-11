@@ -595,7 +595,7 @@ static void update_page(model_t *model, struct page_data *pdata) {
                 lv_obj_add_state(pdata->button_delete, LV_STATE_DISABLED);
             }
 
-            if (program->num_steps < STEP_WINDOW_SIZE) {
+            if (program->num_steps <= STEP_WINDOW_SIZE) {
                 lv_obj_add_state(pdata->button_up, LV_STATE_DISABLED);
                 lv_obj_add_state(pdata->button_down, LV_STATE_DISABLED);
             } else {
@@ -667,7 +667,7 @@ static void close_page(void *state) {
 static void move_window_down(model_t *model, struct page_data *pdata) {
     programma_lavatrice_t *program = model_get_program(model);
     pdata->step_window_index++;
-    if (pdata->step_window_index * STEP_WINDOW_SIZE > program->num_steps) {
+    if (pdata->step_window_index * STEP_WINDOW_SIZE >= program->num_steps) {
         pdata->step_window_index = 0;
     }
 }

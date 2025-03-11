@@ -42,19 +42,6 @@ void bsp_system_init(void) {
         ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0));
     }
 
-    {
-        i2c_config_t i2c_conf = {
-            .mode             = I2C_MODE_MASTER,
-            .sda_io_num       = BSP_HAP_SDA_CLK,
-            .scl_io_num       = BSP_HAP_SCL_CLK,
-            .sda_pullup_en    = GPIO_PULLUP_DISABLE,
-            .scl_pullup_en    = GPIO_PULLUP_DISABLE,
-            .master.clk_speed = 100 * 1000,
-        };
-        ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_1, &i2c_conf));
-        ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_1, I2C_MODE_MASTER, 0, 0, 0));
-    }
-
     ESP_LOGI(TAG, "Initialized");
 }
 

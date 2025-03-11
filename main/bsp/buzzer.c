@@ -12,7 +12,6 @@
 #include "driver/ledc.h"
 
 
-#define GPIO_OUTPUT_PIN_SEL (1ULL << HAP_BUZZER)
 #define BUZZER_SPEED_MODE   LEDC_LOW_SPEED_MODE
 #define BUZZER_LEDC_TIMER   LEDC_TIMER_1
 #define BUZZER_LEDC_CHANNEL LEDC_CHANNEL_1
@@ -48,7 +47,7 @@ void buzzer_init(void) {
     ledc_channel_config_t ledc_channel = {
         .channel    = BUZZER_LEDC_CHANNEL,
         .duty       = 0,
-        .gpio_num   = BSP_HAP_BUZZER,
+        .gpio_num   = BSP_HAP_BUZ,
         .speed_mode = BUZZER_SPEED_MODE,
         .hpoint     = 0,
         .timer_sel  = BUZZER_LEDC_TIMER,

@@ -16,7 +16,6 @@
 #include "bsp/fs_storage.h"
 #include "bsp/storage.h"
 #include "bsp/msc.h"
-#include "bsp/heartbit.h"
 
 
 static const char *TAG = "Main";
@@ -29,7 +28,6 @@ void app_main(void) {
     ESP_LOGI(TAG, "Main");
 
     bsp_system_init();
-    bsp_heartbit_init(2000);
     storage_init();
     msc_init();
     fs_storage_mount_littlefs();
