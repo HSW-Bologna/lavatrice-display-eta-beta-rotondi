@@ -137,6 +137,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                         case BTN_OK_ID: {
                             model_reset_storage_operation(model);
                             update_page(model, pdata);
+                            break;
                         }
                     }
                     break;

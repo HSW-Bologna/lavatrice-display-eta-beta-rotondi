@@ -572,7 +572,7 @@ size_t model_serialize_parmac(uint8_t *buffer, parmac_t *p) {
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->percentuale_livello_carico_ridotto);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->percentuale_sapone_carico_ridotto);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->f_scarico_recupero);
-    i += serialize_uint16_be(&buffer[i], (uint16_t)p->abilitazione_macchina_libera);
+    i += serialize_uint16_be(&buffer[i], (uint16_t)1);     // Removed, now fixed
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->f_macchina_libera);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->abilitazione_espansione_io);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->tipo_gettoniera);
@@ -707,7 +707,10 @@ size_t model_deserialize_parmac(parmac_t *p, uint8_t *buffer) {
     i += UNPACK_UINT16_BE(p->percentuale_livello_carico_ridotto, &buffer[i]);
     i += UNPACK_UINT16_BE(p->percentuale_sapone_carico_ridotto, &buffer[i]);
     i += UNPACK_UINT16_BE(p->f_scarico_recupero, &buffer[i]);
-    i += UNPACK_UINT16_BE(p->abilitazione_macchina_libera, &buffer[i]);
+    {
+        uint16_t placeholder = 1;
+        i += UNPACK_UINT16_BE(placeholder, &buffer[i]);
+    }
     i += UNPACK_UINT16_BE(p->f_macchina_libera, &buffer[i]);
     i += UNPACK_UINT16_BE(p->abilitazione_espansione_io, &buffer[i]);
     i += UNPACK_UINT16_BE(p->tipo_gettoniera, &buffer[i]);
@@ -999,11 +1002,11 @@ size_t model_pack_parametri_macchina(uint8_t *buffer, parmac_t *p) {
     i += serialize_uint8(&buffer[i], p->tipo_out_aux_2);
     i += serialize_uint8(&buffer[i], p->tipo_out_aux_3);
     i += serialize_uint8(&buffer[i], p->tipo_out_aux_4);
-    i += serialize_uint8(&buffer[i], 0);
+    i += serialize_uint8(&buffer[i], 0);     // Removed, it's now fixed
 
-    i += serialize_uint8(&buffer[i], 0);
+    i += serialize_uint8(&buffer[i], 0);     // Removed, it's now fixed
     i += serialize_uint8(&buffer[i], p->f_scarico_recupero);
-    i += serialize_uint8(&buffer[i], p->abilitazione_macchina_libera);
+    i += serialize_uint8(&buffer[i], 1);     // Removed, it's now fixed
     i += serialize_uint8(&buffer[i], p->f_macchina_libera);
     i += serialize_uint8(&buffer[i], p->abilitazione_espansione_io);
     i += serialize_uint8(&buffer[i], p->tipo_gettoniera);

@@ -23,6 +23,7 @@ enum {
     BTN_COMMUNICATION_ID,
     BTN_FACTORY_RESET_ID,
     BTN_ACCESS_ID,
+    BTN_NAME_ID,
 };
 
 
@@ -102,6 +103,20 @@ static void open_page(pman_handle_t handle, void *state) {
         view_register_object_default_callback(btn, BTN_ACCESS_ID);
     }
 
+    {
+        lv_obj_t *btn = lv_btn_create(cont);
+        lv_obj_set_width(btn, 280);
+        lv_obj_t *lbl = lv_label_create(btn);
+        lv_obj_set_style_text_align(lbl, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);
+        lv_label_set_long_mode(lbl, LV_LABEL_LONG_WRAP);
+        lv_obj_set_width(lbl, 270);
+        lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_RINOMINA_MACCHINA));
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        lv_obj_align(lbl, LV_ALIGN_CENTER, 0, 0);
+
+        view_register_object_default_callback(btn, BTN_NAME_ID);
+    }
+
     VIEW_ADD_WATCHED_VARIABLE(&model->system.comunicazione_abilitata, 0);
 
     update_page(model, pdata);
@@ -157,6 +172,11 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             model->prog.parmac.livello_accesso = (model->prog.parmac.livello_accesso + 1) % 4;
                             pdata->modified                    = 1;
                             update_page(model, pdata);
+                            break;
+
+                        case BTN_NAME_ID:
+                            msg.stack_msg   = PMAN_STACK_MSG_PUSH_PAGE_EXTRA(&page_keyboard, model->prog.parmac.nome);
+                            pdata->modified = 1;
                             break;
                     }
                     break;

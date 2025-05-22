@@ -8,7 +8,7 @@
 #include "parmac.h"
 #include "descriptions/AUTOGEN_FILE_pars.h"
 
-#define NUM_PARAMETERS 107
+#define NUM_PARAMETERS 106
 
 enum {
     LIVELLO_ACCESSO_ESTESI  = 0,
@@ -75,7 +75,6 @@ void parmac_init(model_t *pmodel, int reset) {
     ps[i++] = PARAMETER(&p->abilitazione_espansione_io, 0, 1, 1, FOPT(PARS_DESCRIPTIONS_ESPANSIONE_IO, pars_abilitazione), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->numero_saponi_utilizzabili, 3, 10, 6, FINT(PARS_DESCRIPTIONS_NUMERO_SAPONI), BIT_TECNICO);
     ps[i++] = PARAMETER(&p->esclusione_sapone, 0, 10, 0, FINT(PARS_DESCRIPTIONS_ESCLUSIONE_SAPONE), BIT_COSTRUTTORE);
-    ps[i++] = PARAMETER(&p->abilitazione_macchina_libera, 0, 2, 2, FOPT(PARS_DESCRIPTIONS_MACCHINA_LIBERA, pars_macchina_libera), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->f_macchina_libera, 0, 1, 1, FOPT(PARS_DESCRIPTIONS_TIPO_MACCHINA_LIBERA, pars_na_nc), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->tipo_out_aux_1, 0, 1, 1, FOPT(PARS_DESCRIPTIONS_TIPO_IN_AUX_1, &pars_ausiliari[0]), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->tipo_out_aux_2, 0, 1, 1, FOPT(PARS_DESCRIPTIONS_TIPO_OUT_AUX_2, &pars_ausiliari[2]), BIT_COSTRUTTORE);

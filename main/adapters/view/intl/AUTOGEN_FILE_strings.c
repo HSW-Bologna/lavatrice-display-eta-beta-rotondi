@@ -1,4 +1,4 @@
-const char *strings[152][2] = {
+const char *strings[153][2] = {
     {"Diagnosi", "Test", },
     {"Ingressi", "Inputs", },
     {"Uscite", "Outputs", },
@@ -151,5 +151,6 @@ const char *strings[152][2] = {
     {"Giorno", "Day", },
     {"Mese", "Month", },
     {"Anno", "Year", },
+    {"Rinomina macchina", "Rename machine", },
 };
 

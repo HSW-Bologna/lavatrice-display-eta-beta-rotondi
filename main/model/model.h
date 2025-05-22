@@ -156,7 +156,6 @@ typedef struct {
     uint16_t tipo_out_aux_3;
     uint16_t tipo_out_aux_4;
     uint16_t f_scarico_recupero;
-    uint16_t abilitazione_macchina_libera;
     uint16_t f_macchina_libera;
     uint16_t abilitazione_espansione_io;
     uint16_t tipo_gettoniera;

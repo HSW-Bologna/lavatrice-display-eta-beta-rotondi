@@ -154,8 +154,9 @@ typedef enum {
     STRINGS_GIORNO,
     STRINGS_MESE,
     STRINGS_ANNO,
+    STRINGS_RINOMINA_MACCHINA,
 } strings_t;
 
-extern const char *strings[152][2];
+extern const char *strings[153][2];
 
 #endif

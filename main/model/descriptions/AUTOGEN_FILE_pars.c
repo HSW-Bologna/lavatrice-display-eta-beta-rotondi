@@ -243,7 +243,7 @@ const char *pars_descriptions[169][5] = {
     {"Espansione IO", "IO expansion", "Expansión IO", "Extension IO", "IO-Erweiterung", },
     {"Esclusione sapone", "Detergent exclusion", "Exclusión de jabón", "Exclusion du savon", "Ausschluss von Seife", },
     {"Macchina libera", "Machine free", "Máquina libre", "Machine libre", "Freie Maschine", },
-    {"Tipo macchina libera", "Machine free signal", "Máquina tipo libre", "Type de machine libre", "Maschinentyp frei", },
+    {"Tipo contatto macchina libera", "Machine free signal type", "Máquina tipo libre", "Type de machine libre", "Maschinentyp frei", },
     {"Tipo IN ausiliario 1", "Auxiliary IN type 1", "Auxiliar IN tipo 1", "Entrée auxiliaire type 1", "Auxiliary IN Typ 1", },
     {"Tipo OUT ausiliario 2", "Auxiliary OUT type 2", "Auxiliar OUT tipo 2", "Auxiliaire OUT type 2", "Auxiliary OUT Typ 2", },
     {"Tipo OUT ausiliario 3", "Auxiliary OUT type 3", "Auxiliar OUT tipo 3", "Auxiliaire OUT type 3", "Hilfsausgang Typ 3", },
