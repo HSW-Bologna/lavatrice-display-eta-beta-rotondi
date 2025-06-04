@@ -100,6 +100,7 @@ typedef struct {
     uint16_t abilitazione_acqua_calda;
     uint16_t abilitazione_acqua_depurata;
     uint16_t abilitazione_recupero;
+    uint16_t abilitazione_smart_wave;
 } parametri_step_t;
 
 typedef struct {

@@ -74,6 +74,11 @@ typedef struct {
     void (*beep)(void);
     void (*set_time)(pman_handle_t handle, struct tm new_time);
     void (*clear_alarms)(pman_handle_t handle);
+    void (*update_work_parameters)(pman_handle_t handle);
+    void (*save_password)(pman_handle_t handle);
+    void (*toggle_exclude_detergent)(pman_handle_t handle);
+    void (*controllo_sapone)(pman_handle_t handle, uint16_t sapone, uint8_t valore);
+    void (*colpo_sapone)(pman_handle_t handle, uint16_t sapone);
 } view_protocol_t;
 
 
@@ -95,7 +100,7 @@ extern const pman_page_t page_main, page_password, page_menu, page_test_inputs, 
     page_test_level, page_test_temperature, page_test_coins_digital, page_test_coins_mechanical, page_test_led,
     page_test_lock, page_drive, page_import_configuration, page_choice, page_parmac, page_washing, page_programs,
     page_program, page_program_info, page_main_self, page_washing_self, page_choice_self, page_advanced, page_keyboard,
-    page_price, page_step, page_datetime, page_pick_program;
+    page_price, page_step, page_datetime, page_pick_program, page_work_parameters, page_numpad;
 
 
 #endif

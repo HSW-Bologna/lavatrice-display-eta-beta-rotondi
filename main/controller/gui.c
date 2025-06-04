@@ -47,6 +47,11 @@ static void reset(pman_handle_t handle);
 static void update_firmware(pman_handle_t handle);
 static void set_time(pman_handle_t handle, struct tm new_time);
 static void clear_alarms(pman_handle_t handle);
+static void update_work_parameters(pman_handle_t handle);
+static void save_password(pman_handle_t handle);
+static void toggle_exclude_detergent(pman_handle_t handle);
+static void colpo_sapone(pman_handle_t handle, uint16_t sapone);
+static void controllo_sapone(pman_handle_t handle, uint16_t sapone, uint8_t valore);
 
 
 view_protocol_t controller_gui_protocol = {
@@ -79,6 +84,11 @@ view_protocol_t controller_gui_protocol = {
     .update_firmware            = update_firmware,
     .set_time                   = set_time,
     .clear_alarms               = clear_alarms,
+    .update_work_parameters     = update_work_parameters,
+    .save_password              = save_password,
+    .toggle_exclude_detergent   = toggle_exclude_detergent,
+    .controllo_sapone           = controllo_sapone,
+    .colpo_sapone               = colpo_sapone,
 };
 
 
@@ -334,4 +344,37 @@ static void set_time(pman_handle_t handle, struct tm new_time) {
         ESP_LOGW(TAG, "Unable to set RTC time!");
     }
     system_time_set(&new_time);
+}
+
+
+static void update_work_parameters(pman_handle_t handle) {
+    mut_model_t *model = view_get_model(handle);
+    machine_modify_cycle_parameters(model_get_current_step_number(model), model->run.duration,
+                                    model->run.speed_setpoint, model->run.temperature_setpoint,
+                                    model->run.level_setpoint);
+}
+
+
+static void save_password(pman_handle_t handle) {
+    mut_model_t *model = view_get_model(handle);
+    configuration_save_password(model->prog.password);
+}
+
+
+static void toggle_exclude_detergent(pman_handle_t handle) {
+    mut_model_t *model             = view_get_model(handle);
+    model->run.detergent_exclusion = !model->run.detergent_exclusion;
+    machine_exclude_detergent(model->run.detergent_exclusion);
+}
+
+
+static void controllo_sapone(pman_handle_t handle, uint16_t sapone, uint8_t valore) {
+    (void)handle;
+    machine_control_detergent(sapone, valore);
+}
+
+
+static void colpo_sapone(pman_handle_t handle, uint16_t sapone) {
+    (void)handle;
+    machine_activate_detergent(sapone);
 }

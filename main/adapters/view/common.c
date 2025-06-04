@@ -214,19 +214,14 @@ const char *view_common_alarm_description(model_t *pmodel) {
 
 
 const char *view_require_payment_string(model_t *pmodel, int language) {
-    switch (pmodel->prog.parmac.tipo_gettoniera) {
-        case PAGAMENTO_1_LINEA_NA:
-        case PAGAMENTO_1_LINEA_NC:
-        case PAGAMENTO_2_LINEA_NA:
-        case PAGAMENTO_2_LINEA_NC:
+    switch (pmodel->prog.parmac.richiesta_pagamento) {
+        case 0:
             return view_intl_get_string_in_language(language, STRINGS_PAGARE_GETTONE);
 
-        case PAGAMENTO_DIGITALE:
-        case PAGAMENTO_DIGITALE_LINEA_SINGOLA:
+        case 1:
             return view_intl_get_string_in_language(language, STRINGS_PAGARE_MONETA);
 
-        case PAGAMENTO_CASSA_NA:
-        case PAGAMENTO_CASSA_NC:
+        case 2:
             return view_intl_get_string_in_language(language, STRINGS_PAGARE_CASSA);
 
         default:

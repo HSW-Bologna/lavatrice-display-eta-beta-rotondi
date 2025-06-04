@@ -59,6 +59,7 @@ static void open_page(pman_handle_t handle, void *state) {
     lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES - 56);
     lv_obj_add_style(cont, (lv_style_t *)&style_padless_cont, LV_STATE_DEFAULT);
     lv_obj_align(cont, LV_ALIGN_BOTTOM_MID, 0, 0);
+    lv_obj_remove_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
 
     lv_obj_t *ta = lv_textarea_create(cont);
     lv_textarea_set_one_line(ta, 1);

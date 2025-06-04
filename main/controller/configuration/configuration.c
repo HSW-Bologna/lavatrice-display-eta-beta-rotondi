@@ -38,6 +38,8 @@
 static int load_parmac(parmac_t *parmac);
 
 
+static const char *CONFIGURATION_KEY_PASSWORD = "PASSWORD";
+
 static const char *TAG = "Configuration";
 
 /*
@@ -533,8 +535,15 @@ int configuration_save_data_version(void) {
 }
 
 
+void configuration_save_password(const char *password) {
+    storage_save_str(password, (char *)CONFIGURATION_KEY_PASSWORD);
+}
+
+
 int configuration_load_all_data(model_t *pmodel) {
     configuration_load_contrast(pmodel);
+
+    storage_load_str(pmodel->prog.password, MAX_NAME_LENGTH, (char *)CONFIGURATION_KEY_PASSWORD);
 
     int err = load_parmac(&pmodel->prog.parmac);
 

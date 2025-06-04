@@ -51,6 +51,7 @@ enum {
     BTN_PLACEHOLDER_ID,
     BTN_START_ID,
     BTN_STOP_ID,
+    BTN_DETERGENT_ID,
     BTN_LANGUAGE_ID,
     TIMER_BACK_ID,
     TIMER_MINUTES_ID,
@@ -63,6 +64,7 @@ static const char *TAG = __FILE_NAME__;
 struct page_data {
     lv_obj_t *button_start;
     lv_obj_t *button_stop;
+    lv_obj_t *button_detergent;
 
     lv_obj_t *label_status;
     lv_obj_t *label_credit;
@@ -170,13 +172,36 @@ static void open_page(pman_handle_t handle, void *state) {
     }
 
     {
-        lv_obj_t *img = lv_img_create(cont);
-        lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
-        lv_image_set_src(img, &img_stop_released);
-        lv_obj_align(img, LV_ALIGN_TOP_LEFT, 0, 72);
-        view_register_object_default_callback(img, BTN_STOP_ID);
-        pdata->button_stop = img;
+        LV_IMG_DECLARE(img_door)
+
+        lv_obj_t *btn = lv_button_create(cont);
+        lv_obj_add_style(btn, (lv_style_t *)&style_config_btn, LV_STATE_DEFAULT);
+        lv_obj_add_style(btn, (lv_style_t *)&style_icon_button, LV_STATE_DEFAULT);
+        lv_obj_set_size(btn, 64, 64);
+        lv_obj_t *img = lv_image_create(btn);
+        lv_image_set_src(img, &img_door);
+        lv_obj_add_style(img, &style_white_icon, LV_STATE_DEFAULT);
+        lv_obj_center(img);
+        lv_obj_align(btn, LV_ALIGN_TOP_LEFT, 0, 72);
+        view_register_object_default_callback(btn, BTN_STOP_ID);
+
+        pdata->button_stop = btn;
     }
+
+    {
+        LV_IMG_DECLARE(img_soap);
+        lv_obj_t *btn = lv_btn_create(cont);
+        lv_obj_add_style(btn, (lv_style_t *)&style_config_btn, LV_STATE_DEFAULT);
+        lv_obj_add_style(btn, (lv_style_t *)&style_icon_button, LV_STATE_DEFAULT);
+        lv_obj_set_size(btn, 64, 64);
+        lv_obj_t *img = lv_img_create(btn);
+        lv_img_set_src(img, &img_soap);
+        lv_obj_center(img);
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, 0, -32);
+        view_register_object_default_callback(btn, BTN_DETERGENT_ID);
+        pdata->button_detergent = btn;
+    }
+
 
     {
         lv_obj_t *lbl = lv_label_create(lv_screen_active());
@@ -300,6 +325,12 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             break;
                         }
 
+                        case BTN_DETERGENT_ID: {
+                            view_get_protocol(handle)->toggle_exclude_detergent(handle);
+                            update_page(model, pdata);
+                            break;
+                        }
+
                         default:
                             break;
                     }
@@ -321,6 +352,11 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
 
 static void update_page(model_t *model, struct page_data *pdata) {
+    LV_IMG_DECLARE(img_nosoap);
+    LV_IMG_DECLARE(img_soap);
+    view_common_set_hidden(pdata->button_detergent, !model->prog.parmac.visualizzazione_esclusione_sapone);
+    lv_img_set_src(lv_obj_get_child(pdata->button_detergent, 0),
+                   model->run.detergent_exclusion ? &img_nosoap : &img_soap);
 
     const char *status_string =
         view_intl_get_string_in_language(model_get_temporary_language(model), STRINGS_SCELTA_PROGRAMMA);

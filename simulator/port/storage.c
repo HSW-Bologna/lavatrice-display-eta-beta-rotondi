@@ -136,6 +136,36 @@ void storage_save_blob(void *value, size_t len, char *key) {
 }
 
 
+int storage_load_str(void *value, size_t len, const char *key) {
+    (void)len;
+    cJSON *json    = read_database();
+    cJSON *encoded = cJSON_GetObjectItemCaseSensitive(json, key);
+    if (!cJSON_IsString(encoded)) {
+        printf("Mi aspettavo una stringa (b64) per %s\n", key);
+        cJSON_free(encoded);
+        cJSON_free(json);
+        return -1;
+    } else {
+        strcpy(value, encoded->valuestring);
+        cJSON_free(encoded);
+        cJSON_free(json);
+        return 0;
+    }
+}
+
+
+void storage_save_str(void *value, const char *key) {
+    cJSON *json = read_database();
+    cJSON_DeleteItemFromObjectCaseSensitive(json, key);
+    if (cJSON_AddStringToObject(json, key, value) == NULL) {
+        printf("Non sono riuscito ad aggiungere %s", key);
+    } else {
+        write_database(json);
+    }
+    cJSON_free(json);
+}
+
+
 static cJSON *read_database() {
     FILE *f = fopen(DATABASE_FILE, "r");
     if (f == NULL) {

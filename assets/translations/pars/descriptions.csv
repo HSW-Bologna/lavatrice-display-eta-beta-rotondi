@@ -1,12 +1,12 @@
 Identificatore, Italiano, Inglese,Spagnolo,Francese,Tedesco
-PARAMETRO, PARAMETRO, Parameter, PARÁMETRO, PARAMÈTRE, PARAMETER
-LINGUA, LINGUA, LANGUAGE, IDIOMA, LANGUE, SPRACHE
-LOGO, LOGO, LOGO, LOGO, LOGO, LOGO
+PARAMETRO, Parametro, Parameter, Parámetro, Paramètre, Parameter
+LINGUA, Lingua, Language, Idioma, Langue, SprachE
+LOGO, Logo, Logo, Logo, Logo, Logo
 NODO_MACCHINA, Nodo macchina, Machine node, Nodo máquina, Nœud de la machine, Maschinenknoten
-LIVELLO_ACCESSO, LIVELLO DI ACCESSO, ACCESS LEVEL, NIVEL DE ACCESO, NIVEAU D'ACCES, ZUGRIFFSEBENE
-TEMPO_TASTO_PAUSA, TEMPO TASTO PAUSA, PAUSE BUTTON TIME, BOTÓN DE PAUSA TIEMPO, DURÉE DE LA TOUCHE PAUSE, PAUSE-TASTE ZEIT
-TEMPO_TASTO_STOP, TEMPO TASTO STOP, STOP BUTTON TIME, BOTÓN DE PARADA TIEMPO, BOUTON D'ARRET TEMPS, STOP-TASTE ZEIT
-TEMPO_OUT_PAGINE, TEMPO OUT PAGINE, OUT PAGE TIME, TIEMPO FUERA PÁGINAS, TEMPS DE SORTIE PAGES, TIME OUT SEITEN
+LIVELLO_ACCESSO, Livello di accesso, Access level, Nivel de acceso, Niveau d'acces, Zugriffsebene
+TEMPO_TASTO_PAUSA, Tempo tasto pausa, Pause button time, Botón de pausa tiempo, Durée de la touche pause, Pause-taste zeit
+TEMPO_TASTO_STOP, Tempo tasto stop, Stop button time, Botón de parada tiempo, Bouton d'arret temps, Stop-taste zeit
+TEMPO_OUT_PAGINE, Tempo out pagine, Out page time, Tiempo fuera páginas, Temps de sortie pages, Time out seiten
 DURATA, Durata, Duration, Duración, Durée de l'activité, Dauer
 TEMPO_ATTIVO, Tempo attivo, Active time, Tiempo activo, Temps actif, Aktive Zeit
 MOTO_IN_RIEMPIMENTO, Moto in riempimento, Fillup motion, Marcha de llenado, Mode de remplissage, Füllgeschwindigkeit
@@ -62,7 +62,6 @@ LITRI_MASSIMI, Litri massimi, Maximum liters, Litros máximos, Lits maximums, Ma
 LITRI_MINIMI_RISCALDAMENTO, Litri minimi riscaldamento, Minimum heating liters, Calentamiento mínimo litros, Chauffage minimum litres, Minimale Heizleistung Liter
 IMPULSI_LITRI, Impulsi litri, Pulses per liters, Pulsos litros, Impulsions litres, Pulsierende Liter
 TIPO_INVERTER, Tipo inverter, Inverter type, Tipo de inversor, Type d'inverseur, Inverter-Typ
-VELOCITA_SERVIZIO, Velocita' servizio, Service speed, Velocidad de servicio, Vitesse de service, Betriebsgeschwindigkeit
 VELOCITA_MINIMA_LAVAGGIO, Velocita' minima lavaggio, Minimum wash speed, Velocidad mínima de lavado, Vitesse de lavage minimum, Minimale Waschgeschwindigkeit
 VELOCITA_MASSIMA_LAVAGGIO, Velocita' massima lavaggio, Maximum wash speed, Velocidad máxima de lavado, Vitesse de lavage maximale, Maximale Waschgeschwindigkeit
 PREPARAZIONE_ROTAZIONE, Cicli preparazione, Preparation cycles, Ciclos de preparación, Cycles de préparation, Aufbereitungszyklen
@@ -169,3 +168,5 @@ MAX_PROGRAMMI_UTENTE, Max programmi utente, Max user programs, Programas de usua
 RIPETIZIONE_CICLO, Ripetizione ciclo, Cycle repetition, Repetición de ciclo, Répétition du cycle, Zykluswiederholung
 INTERFACCIA_SAPONI, Interf. saponi, Detergent interf., Interfaz de jabón, Interface savon, Seifenschnittstelle
 TEMPO_SCARICO, Tempo scarico servizio, Service drain time, Tiempo de drenaje de servicio, Temps de vidange du service, Service-Ablaufzeit
+SMART_WAVE, Smart Wave, Smart Wave, Smart Wave, Smart Wave, Smart Wave
+VISUALIZZAZIONE_ESCLUSIONE_SAPONE, Visualizzazione esclusione sapone, Show detergent exclusion, Show detergent exclusion, Show detergent exclusion, Show detergent exclusion

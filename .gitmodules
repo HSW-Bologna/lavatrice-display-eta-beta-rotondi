@@ -37,3 +37,6 @@
 [submodule "components/c-i2c-drivers"]
 	path = components/c-i2c-drivers
 	url = https://github.com/Maldus512/c-i2c-drivers.git
+[submodule "components/c-stopwatch"]
+	path = components/c-stopwatch
+	url = https://github.com/Maldus512/c-stopwatch.git

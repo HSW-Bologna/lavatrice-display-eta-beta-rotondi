@@ -205,6 +205,9 @@ void controller_manage(mut_model_t *pmodel) {
                 }
                 initial_level_check = 1;
 
+                if (model_macchina_in_stop(pmodel)) {
+                    pmodel->run.detergent_exclusion = 0;
+                }
                 // view_event((view_event_t){.code = VIEW_EVENT_CODE_MODEL_UPDATE});
 
                 if (pending_state_change) {

@@ -69,5 +69,6 @@ void machine_imposta_led(uint8_t led);
 void machine_azzera_credito(void);
 void machine_payment_state(uint8_t payment_state);
 void machine_enable_digital_coin_reader(uint8_t enable);
+void machine_exclude_detergent(uint8_t value);
 
 #endif

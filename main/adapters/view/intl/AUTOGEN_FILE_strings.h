@@ -155,8 +155,12 @@ typedef enum {
     STRINGS_MESE,
     STRINGS_ANNO,
     STRINGS_RINOMINA_MACCHINA,
+    STRINGS_VELOCITA,
+    STRINGS_DURATA,
+    STRINGS_PASSWORD,
+    STRINGS_SAPONE,
 } strings_t;
 
-extern const char *strings[153][2];
+extern const char *strings[157][2];
 
 #endif

@@ -10,6 +10,12 @@
 #define MENU_BUTTON_WIDTH LV_PCT(48);
 
 
+typedef struct {
+    char    *string;
+    uint8_t  numeric;
+    uint16_t max_length;
+} keyboard_page_options_t;
+
 typedef enum {
     VIEW_COMMON_PAGE_TEST_DRUM_TYPE_BACKWARD = 0,
     VIEW_COMMON_PAGE_TEST_DRUM_TYPE_FORWARD,

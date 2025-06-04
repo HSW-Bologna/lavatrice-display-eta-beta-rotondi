@@ -46,6 +46,8 @@
 
 
 struct page_data {
+    keyboard_page_options_t keyboard_options;
+
     lv_obj_t *btn_drive;
 };
 
@@ -59,6 +61,7 @@ enum {
     BTN_ADVANCED_ID,
     BTN_DATETIME_ID,
     BTN_PROGRAMMED_WASH_ID,
+    BTN_PASSWORD_ID,
 };
 
 
@@ -84,7 +87,8 @@ static void open_page(pman_handle_t handle, void *state) {
     view_common_create_title(lv_scr_act(), view_intl_get_string(model, STRINGS_IMPOSTAZIONI), BTN_BACK_ID, -1);
 
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
-    lv_obj_set_style_pad_column(cont, 8, LV_STATE_DEFAULT);
+    lv_obj_set_style_pad_column(cont, 4, LV_STATE_DEFAULT);
+    lv_obj_set_style_pad_row(cont, 4, LV_STATE_DEFAULT);
     lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES - 56);
     lv_obj_set_layout(cont, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(cont, LV_FLEX_FLOW_ROW_WRAP);
@@ -162,6 +166,16 @@ static void open_page(pman_handle_t handle, void *state) {
         view_register_object_default_callback(btn, BTN_PROGRAMMED_WASH_ID);
     }
 
+    {
+        lv_obj_t *btn = lv_btn_create(cont);
+        lv_obj_set_width(btn, 140);
+        lv_obj_t *lbl = lv_label_create(btn);
+        lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_PASSWORD));
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        lv_obj_center(lbl);
+        view_register_object_default_callback(btn, BTN_PASSWORD_ID);
+    }
+
     lv_obj_t *label_machine_name = lv_label_create(lv_screen_active());
     lv_obj_set_style_text_font(label_machine_name, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
     lv_obj_align(label_machine_name, LV_ALIGN_TOP_MID, 0, 64);
@@ -171,18 +185,18 @@ static void open_page(pman_handle_t handle, void *state) {
     lv_obj_set_style_text_font(label_machine_version, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(label_machine_version, lv_color_lighten(VIEW_STYLE_COLOR_GREEN, LV_OPA_50),
                                 LV_STATE_DEFAULT);
-    lv_label_set_text_fmt(label_machine_version, "%s %s", model->system.machine_fw_version,
+    lv_label_set_text_fmt(label_machine_version, "macchina %s %s", model->system.machine_fw_version,
                           model->system.machine_fw_date);
-    lv_obj_align(label_machine_version, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+    lv_obj_align(label_machine_version, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
 
     lv_obj_t *label_display_version = lv_label_create(lv_screen_active());
     lv_obj_set_style_text_font(label_display_version, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(label_display_version, lv_color_lighten(VIEW_STYLE_COLOR_RED, LV_OPA_50),
                                 LV_STATE_DEFAULT);
-    lv_label_set_text_fmt(label_display_version, "v%i.%i.%i %02i/%02i/%i", APP_CONFIG_FIRMWARE_VERSION_MAJOR,
+    lv_label_set_text_fmt(label_display_version, "display v%i.%i.%i %02i/%02i/%i", APP_CONFIG_FIRMWARE_VERSION_MAJOR,
                           APP_CONFIG_FIRMWARE_VERSION_MINOR, APP_CONFIG_FIRMWARE_VERSION_PATCH, COMPUTE_BUILD_DAY,
                           COMPUTE_BUILD_MONTH, COMPUTE_BUILD_YEAR);
-    lv_obj_align(label_display_version, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+    lv_obj_align(label_display_version, LV_ALIGN_BOTTOM_LEFT, 0, -18);
 
     VIEW_ADD_WATCHED_VARIABLE(&model->system.removable_drive_state, 0);
 
@@ -254,6 +268,15 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                         case BTN_PROGRAMMED_WASH_ID:
                             msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_pick_program);
                             break;
+
+                        case BTN_PASSWORD_ID: {
+                            pdata->keyboard_options.max_length = strlen(APP_CONFIG_BACKDOOR_PASSWORD);
+                            pdata->keyboard_options.numeric    = 1;
+                            pdata->keyboard_options.string     = model->prog.password;
+
+                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE_EXTRA(&page_numpad, &pdata->keyboard_options);
+                            break;
+                        }
                     }
                     break;
                 }

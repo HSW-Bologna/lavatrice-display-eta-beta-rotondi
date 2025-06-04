@@ -54,6 +54,7 @@ enum {
     BTN_LANGUAGE_ID,
     BTN_LEFT_ID,
     BTN_RIGHT_ID,
+    BTN_MENU_ID,
 };
 
 
@@ -236,6 +237,20 @@ static void open_page(pman_handle_t handle, void *state) {
         pdata->image_language = img;
     }
 
+    if (model->prog.parmac.visualizzazione_menu) {
+        LV_IMG_DECLARE(img_user);
+        lv_obj_t *btn = lv_btn_create(cont);
+        lv_obj_add_style(btn, (lv_style_t *)&style_config_btn, LV_STATE_DEFAULT);
+        lv_obj_add_style(btn, (lv_style_t *)&style_icon_button, LV_STATE_DEFAULT);
+        lv_obj_set_size(btn, 64, 64);
+        lv_obj_t *img = lv_img_create(btn);
+        lv_image_set_scale(img, 200);
+        lv_img_set_src(img, &img_user);
+        lv_obj_center(img);
+        lv_obj_align(btn, LV_ALIGN_RIGHT_MID, 4, 18);
+        view_register_object_default_callback(btn, BTN_MENU_ID);
+    }
+
     {
         lv_obj_t *img = lv_image_create(cont);
         lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
@@ -351,6 +366,12 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             break;
                         }
 
+                        case BTN_MENU_ID: {
+                            if (!model_macchina_in_stop(model)) {
+                                msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_work_parameters);
+                            }
+                            break;
+                        }
 
                         default:
                             break;

@@ -386,7 +386,10 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             break;
 
                         case BTN_STEP_ID: {
-                            if (pdata->selected_step == obj_data->number) {
+                            programma_lavatrice_t *program = model_get_program(model);
+                            if (program->num_steps == 0) {
+                                pdata->page_state = PAGE_STATE_NEW;
+                            } else if (pdata->selected_step == obj_data->number) {
                                 pdata->selected_step = -1;
                             } else {
                                 pdata->selected_step = obj_data->number;
@@ -555,27 +558,36 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 static void update_page(model_t *model, struct page_data *pdata) {
     programma_lavatrice_t *program = model_get_program(model);
 
-    for (uint16_t i = 0; i < STEP_WINDOW_SIZE; i++) {
-        uint16_t absolute_index = pdata->step_window_index * STEP_WINDOW_SIZE + i;
+    if (program->num_steps == 0) {
+        view_common_set_hidden(pdata->button_programs[0], 0);
+        lv_label_set_text(pdata->label_numbers[0], LV_SYMBOL_PLUS);
+        lv_label_set_text(pdata->label_names[0], view_intl_get_string(model, STRINGS_NUOVO_PASSO));
 
-        if (absolute_index < program->num_steps && pdata->page_state == PAGE_STATE_SELECTION) {
-            parametri_step_t *step = &program->steps[absolute_index];
+        view_common_set_hidden(pdata->button_programs[1], 1);
+        view_common_set_hidden(pdata->button_programs[2], 2);
+    } else {
+        for (uint16_t i = 0; i < STEP_WINDOW_SIZE; i++) {
+            uint16_t absolute_index = pdata->step_window_index * STEP_WINDOW_SIZE + i;
 
-            if (pdata->selected_step == i) {
-                lv_obj_add_state(pdata->button_programs[i], LV_STATE_CHECKED);
+            if (absolute_index < program->num_steps && pdata->page_state == PAGE_STATE_SELECTION) {
+                parametri_step_t *step = &program->steps[absolute_index];
+
+                if (pdata->selected_step == i) {
+                    lv_obj_add_state(pdata->button_programs[i], LV_STATE_CHECKED);
+                } else {
+                    lv_obj_remove_state(pdata->button_programs[i], LV_STATE_CHECKED);
+                }
+
+                const char *string = view_common_step2str(model, step->tipo);
+                if (strcmp(lv_label_get_text(pdata->label_names[i]), string)) {
+                    lv_label_set_text(pdata->label_names[i], string);
+                }
+                lv_label_set_text_fmt(pdata->label_numbers[i], "%i.", absolute_index + 1);
+
+                view_common_set_hidden(pdata->button_programs[i], 0);
             } else {
-                lv_obj_clear_state(pdata->button_programs[i], LV_STATE_CHECKED);
+                view_common_set_hidden(pdata->button_programs[i], 1);
             }
-
-            const char *string = view_common_step2str(model, step->tipo);
-            if (strcmp(lv_label_get_text(pdata->label_names[i]), string)) {
-                lv_label_set_text(pdata->label_names[i], string);
-            }
-            lv_label_set_text_fmt(pdata->label_numbers[i], "%i.", absolute_index + 1);
-
-            view_common_set_hidden(pdata->button_programs[i], 0);
-        } else {
-            view_common_set_hidden(pdata->button_programs[i], 1);
         }
     }
 

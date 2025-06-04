@@ -18,5 +18,7 @@ int  storage_load_uint64(uint64_t *value, char *key);
 void storage_save_uint64(uint64_t *value, char *key);
 int  storage_load_blob(void *value, size_t len, char *key);
 void storage_save_blob(void *value, size_t len, char *key);
+int  storage_load_str(char *value, size_t len, char *key);
+void storage_save_str(const char *value, char *key);
 
 #endif

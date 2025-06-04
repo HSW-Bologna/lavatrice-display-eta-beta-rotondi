@@ -2,6 +2,9 @@
 #include "style.h"
 
 
+static lv_color_t dark_color_filter_cb(const lv_color_filter_dsc_t *f, lv_color_t c, lv_opa_t opa);
+
+
 static const lv_style_const_prop_t style_transparent_cont_props[] = {
     LV_STYLE_CONST_PAD_BOTTOM(0), LV_STYLE_CONST_PAD_TOP(0),      LV_STYLE_CONST_PAD_LEFT(0),
     LV_STYLE_CONST_PAD_RIGHT(0),  LV_STYLE_CONST_BORDER_WIDTH(0), LV_STYLE_CONST_BG_OPA(LV_OPA_TRANSP),
@@ -64,11 +67,16 @@ static const lv_style_const_prop_t style_black_icon_props[] = {
 LV_STYLE_CONST_INIT(style_black_icon, (void *)style_black_icon_props);
 
 
-lv_style_t style_work_button = {0};
-lv_style_t style_tall_button = {0};
+lv_style_t style_work_button         = {0};
+lv_style_t style_tall_button         = {0};
+lv_style_t style_tall_button_checked = {0};
+
+static lv_color_filter_dsc_t dark_filter;
 
 
 void style_init(void) {
+    lv_color_filter_dsc_init(&dark_filter, dark_color_filter_cb);
+
     lv_style_init(&style_work_button);
     lv_style_set_border_width(&style_work_button, 0);
     lv_style_set_border_color(&style_work_button, VIEW_STYLE_PRIMARY);
@@ -81,6 +89,14 @@ void style_init(void) {
     lv_style_set_border_width(&style_tall_button, 2);
     lv_style_set_border_color(&style_tall_button, lv_color_darken(VIEW_STYLE_COLOR_BACKGROUND, LV_OPA_20));
 
+    lv_style_init(&style_tall_button_checked);
+    lv_style_set_bg_color(&style_tall_button_checked, VIEW_STYLE_COLOR_WHITE);
+    lv_style_set_text_color(&style_tall_button_checked, VIEW_STYLE_COLOR_BLACK);
+    lv_style_set_border_width(&style_tall_button_checked, 4);
+    lv_style_set_border_color(&style_tall_button_checked, lv_color_hex(0xf79410));
+    lv_style_set_color_filter_dsc(&style_tall_button_checked, &dark_filter);
+    lv_style_set_color_filter_opa(&style_tall_button_checked, 60);
+
     /*
             lv_obj_set_style_bg_color(button, STYLE_COLOR_WHITE, LV_STATE_CHECKED);
             lv_obj_set_style_pad_bottom(button, 0, LV_STATE_CHECKED);
@@ -88,4 +104,10 @@ void style_init(void) {
             lv_obj_set_style_border_color(button, STYLE_COLOR_TEXT, LV_STATE_CHECKED);
             lv_obj_set_style_text_color(button, STYLE_COLOR_TEXT, LV_STATE_CHECKED);
             */
+}
+
+
+static lv_color_t dark_color_filter_cb(const lv_color_filter_dsc_t *f, lv_color_t c, lv_opa_t opa) {
+    LV_UNUSED(f);
+    return lv_color_darken(c, opa);
 }

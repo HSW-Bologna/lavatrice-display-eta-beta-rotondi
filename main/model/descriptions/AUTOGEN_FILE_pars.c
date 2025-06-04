@@ -93,15 +93,15 @@ const char *pars_tipo_inverter[2][5] = {
     {"Marcia/direzione", "Run/direction", "Avance/dirección", "Avant/direction", "Vorwärts/Richtung", },
 };
 
-const char *pars_descriptions[169][5] = {
-    {"PARAMETRO", "Parameter", "PARÁMETRO", "PARAMÈTRE", "PARAMETER", },
-    {"LINGUA", "LANGUAGE", "IDIOMA", "LANGUE", "SPRACHE", },
-    {"LOGO", "LOGO", "LOGO", "LOGO", "LOGO", },
+const char *pars_descriptions[171][5] = {
+    {"Parametro", "Parameter", "Parámetro", "Paramètre", "Parameter", },
+    {"Lingua", "Language", "Idioma", "Langue", "SprachE", },
+    {"Logo", "Logo", "Logo", "Logo", "Logo", },
     {"Nodo macchina", "Machine node", "Nodo máquina", "Nœud de la machine", "Maschinenknoten", },
-    {"LIVELLO DI ACCESSO", "ACCESS LEVEL", "NIVEL DE ACCESO", "NIVEAU D'ACCES", "ZUGRIFFSEBENE", },
-    {"TEMPO TASTO PAUSA", "PAUSE BUTTON TIME", "BOTÓN DE PAUSA TIEMPO", "DURÉE DE LA TOUCHE PAUSE", "PAUSE-TASTE ZEIT", },
-    {"TEMPO TASTO STOP", "STOP BUTTON TIME", "BOTÓN DE PARADA TIEMPO", "BOUTON D'ARRET TEMPS", "STOP-TASTE ZEIT", },
-    {"TEMPO OUT PAGINE", "OUT PAGE TIME", "TIEMPO FUERA PÁGINAS", "TEMPS DE SORTIE PAGES", "TIME OUT SEITEN", },
+    {"Livello di accesso", "Access level", "Nivel de acceso", "Niveau d'acces", "Zugriffsebene", },
+    {"Tempo tasto pausa", "Pause button time", "Botón de pausa tiempo", "Durée de la touche pause", "Pause-taste zeit", },
+    {"Tempo tasto stop", "Stop button time", "Botón de parada tiempo", "Bouton d'arret temps", "Stop-taste zeit", },
+    {"Tempo out pagine", "Out page time", "Tiempo fuera páginas", "Temps de sortie pages", "Time out seiten", },
     {"Durata", "Duration", "Duración", "Durée de l'activité", "Dauer", },
     {"Tempo attivo", "Active time", "Tiempo activo", "Temps actif", "Aktive Zeit", },
     {"Moto in riempimento", "Fillup motion", "Marcha de llenado", "Mode de remplissage", "Füllgeschwindigkeit", },
@@ -157,7 +157,6 @@ const char *pars_descriptions[169][5] = {
     {"Litri minimi riscaldamento", "Minimum heating liters", "Calentamiento mínimo litros", "Chauffage minimum litres", "Minimale Heizleistung Liter", },
     {"Impulsi litri", "Pulses per liters", "Pulsos litros", "Impulsions litres", "Pulsierende Liter", },
     {"Tipo inverter", "Inverter type", "Tipo de inversor", "Type d'inverseur", "Inverter-Typ", },
-    {"Velocita' servizio", "Service speed", "Velocidad de servicio", "Vitesse de service", "Betriebsgeschwindigkeit", },
     {"Velocita' minima lavaggio", "Minimum wash speed", "Velocidad mínima de lavado", "Vitesse de lavage minimum", "Minimale Waschgeschwindigkeit", },
     {"Velocita' massima lavaggio", "Maximum wash speed", "Velocidad máxima de lavado", "Vitesse de lavage maximale", "Maximale Waschgeschwindigkeit", },
     {"Cicli preparazione", "Preparation cycles", "Ciclos de preparación", "Cycles de préparation", "Aufbereitungszyklen", },
@@ -263,6 +262,9 @@ const char *pars_descriptions[169][5] = {
     {"Ripetizione ciclo", "Cycle repetition", "Repetición de ciclo", "Répétition du cycle", "Zykluswiederholung", },
     {"Interf. saponi", "Detergent interf.", "Interfaz de jabón", "Interface savon", "Seifenschnittstelle", },
     {"Tempo scarico servizio", "Service drain time", "Tiempo de drenaje de servicio", "Temps de vidange du service", "Service-Ablaufzeit", },
+    {"Smart Wave", "Smart Wave", "Smart Wave", "Smart Wave", "Smart Wave", },
+    {"Visualizzazione esclusione sapone", "Show detergent exclusion", "Show detergent exclusion", "Show detergent exclusion", "Show detergent exclusion", },
+    {"Tempo reset lingua", "Language reset time", "Language reset time", "Language reset time", "Language reset time", },
 };
 
 const char *pars_rgb[8][5] = {

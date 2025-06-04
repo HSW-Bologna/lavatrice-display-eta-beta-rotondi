@@ -118,10 +118,7 @@ typedef enum {
 typedef struct {
     name_t   nome;
     uint16_t lingua;
-    uint16_t lingua_max_bandiera;
     uint16_t logo;
-    uint16_t modello_macchina;
-    uint16_t submodello_macchina;
     uint16_t codice_nodo_macchina;
     uint16_t diametro_cesto;
     uint16_t profondita_cesto;
@@ -135,15 +132,8 @@ typedef struct {
     uint16_t visualizzazione_start;
     uint16_t visualizzazione_menu;
     uint16_t visualizzazione_menu_saponi;
-    uint16_t visualizzazione_tot_cicli;
     uint16_t abilitazione_lavaggio_programmato;
-    uint16_t visualizzazione_kg;
     uint16_t visualizzazione_prezzo_macchina;
-    uint16_t visualizzazione_help_1;
-    uint16_t visualizzazione_help_2;
-    uint16_t visualizzazione_help_3;
-    uint16_t visualizzazione_help_4;
-    uint16_t visualizzazione_help_5;
     uint16_t secondi_pausa;
     uint16_t secondi_stop;
     uint16_t tempo_out_pagine;
@@ -183,7 +173,6 @@ typedef struct {
     uint16_t tipo_inverter;
     uint16_t velocita_minima_lavaggio;
     uint16_t velocita_massima_lavaggio;
-    uint16_t velocita_servizio;
     uint16_t abilitazione_preparazione_rotazione;
     uint16_t tempo_marcia_preparazione_rotazione;
     uint16_t tempo_sosta_preparazione_rotazione;
@@ -229,6 +218,11 @@ typedef struct {
     uint16_t valore_prezzo_unico;
     uint16_t percentuale_livello_carico_ridotto;
     uint16_t percentuale_sapone_carico_ridotto;
+
+    uint16_t interfaccia_semplificata;
+    uint16_t controllo_pausa_stop;
+    uint16_t controllo_lucchetto;
+    uint16_t controllo_step;
 
     uint8_t  funzioni_rgb[NUM_CONDIZIONI_MACCHINA];
     uint16_t visualizzazione_data_ora;
@@ -386,6 +380,7 @@ typedef struct {
 
     struct {
         parmac_t            parmac;
+        name_t              password;
         size_t              num_programmi;
         programma_preview_t preview_programmi[MAX_PROGRAMMI];
         uint8_t             contrast;
@@ -420,10 +415,16 @@ typedef struct {
 
         test_override_t digital_coin_reader_test_override;
         uint8_t         test_mode;
-        uint32_t         test_outputs_map;
+        uint32_t        test_outputs_map;
         unsigned long   resistors_ts;
 
         firmware_update_state_t firmware_update_state;
+
+        int16_t  temperature_setpoint;
+        uint16_t level_setpoint;
+        uint16_t speed_setpoint;
+        uint16_t duration;
+        uint8_t  detergent_exclusion;
     } run;     // Informazioni relative all'esecuzione attuale (sia della scheda quadro che dell'applicazione)
 
     struct {
@@ -525,5 +526,8 @@ int          model_lavaggio_programmato_impostato(model_t *model, int *lavaggio)
 void         model_cancella_lavaggio_programmato(model_t *model);
 int          model_lavaggio_programmato_minuti_rimanenti(model_t *model);
 void         model_test_output_set(mut_model_t *model, uint16_t output, uint8_t value);
+void         model_modify_temperature_setpoint(mut_model_t *model, int16_t modification);
+void         model_modify_level_setpoint(mut_model_t *model, int16_t modification);
+void         model_modify_speed_setpoint(mut_model_t *model, int16_t modification);
 
 #endif

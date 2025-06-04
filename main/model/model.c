@@ -29,6 +29,7 @@ void model_init(model_t *pmodel) {
     pmodel->run.digital_coin_reader_test_override = TEST_OVERRIDE_NONE;
     pmodel->run.firmware_update_state             = FIRMWARE_UPDATE_STATE_NONE;
 
+    strcpy(pmodel->prog.password, "12345");
     strcpy(pmodel->prog.parmac.nome, "Pluto");
 }
 
@@ -527,15 +528,14 @@ int model_is_level_in_cm(parmac_t *parmac) {
 size_t model_serialize_parmac(uint8_t *buffer, parmac_t *p) {
     size_t i = 0;
 
-    ESP_LOGI(TAG, "Nome macchina in salvataggio %s", p->nome);
     memcpy(&buffer[i], p->nome, sizeof(name_t));
     i += sizeof(name_t);
 
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->lingua);
-    i += serialize_uint16_be(&buffer[i], (uint16_t)p->lingua_max_bandiera);
+    i += serialize_uint16_be(&buffer[i], 0);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->logo);
-    i += serialize_uint16_be(&buffer[i], (uint16_t)p->modello_macchina);
-    i += serialize_uint16_be(&buffer[i], (uint16_t)p->submodello_macchina);
+    i += serialize_uint16_be(&buffer[i], 0);
+    i += serialize_uint16_be(&buffer[i], 0);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->codice_nodo_macchina);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->diametro_cesto);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->profondita_cesto);
@@ -545,19 +545,19 @@ size_t model_serialize_parmac(uint8_t *buffer, parmac_t *p) {
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->numero_massimo_programmi_utente);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->visualizzazione_opl);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->livello_accesso);
-    i += serialize_uint16_be(&buffer[i], (uint16_t)p->visualizzazione_stop);
-    i += serialize_uint16_be(&buffer[i], (uint16_t)p->visualizzazione_start);
+    i += serialize_uint16_be(&buffer[i], (uint16_t)p->interfaccia_semplificata);
+    i += serialize_uint16_be(&buffer[i], (uint16_t)p->controllo_pausa_stop);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->visualizzazione_menu);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->visualizzazione_menu_saponi);
-    i += serialize_uint16_be(&buffer[i], (uint16_t)p->visualizzazione_tot_cicli);
+    i += serialize_uint16_be(&buffer[i], 0);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->abilitazione_lavaggio_programmato);
-    i += serialize_uint16_be(&buffer[i], (uint16_t)p->visualizzazione_kg);
-    i += serialize_uint32_be(&buffer[i], (uint16_t)p->visualizzazione_prezzo_macchina);
-    i += serialize_uint16_be(&buffer[i], (uint16_t)p->visualizzazione_help_1);
-    i += serialize_uint16_be(&buffer[i], (uint16_t)p->visualizzazione_help_2);
-    i += serialize_uint16_be(&buffer[i], (uint16_t)p->visualizzazione_help_3);
-    i += serialize_uint16_be(&buffer[i], (uint16_t)p->visualizzazione_help_4);
-    i += serialize_uint16_be(&buffer[i], (uint16_t)p->visualizzazione_help_5);
+    i += serialize_uint16_be(&buffer[i], 0);
+    i += serialize_uint32_be(&buffer[i], 0);
+    i += serialize_uint16_be(&buffer[i], (uint16_t)p->controllo_lucchetto);
+    i += serialize_uint16_be(&buffer[i], (uint16_t)p->controllo_step);
+    i += serialize_uint16_be(&buffer[i], 0);
+    i += serialize_uint16_be(&buffer[i], 0);
+    i += serialize_uint16_be(&buffer[i], 0);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->secondi_pausa);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->secondi_stop);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->tempo_out_pagine);
@@ -572,7 +572,7 @@ size_t model_serialize_parmac(uint8_t *buffer, parmac_t *p) {
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->percentuale_livello_carico_ridotto);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->percentuale_sapone_carico_ridotto);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->f_scarico_recupero);
-    i += serialize_uint16_be(&buffer[i], (uint16_t)1);     // Removed, now fixed
+    i += serialize_uint16_be(&buffer[i], 1);     // Removed, now fixed
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->f_macchina_libera);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->abilitazione_espansione_io);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->tipo_gettoniera);
@@ -601,7 +601,7 @@ size_t model_serialize_parmac(uint8_t *buffer, parmac_t *p) {
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->tipo_inverter);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->velocita_minima_lavaggio);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->velocita_massima_lavaggio);
-    i += serialize_uint16_be(&buffer[i], (uint16_t)p->velocita_servizio);
+    i += serialize_uint16_be(&buffer[i], 0);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->abilitazione_preparazione_rotazione);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->tempo_marcia_preparazione_rotazione);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->tempo_sosta_preparazione_rotazione);
@@ -653,24 +653,24 @@ size_t model_serialize_parmac(uint8_t *buffer, parmac_t *p) {
     i += serialize_uint32_be(&buffer[i], (uint16_t)p->valore_prezzo_unico);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->tipo_frontale);
     i += serialize_uint16_be(&buffer[i], (uint16_t)p->tipo_serratura);
-    i += serialize_uint16_be(&buffer[i], (uint16_t)p->inibizione_allarmi);
+    i += serialize_uint16_be(&buffer[i], (uint16_t)p->durata_impulso_serratura);
 
     assert(i == PARMAC_SIZE);
     return i;
 }
 
 size_t model_deserialize_parmac(parmac_t *p, uint8_t *buffer) {
-    size_t i = 0;
+    size_t       i    = 0;
+    unsigned int stub = 0;
 
     memcpy(p->nome, &buffer[i], sizeof(name_t));
     i += sizeof(name_t);
-    ESP_LOGI(TAG, "Nome macchina in caricamento %s", p->nome);
 
     i += UNPACK_UINT16_BE(p->lingua, &buffer[i]);
-    i += UNPACK_UINT16_BE(p->lingua_max_bandiera, &buffer[i]);
+    i += UNPACK_UINT16_BE(stub, &buffer[i]);
     i += UNPACK_UINT16_BE(p->logo, &buffer[i]);
-    i += UNPACK_UINT16_BE(p->modello_macchina, &buffer[i]);
-    i += UNPACK_UINT16_BE(p->submodello_macchina, &buffer[i]);
+    i += UNPACK_UINT16_BE(stub, &buffer[i]);
+    i += UNPACK_UINT16_BE(stub, &buffer[i]);
     i += UNPACK_UINT16_BE(p->codice_nodo_macchina, &buffer[i]);
     i += UNPACK_UINT16_BE(p->diametro_cesto, &buffer[i]);
     i += UNPACK_UINT16_BE(p->profondita_cesto, &buffer[i]);
@@ -680,19 +680,19 @@ size_t model_deserialize_parmac(parmac_t *p, uint8_t *buffer) {
     i += UNPACK_UINT16_BE(p->numero_massimo_programmi_utente, &buffer[i]);
     i += UNPACK_UINT16_BE(p->visualizzazione_opl, &buffer[i]);
     i += UNPACK_UINT16_BE(p->livello_accesso, &buffer[i]);
-    i += UNPACK_UINT16_BE(p->visualizzazione_stop, &buffer[i]);
-    i += UNPACK_UINT16_BE(p->visualizzazione_start, &buffer[i]);
+    i += UNPACK_UINT16_BE(p->interfaccia_semplificata, &buffer[i]);
+    i += UNPACK_UINT16_BE(p->controllo_pausa_stop, &buffer[i]);
     i += UNPACK_UINT16_BE(p->visualizzazione_menu, &buffer[i]);
     i += UNPACK_UINT16_BE(p->visualizzazione_menu_saponi, &buffer[i]);
-    i += UNPACK_UINT16_BE(p->visualizzazione_tot_cicli, &buffer[i]);
+    i += UNPACK_UINT16_BE(stub, &buffer[i]);
     i += UNPACK_UINT16_BE(p->abilitazione_lavaggio_programmato, &buffer[i]);
-    i += UNPACK_UINT16_BE(p->visualizzazione_kg, &buffer[i]);
-    i += UNPACK_UINT32_BE(p->visualizzazione_prezzo_macchina, &buffer[i]);
-    i += UNPACK_UINT16_BE(p->visualizzazione_help_1, &buffer[i]);
-    i += UNPACK_UINT16_BE(p->visualizzazione_help_2, &buffer[i]);
-    i += UNPACK_UINT16_BE(p->visualizzazione_help_3, &buffer[i]);
-    i += UNPACK_UINT16_BE(p->visualizzazione_help_4, &buffer[i]);
-    i += UNPACK_UINT16_BE(p->visualizzazione_help_5, &buffer[i]);
+    i += UNPACK_UINT16_BE(stub, &buffer[i]);
+    i += UNPACK_UINT32_BE(stub, &buffer[i]);
+    i += UNPACK_UINT16_BE(p->controllo_lucchetto, &buffer[i]);
+    i += UNPACK_UINT16_BE(p->controllo_step, &buffer[i]);
+    i += UNPACK_UINT16_BE(stub, &buffer[i]);
+    i += UNPACK_UINT16_BE(stub, &buffer[i]);
+    i += UNPACK_UINT16_BE(stub, &buffer[i]);
     i += UNPACK_UINT16_BE(p->secondi_pausa, &buffer[i]);
     i += UNPACK_UINT16_BE(p->secondi_stop, &buffer[i]);
     i += UNPACK_UINT16_BE(p->tempo_out_pagine, &buffer[i]);
@@ -739,7 +739,7 @@ size_t model_deserialize_parmac(parmac_t *p, uint8_t *buffer) {
     i += UNPACK_UINT16_BE(p->tipo_inverter, &buffer[i]);
     i += UNPACK_UINT16_BE(p->velocita_minima_lavaggio, &buffer[i]);
     i += UNPACK_UINT16_BE(p->velocita_massima_lavaggio, &buffer[i]);
-    i += UNPACK_UINT16_BE(p->velocita_servizio, &buffer[i]);
+    i += UNPACK_UINT16_BE(stub, &buffer[i]);
     i += UNPACK_UINT16_BE(p->abilitazione_preparazione_rotazione, &buffer[i]);
     i += UNPACK_UINT16_BE(p->tempo_marcia_preparazione_rotazione, &buffer[i]);
     i += UNPACK_UINT16_BE(p->tempo_sosta_preparazione_rotazione, &buffer[i]);
@@ -1031,7 +1031,7 @@ size_t model_pack_parametri_macchina(uint8_t *buffer, parmac_t *p) {
     i += serialize_uint8(&buffer[i], p->tipo_inverter);
     i += serialize_uint8(&buffer[i], p->velocita_minima_lavaggio);
     i += serialize_uint8(&buffer[i], p->velocita_massima_lavaggio);
-    i += serialize_uint8(&buffer[i], p->velocita_servizio);
+    i += serialize_uint8(&buffer[i], 0);
     i += serialize_uint8(&buffer[i], p->abilitazione_preparazione_rotazione);
     i += serialize_uint8(&buffer[i], p->tempo_marcia_preparazione_rotazione);
     i += serialize_uint8(&buffer[i], p->tempo_sosta_preparazione_rotazione);
@@ -1406,4 +1406,51 @@ uint8_t model_is_emergency_ok(model_t *model) {
 uint8_t model_test_cesto_in_sicurezza(model_t *model) {
     return model_oblo_serrato(model) && model_get_livello_centimetri(model) == 0 && model_is_emergency_ok(model) &&
            (model->test.inputs & 0x02) && (model->test.inputs & (1 << 10));
+}
+
+
+void model_modify_temperature_setpoint(mut_model_t *model, int16_t modification) {
+    assert(model != NULL);
+
+    model->run.temperature_setpoint += modification;
+
+    if (model->run.temperature_setpoint < 0) {
+        model->run.temperature_setpoint = 0;
+    } else if (model->run.temperature_setpoint > model->prog.parmac.temperatura_massima) {
+        model->run.temperature_setpoint = model->prog.parmac.temperatura_massima;
+    }
+}
+
+
+void model_modify_level_setpoint(mut_model_t *model, int16_t modification) {
+    assert(model != NULL);
+    uint16_t livmin, livmax;
+
+    if (model_is_level_in_cm(&model->prog.parmac)) {
+        livmin = model->prog.parmac.centimetri_minimo_riscaldo;
+        livmax = model->prog.parmac.centimetri_max_livello;
+    } else {
+        livmin = model->prog.parmac.litri_minimi_riscaldo;
+        livmax = model->prog.parmac.litri_massimi;
+    }
+
+    model->run.level_setpoint += modification;
+
+    if (model->run.level_setpoint < livmin) {
+        model->run.level_setpoint = livmin;
+    } else if (model->run.level_setpoint > livmax) {
+        model->run.level_setpoint = livmax;
+    }
+}
+
+
+void model_modify_speed_setpoint(mut_model_t *model, int16_t modification) {
+    assert(model != NULL);
+    model->run.speed_setpoint += modification;
+
+    if (model->run.speed_setpoint < model->prog.parmac.velocita_minima_lavaggio) {
+        model->run.speed_setpoint = model->prog.parmac.velocita_minima_lavaggio;
+    } else if (model->run.level_setpoint > model->prog.parmac.velocita_massima_lavaggio) {
+        model->run.level_setpoint = model->prog.parmac.velocita_massima_lavaggio;
+    }
 }

@@ -28,6 +28,7 @@ void parmac_init(model_t *pmodel, int reset) {
 
     char *fmt_dec_sec = "%i dsec";
     char *fmt_sec     = "%i s";
+    char *fmt_decisec = "%i .1s";
     char *fmt_min     = "%i min";
     char *fmt_cm      = "%i cm";
     char *fmt_perc    = "%i %%";
@@ -57,7 +58,7 @@ void parmac_init(model_t *pmodel, int reset) {
     ps[i++] = PARAMETER(&p->abilitazione_sblocco_get, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_SBLOCCO_GETTONIERA, pars_abilitazione), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->secondi_pausa, 0, 10, 1, FFINT(PARS_DESCRIPTIONS_TEMPO_TASTO_PAUSA, fmt_sec), BIT_UTENTE);
     ps[i++] = PARAMETER(&p->secondi_stop, 0, 10, 3, FFINT(PARS_DESCRIPTIONS_TEMPO_TASTO_STOP, fmt_sec), BIT_UTENTE);
-    ps[i++] = PARAMETER(&p->tempo_out_pagine, 3, 60, 20, FFINT(PARS_DESCRIPTIONS_TEMPO_OUT_PAGINE, fmt_sec), BIT_TECNICO);
+    ps[i++] = PARAMETER(&p->tempo_out_pagine, 3, 60*30, 20, FFINT(PARS_DESCRIPTIONS_TEMPO_OUT_PAGINE, fmt_sec), BIT_TECNICO);
     ps[i++] = PARAMETER(&p->tempo_allarme_livello, 1, 100, 30, FFINT(PARS_DESCRIPTIONS_TEMPO_ALLARME_LIVELLO, fmt_min), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->tempo_allarme_temperatura, 1, 100, 45, FFINT(PARS_DESCRIPTIONS_TEMPO_ALLARME_TEMPERATURA, fmt_min), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->tempo_allarme_scarico, 1, 100, 45, FFINT(PARS_DESCRIPTIONS_TEMPO_ALLARME_SCARICO, fmt_min), BIT_COSTRUTTORE);
@@ -114,7 +115,6 @@ void parmac_init(model_t *pmodel, int reset) {
     ps[i++] = PARAMETER(&p->litri_minimi_riscaldo, 1, 1000, 20, FFINT(PARS_DESCRIPTIONS_LITRI_MINIMI_RISCALDAMENTO, fmt_lt), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->impulsi_litro, 0, 10000, 328, FINT(PARS_DESCRIPTIONS_IMPULSI_LITRI), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->tipo_inverter, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_TIPO_INVERTER, pars_tipo_inverter), BIT_COSTRUTTORE);
-    ps[i++] = PARAMETER(&p->velocita_servizio, 0, 100, 36, FFINT(PARS_DESCRIPTIONS_VELOCITA_SERVIZIO, fmt_rpm), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->velocita_minima_lavaggio, 0, 150, 20, FFINT(PARS_DESCRIPTIONS_VELOCITA_MINIMA_LAVAGGIO, fmt_rpm), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->velocita_massima_lavaggio, 0, 150, 60, FFINT(PARS_DESCRIPTIONS_VELOCITA_MASSIMA_LAVAGGIO, fmt_rpm), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->abilitazione_preparazione_rotazione, 0, 9, 3, FINT(PARS_DESCRIPTIONS_PREPARAZIONE_ROTAZIONE), BIT_COSTRUTTORE);
@@ -133,9 +133,10 @@ void parmac_init(model_t *pmodel, int reset) {
     ps[i++] = PARAMETER(&p->nro_max_sbilanciamenti, 1, 60, 35, FINT(PARS_DESCRIPTIONS_NUMERO_MAX_SBILANCIAMENTI), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->abilitazione_min_sec, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_MIN_SEC, pars_abilitazione), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->tipo_serratura, 0, 4, 0, FOPT(PARS_DESCRIPTIONS_TIPO_SERRATURA, pars_tipo_serratura), BIT_COSTRUTTORE);
-    ps[i++] = PARAMETER(&p->durata_impulso_serratura, 1, 30, 8, FFINT(PARS_DESCRIPTIONS_DURATA_IMPULSO_SERRATURA, fmt_sec), BIT_COSTRUTTORE);
+    ps[i++] = PARAMETER(&p->durata_impulso_serratura, 1, 30, 8, FFINT(PARS_DESCRIPTIONS_DURATA_IMPULSO_SERRATURA, fmt_decisec), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->inibizione_allarmi, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_INIBIZIONE_ALLARMI, pars_abilitazione), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->abilitazione_loop_prog, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_RIPETIZIONE_CICLO, pars_abilitazione), BIT_COSTRUTTORE);
+    ps[i++] = PARAMETER(&p->visualizzazione_esclusione_sapone,0,1,0, FOPT(PARS_DESCRIPTIONS_VISUALIZZAZIONE_ESCLUSIONE_SAPONE, pars_abilitazione), BIT_UTENTE);
     ps[i++] = PARAMETER(&p->funzioni_rgb[CONDIZIONE_MACCHINA_FERMO], 0, 7, 7, FOPT(PARS_DESCRIPTIONS_MACCHINA_FERMA, pars_rgb), BIT_UTENTE);
     ps[i++] = PARAMETER(&p->funzioni_rgb[CONDIZIONE_MACCHINA_LAVORO], 0, 7, 1, FOPT(PARS_DESCRIPTIONS_MACCHINA_LAVORO, pars_rgb), BIT_UTENTE);
     ps[i++] = PARAMETER(&p->funzioni_rgb[CONDIZIONE_MACCHINA_PAUSA], 0, 7, 6, FOPT(PARS_DESCRIPTIONS_MACCHINA_PAUSA, pars_rgb), BIT_UTENTE);
@@ -144,7 +145,6 @@ void parmac_init(model_t *pmodel, int reset) {
     ps[i++] = PARAMETER(&p->funzioni_rgb[CONDIZIONE_MACCHINA_ALLARME], 0, 7, 4, FOPT(PARS_DESCRIPTIONS_MACCHINA_ALLARME, pars_rgb), BIT_UTENTE);
 
     // clang-format on
-
 
 #if 0
     parameter_data_t tmp[NUMP] = {

@@ -39,6 +39,7 @@ typedef enum {
     MACHINE_REQUEST_CODE_SEND_DEBUG_CODE,
     MACHINE_REQUEST_CODE_DETERGENT_ACTIVATION,
     MACHINE_REQUEST_CODE_DETERGENT_CONTROL,
+    MACHINE_REQUEST_CODE_DETERGENT_EXCLUSION,
     MACHINE_REQUEST_CODE_STATO_PAGAMENTO,
     MACHINE_REQUEST_CODE_ABILITA_GETTONIERA,
 } machine_request_code_t;
@@ -170,6 +171,15 @@ void machine_control_detergent(uint8_t detergent, uint8_t value) {
     machine_request_t richiesta = {
         .code      = MACHINE_REQUEST_CODE_DETERGENT_CONTROL,
         .detergent = {.num = detergent, .value = value},
+    };
+    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+}
+
+
+void machine_exclude_detergent(uint8_t value) {
+    machine_request_t richiesta = {
+        .code      = MACHINE_REQUEST_CODE_DETERGENT_EXCLUSION,
+        .detergent = {.value = value},
     };
     xQueueSend(requestq, &richiesta, portMAX_DELAY);
 }
@@ -554,6 +564,12 @@ static int task_gestisci_richiesta(machine_request_t request) {
         case MACHINE_REQUEST_CODE_DETERGENT_ACTIVATION: {
             uint8_t num = request.detergent.num;
             res         = invia_pacchetto(COLPO_SAPONE, &num, 1, &risposta_pacchetto, 1);
+            break;
+        }
+
+        case MACHINE_REQUEST_CODE_DETERGENT_EXCLUSION: {
+            uint8_t buffer[1] = {request.detergent.value};
+            res               = invia_pacchetto(ESCLUDI_SAPONE, buffer, sizeof(buffer), &risposta_pacchetto, 1);
             break;
         }
 

@@ -144,8 +144,9 @@ static void *create_page(pman_handle_t handle, void *extra) {
     pdata->last_alarm           = 0;
     pdata->alarm_pacified       = 0;
 
+    model_t *model                = view_get_model(handle);
     pdata->timer_change_page      = pman_timer_create(handle, 250, (void *)(uintptr_t)TIMER_CHANGE_PAGE_ID);
-    pdata->timer_restore_language = pman_timer_create(handle, 10000, (void *)(uintptr_t)TIMER_RESTORE_LANGUAGE_ID);
+    pdata->timer_restore_language = pman_timer_create(handle, 20000UL, (void *)(uintptr_t)TIMER_RESTORE_LANGUAGE_ID);
 
     return pdata;
 }
@@ -360,7 +361,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                 case TIMER_CHANGE_PAGE_ID: {
                     pman_stack_msg_t         pw_msg = PMAN_STACK_MSG_SWAP(&page_menu);
                     password_page_options_t *opts =
-                        view_common_default_password_page_options(pw_msg, (const char *)APP_CONFIG_PASSWORD);
+                        view_common_default_password_page_options(pw_msg, (const char *)model->prog.password);
                     msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE_EXTRA(&page_password, opts);
                     break;
                 }
@@ -567,7 +568,8 @@ static void update_page(model_t *model, struct page_data *pdata) {
         view_common_set_hidden(pdata->alarm_popup.blanket, 1);
     }
 
-    const lv_image_dsc_t *icons_language[NUM_LINGUE] = {&img_italiano, &img_english, &img_english, &img_english, &img_english};
+    const lv_image_dsc_t *icons_language[NUM_LINGUE] = {&img_italiano, &img_english, &img_english, &img_english,
+                                                        &img_english};
     lv_image_set_src(pdata->image_language, icons_language[model->run.lingua]);
 }
 

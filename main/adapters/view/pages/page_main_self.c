@@ -133,7 +133,7 @@ static void *create_page(pman_handle_t handle, void *extra) {
     pdata->last_alarm           = 0;
 
     pdata->timer_change_page      = pman_timer_create(handle, 250, (void *)(uintptr_t)TIMER_CHANGE_PAGE_ID);
-    pdata->timer_restore_language = pman_timer_create(handle, 10000, (void *)(uintptr_t)TIMER_RESTORE_LANGUAGE_ID);
+    pdata->timer_restore_language = pman_timer_create(handle, 20000UL, (void *)(uintptr_t)TIMER_RESTORE_LANGUAGE_ID);
 
     return pdata;
 }
@@ -391,13 +391,14 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                 case TIMER_CHANGE_PAGE_ID: {
                     pman_stack_msg_t         pw_msg = PMAN_STACK_MSG_SWAP(&page_menu);
                     password_page_options_t *opts =
-                        view_common_default_password_page_options(pw_msg, (const char *)APP_CONFIG_PASSWORD);
+                        view_common_default_password_page_options(pw_msg, (const char *)model->prog.password);
                     msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE_EXTRA(&page_password, opts);
                     break;
                 }
 
                 case TIMER_RESTORE_LANGUAGE_ID: {
                     model_reset_temporary_language(model);
+                    pman_timer_pause(pdata->timer_restore_language);
                     update_page(model, pdata);
                     break;
                 }
@@ -477,6 +478,8 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                 }
 
                 case LV_EVENT_CLICKED: {
+                    pman_timer_reset(pdata->timer_restore_language);
+
                     switch (obj_data->id) {
                         case BTN_PROGRAM_ID: {
                             uint16_t absolute_index = pdata->program_window_index * MAX_IMAGES + obj_data->number;
@@ -489,6 +492,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
                         case BTN_LANGUAGE_ID: {
                             model->run.lingua = (model->run.lingua + 1) % 2;
+                            pman_timer_resume(pdata->timer_restore_language);
                             update_page(model, pdata);
                             break;
                         }

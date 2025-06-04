@@ -123,6 +123,7 @@ parametri_step_t default_step(int tipo, int delicato_energico) {
             step.abilitazione_acqua_calda                    = 0;
             step.abilitazione_acqua_depurata                 = 0;
             step.tempo_attivo_sapone                         = 1;
+            step.abilitazione_smart_wave                     = 0;
             break;
 
         case STEP_LAVAGGIO:
@@ -147,6 +148,7 @@ parametri_step_t default_step(int tipo, int delicato_energico) {
             step.abilitazione_acqua_calda                    = 0;
             step.abilitazione_acqua_depurata                 = 0;
             step.tempo_attivo_sapone                         = 1;
+            step.abilitazione_smart_wave                     = 0;
             break;
 
         case STEP_RISCIACQUO:
@@ -166,6 +168,7 @@ parametri_step_t default_step(int tipo, int delicato_energico) {
             step.abilitazione_acqua_fredda           = 1;
             step.abilitazione_acqua_depurata         = 0;
             step.tempo_attivo_sapone                 = 1;
+            step.abilitazione_smart_wave             = 0;
             break;
 
         case STEP_SROTOLAMENTO:
@@ -201,7 +204,6 @@ parametri_step_t default_step(int tipo, int delicato_energico) {
             step.velocita_centrifuga_3     = delicato_energico == DELICATO ? 500 : 600;
             step.tempo_rampa_3             = 60;
             step.tempo_frenata             = 75;
-            step.abilitazione_recupero     = 0;
             break;
 
         case STEP_ATTESA:
@@ -282,6 +284,8 @@ int pack_step(uint8_t *buffer, const parametri_step_t *step, int num) {
             bitmap |= (step->abilitazione_acqua_depurata > 0) << 7;
             PACK_BYTE(buffer, bitmap, i);
 
+            PACK_BYTE(buffer, step->abilitazione_smart_wave, i);
+
             break;
 
         case STEP_RISCIACQUO:
@@ -330,6 +334,9 @@ int pack_step(uint8_t *buffer, const parametri_step_t *step, int num) {
             bitmap |= (step->abilitazione_acqua_calda > 0) << 6;
             bitmap |= (step->abilitazione_acqua_depurata > 0) << 7;
             PACK_BYTE(buffer, bitmap, i);
+
+            PACK_BYTE(buffer, step->abilitazione_smart_wave, i);
+
             break;
 
         case STEP_SCARICO:
@@ -449,6 +456,7 @@ static int serialize_step(uint8_t *buffer, parametri_step_t *s) {
     i += serialize_uint16_be(&buffer[i], (uint16_t)s->abilitazione_acqua_calda);
     i += serialize_uint16_be(&buffer[i], (uint16_t)s->abilitazione_acqua_depurata);
     i += serialize_uint16_be(&buffer[i], (uint16_t)s->abilitazione_recupero);
+    i += serialize_uint16_be(&buffer[i], (uint16_t)s->abilitazione_smart_wave);
 
     assert(i <= STEP_SIZE);
     return STEP_SIZE;     // Allow for some margin
@@ -518,6 +526,7 @@ int deserialize_step(parametri_step_t *s, uint8_t *buffer) {
     i += UNPACK_UINT16_BE(s->abilitazione_acqua_calda, &buffer[i]);
     i += UNPACK_UINT16_BE(s->abilitazione_acqua_depurata, &buffer[i]);
     i += UNPACK_UINT16_BE(s->abilitazione_recupero, &buffer[i]);
+    i += UNPACK_UINT16_BE(s->abilitazione_smart_wave, &buffer[i]);
 
     assert(i <= STEP_SIZE);
     return STEP_SIZE;     // Allow for some margin

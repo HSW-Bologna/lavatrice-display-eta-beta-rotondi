@@ -23,14 +23,14 @@ static struct {
     int          num;
     int          t[MAX_INDEX_PARS];
 } transformations[NUM_STEPS] = {
-    {STEP_AMMOLLO, 41, {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    {STEP_AMMOLLO, 42, {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 61, 20,
                         21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40}},
-    {STEP_PRELAVAGGIO, 41, {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    {STEP_PRELAVAGGIO, 42, {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 61, 20,
                             21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40}},
-    {STEP_LAVAGGIO, 41, {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    {STEP_LAVAGGIO, 42, {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 61, 20,
                          21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40}},
-    {STEP_RISCIACQUO, 36, {0,  59, 2,  3,  4,  5,  6,  7,  8,  9,  10, 15, 16, 17, 19, 60, 21, 22,
-                           23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40}},
+    {STEP_RISCIACQUO, 37, {0,  59, 2,  3,  4,  5,  6,  7,  8,  9,  10, 15, 16, 17, 19, 60, 61, 21, 22, 23,
+                           24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40}},
     {STEP_SCARICO, 7, {0, 41, 7, 8, 9, 10, 42}},
     {STEP_CENTRIFUGA, 15, {0, 43, 44, 45, 42, 58, 46, 47, 48, 49, 50, 51, 52, 53, 54}},
     {STEP_SROTOLAMENTO, 4, {0, 7, 9, 10}},
@@ -133,6 +133,7 @@ int parlav_init(parmac_t *parmac, parametri_step_t *step) {
         PARAMETER(&step->numero_rampe, 1, 3, 3, FINT(PARS_DESCRIPTIONS_NUMERO_RAMPE), BIT_UTENTE),
         PARAMETER(&step->tempo_attivo, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_TEMPO_ATTIVO, pars_tempo_attivo), BIT_UTENTE),
         PARAMETER(&step->tempo_attivo_sapone, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_TEMPO_ATTIVO_SAPONE, pars_tempo_attivo), BIT_UTENTE),
+        PARAMETER(&step->abilitazione_smart_wave, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_SMART_WAVE, pars_abilitazione), BIT_UTENTE),
     };
     // clang-format on
 
