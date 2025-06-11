@@ -100,18 +100,8 @@ static void open_page(pman_handle_t handle, void *state) {
 
     model_t *model = pman_get_user_data(handle);
 
-    const parametri_step_t *s = model_get_current_step(model);
-
     model->run.speed_setpoint = model->run.macchina.velocita_rpm;
     model->run.duration       = model->run.macchina.rimanente;
-
-    if (s) {
-        model->run.temperature_setpoint = s->temperatura;
-        model->run.level_setpoint       = s->livello;
-    } else {
-        model->run.temperature_setpoint = 0;
-        model->run.level_setpoint       = 0;
-    }
 
     pman_timer_reset(pdata->timer);
     pman_timer_resume(pdata->timer);

@@ -217,6 +217,15 @@ void model_avanza_step(model_t *model) {
         model->run.model_lavaggio_finito = 1;
     } else {
         model->run.model_lavaggio_finito = 0;
+
+        const parametri_step_t *s = model_get_current_step(model);
+        if (s) {
+            model->run.temperature_setpoint = s->temperatura;
+            model->run.level_setpoint       = s->livello;
+        } else {
+            model->run.temperature_setpoint = 0;
+            model->run.level_setpoint       = 0;
+        }
     }
     model->run.num_step_successivo = (model->run.num_step_successivo + 1) % p->num_steps;
 }
@@ -341,6 +350,16 @@ int model_select_program_step(model_t *pmodel, size_t i, size_t step) {
         }
 
         pmodel->run.num_step_successivo = pmodel->run.num_step_corrente;
+
+        const parametri_step_t *s = model_get_current_step(pmodel);
+        if (s) {
+            pmodel->run.temperature_setpoint = s->temperatura;
+            pmodel->run.level_setpoint       = s->livello;
+        } else {
+            pmodel->run.temperature_setpoint = 0;
+            pmodel->run.level_setpoint       = 0;
+        }
+
         return 0;
     } else {
         return -1;

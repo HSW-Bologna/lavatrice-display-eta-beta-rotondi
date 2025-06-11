@@ -280,10 +280,9 @@ typedef enum {
     PARS_DESCRIPTIONS_TEMPO_SCARICO,
     PARS_DESCRIPTIONS_SMART_WAVE,
     PARS_DESCRIPTIONS_VISUALIZZAZIONE_ESCLUSIONE_SAPONE,
-    PARS_DESCRIPTIONS_TEMPO_RESET_LINGUA,
 } pars_descriptions_t;
 
-extern const char *pars_descriptions[171][5];
+extern const char *pars_descriptions[170][5];
 typedef enum {
     PARS_RGB_SPENTO = 0,
     PARS_RGB_BLU,

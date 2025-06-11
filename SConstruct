@@ -114,6 +114,11 @@ def main():
         f'{COMPONENTS}/c-parameter/SConscript', exports=['c_parameter_env'])
     env['CPPPATH'] += [include]
 
+    c_stopwatch_env = env
+    (c_stopwatch, include) = SConscript(
+        f'{COMPONENTS}/c-stopwatch/SConscript', exports=['c_stopwatch_env'])
+    env['CPPPATH'] += [include]
+
     i2c_env = env
     i2c_selected = ["dummy", "rtc/RX8010"]
     (i2c, include) = SConscript(
@@ -136,7 +141,7 @@ def main():
     sources += [File(f'{B64}/encode.c'),
                 File(f'{B64}/decode.c'), File(f'{B64}/buffer.c')]
 
-    prog = env.Program(PROGRAM, sdkconfig + sources + freertos + pman + watcher + parameter + i2c)
+    prog = env.Program(PROGRAM, sdkconfig + sources + freertos + pman + watcher + parameter + i2c + c_stopwatch)
 
     env.Depends(prog, translations)
     PhonyTargets("run", f"./{PROGRAM}", prog, env)

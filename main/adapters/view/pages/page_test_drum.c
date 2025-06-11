@@ -16,6 +16,7 @@
 
 struct page_data {
     lv_obj_t *label_da;
+    lv_obj_t *label_values;
     lv_obj_t *label_signal;
     lv_obj_t *label_run;
     lv_obj_t *label_level;
@@ -238,6 +239,13 @@ static void open_page(pman_handle_t handle, void *state) {
         pdata->ser_z = ser3;
 
         pdata->chart = chart;
+    }
+
+    {
+        lv_obj_t *lbl = lv_label_create(cont);
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        lv_obj_align(lbl, LV_ALIGN_TOP_LEFT, 64, 96);
+        pdata->label_values = lbl;
     }
 
     {
@@ -544,9 +552,11 @@ static void update_page(model_t *model, struct page_data *pdata) {
             view_common_set_hidden(pdata->button_clear, 0);
             view_common_set_hidden(pdata->label_accelerometer_off, 1);
             view_common_set_hidden(pdata->button_clear_alarms, 1);
+            view_common_set_hidden(pdata->label_values, 1);
             break;
         default: {
             if (model->test.accelerometro_ok) {
+                view_common_set_hidden(pdata->label_values, 0);
                 view_common_set_hidden(pdata->chart, 0);
                 view_common_set_hidden(pdata->scale, 0);
                 view_common_set_hidden(pdata->label_accelerometer_off, 1);
@@ -554,6 +564,7 @@ static void update_page(model_t *model, struct page_data *pdata) {
                 int32_t *ser_x_points = lv_chart_get_y_array(pdata->chart, pdata->ser_x);
                 int32_t *ser_y_points = lv_chart_get_y_array(pdata->chart, pdata->ser_y);
                 int32_t *ser_z_points = lv_chart_get_y_array(pdata->chart, pdata->ser_z);
+
                 for (uint16_t i = 0; i < MAX_LOG_ACCELEROMETRO; i++) {
                     uint16_t j      = (model->test.log_index + i) % MAX_LOG_ACCELEROMETRO;
                     ser_x_points[i] = model->test.log_accelerometro[j][0];
@@ -561,7 +572,12 @@ static void update_page(model_t *model, struct page_data *pdata) {
                     ser_z_points[i] = model->test.log_accelerometro[j][2];
                 }
                 lv_chart_refresh(pdata->chart);
+
+                lv_label_set_text_fmt(pdata->label_values, "x=%4" PRIi32 " y=%4" PRIi32 " z=%4" PRIi32,
+                                      ser_x_points[MAX_LOG_ACCELEROMETRO - 1], ser_y_points[MAX_LOG_ACCELEROMETRO - 1],
+                                      ser_z_points[MAX_LOG_ACCELEROMETRO - 1]);
             } else {
+                view_common_set_hidden(pdata->label_values, 1);
                 view_common_set_hidden(pdata->chart, 1);
                 view_common_set_hidden(pdata->scale, 1);
                 view_common_set_hidden(pdata->label_accelerometer_off, 0);

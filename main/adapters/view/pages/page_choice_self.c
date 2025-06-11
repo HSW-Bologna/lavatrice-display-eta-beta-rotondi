@@ -374,8 +374,8 @@ static void update_page(model_t *model, struct page_data *pdata) {
     if (model_alarm_code(model) > 0) {
         if (pdata->allarme != model_alarm_code(model)) {
             pdata->allarme = model_alarm_code(model);
-            status_string  = view_common_alarm_description(model);
         }
+        status_string = view_common_alarm_description(model);
         view_common_set_hidden(pdata->label_credit, 0);
         view_common_set_hidden(pdata->label_price, 0);
         view_common_set_hidden(pdata->button_start, 0);

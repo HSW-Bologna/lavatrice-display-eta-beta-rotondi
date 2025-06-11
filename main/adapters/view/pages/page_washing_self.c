@@ -396,9 +396,9 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 static void update_page(model_t *model, struct page_data *pdata) {
     uint16_t rimanente = model_program_remaining(model);
 
-    lv_label_set_text_fmt(pdata->label_level_speed, "liv %3i, vel %3i, t %3i, %i", model->run.macchina.livello,
+    lv_label_set_text_fmt(pdata->label_level_speed, "liv %3i, vel %3i, t %3i, a%i p%i ", model->run.macchina.livello,
                           model->run.macchina.velocita_rilevata, model->run.macchina.temperatura,
-                          model->run.macchina.codice_allarme);
+                          model->run.macchina.codice_allarme, model->run.macchina.descrizione_pedante);
 
     uint16_t remaining_seconds = rimanente;
     uint16_t remaining_minutes = remaining_seconds / 60;

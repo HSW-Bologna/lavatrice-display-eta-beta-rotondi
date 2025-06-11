@@ -93,7 +93,7 @@ const char *pars_tipo_inverter[2][5] = {
     {"Marcia/direzione", "Run/direction", "Avance/dirección", "Avant/direction", "Vorwärts/Richtung", },
 };
 
-const char *pars_descriptions[171][5] = {
+const char *pars_descriptions[170][5] = {
     {"Parametro", "Parameter", "Parámetro", "Paramètre", "Parameter", },
     {"Lingua", "Language", "Idioma", "Langue", "SprachE", },
     {"Logo", "Logo", "Logo", "Logo", "Logo", },
@@ -264,7 +264,6 @@ const char *pars_descriptions[171][5] = {
     {"Tempo scarico servizio", "Service drain time", "Tiempo de drenaje de servicio", "Temps de vidange du service", "Service-Ablaufzeit", },
     {"Smart Wave", "Smart Wave", "Smart Wave", "Smart Wave", "Smart Wave", },
     {"Visualizzazione esclusione sapone", "Show detergent exclusion", "Show detergent exclusion", "Show detergent exclusion", "Show detergent exclusion", },
-    {"Tempo reset lingua", "Language reset time", "Language reset time", "Language reset time", "Language reset time", },
 };
 
 const char *pars_rgb[8][5] = {

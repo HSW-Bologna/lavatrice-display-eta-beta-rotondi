@@ -102,7 +102,7 @@ const char *strings[157][2] = {
     {"Prescarico", "Pre-draining", },
     {"Preparazione", "Preparing", },
     {"Attesa velocita'", "Warning speed", },
-    {"In frenata", "Stopping due to lurching", },
+    {"In frenata a causa di uno sbilanciamento", "Stopping due to lurching", },
     {"Attesa frenata", "Waiting for full stop", },
     {"Scarico forzato", "Forced drain", },
     {"Recupero", "Recovery", },
