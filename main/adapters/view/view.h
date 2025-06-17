@@ -79,6 +79,7 @@ typedef struct {
     void (*toggle_exclude_detergent)(pman_handle_t handle);
     void (*controllo_sapone)(pman_handle_t handle, uint16_t sapone, uint8_t valore);
     void (*colpo_sapone)(pman_handle_t handle, uint16_t sapone);
+    void (*read_events)(pman_handle_t handle, uint16_t offset);
 } view_protocol_t;
 
 
@@ -98,9 +99,9 @@ view_protocol_t *view_get_protocol(pman_handle_t handle);
 
 extern const pman_page_t page_main, page_password, page_menu, page_test_inputs, page_test_outputs, page_test_drum,
     page_test_level, page_test_temperature, page_test_coins_digital, page_test_coins_mechanical, page_test_led,
-    page_test_lock, page_drive, page_import_configuration, page_choice, page_parmac, page_washing, page_programs,
+    page_test_lock, page_drive, page_import_configuration, page_choice, page_parmac, page_programs,
     page_program, page_program_info, page_main_self, page_washing_self, page_choice_self, page_advanced, page_keyboard,
-    page_price, page_step, page_datetime, page_pick_program, page_work_parameters, page_numpad;
+    page_price, page_step, page_datetime, page_pick_program, page_work_parameters, page_numpad, page_statistics, page_events;
 
 
 #endif

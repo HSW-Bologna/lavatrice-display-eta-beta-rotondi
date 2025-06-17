@@ -44,6 +44,8 @@
      : (BUILD_MONTH_IS_DEC) ? 12                                                                                       \
                             : /* error default */ 99)
 
+#define BUTTON_WIDTH 150
+
 
 struct page_data {
     keyboard_page_options_t keyboard_options;
@@ -60,6 +62,8 @@ enum {
     BTN_PROGRAMS_ID,
     BTN_ADVANCED_ID,
     BTN_DATETIME_ID,
+    BTN_STATS_ID,
+    BTN_EVENTS_ID,
     BTN_PROGRAMMED_WASH_ID,
     BTN_PASSWORD_ID,
 };
@@ -87,8 +91,9 @@ static void open_page(pman_handle_t handle, void *state) {
     view_common_create_title(lv_scr_act(), view_intl_get_string(model, STRINGS_IMPOSTAZIONI), BTN_BACK_ID, -1);
 
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
-    lv_obj_set_style_pad_column(cont, 4, LV_STATE_DEFAULT);
+    lv_obj_set_style_pad_column(cont, 3, LV_STATE_DEFAULT);
     lv_obj_set_style_pad_row(cont, 4, LV_STATE_DEFAULT);
+    lv_obj_set_style_pad_hor(cont, 0, LV_STATE_DEFAULT);
     lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES - 56);
     lv_obj_set_layout(cont, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(cont, LV_FLEX_FLOW_ROW_WRAP);
@@ -97,7 +102,7 @@ static void open_page(pman_handle_t handle, void *state) {
 
     {
         lv_obj_t *btn = lv_btn_create(cont);
-        lv_obj_set_width(btn, 140);
+        lv_obj_set_width(btn, BUTTON_WIDTH);
         lv_obj_t *lbl = lv_label_create(btn);
         lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_DIAGNOSI));
         lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
@@ -107,7 +112,7 @@ static void open_page(pman_handle_t handle, void *state) {
 
     {
         lv_obj_t *btn = lv_btn_create(cont);
-        lv_obj_set_width(btn, 140);
+        lv_obj_set_width(btn, BUTTON_WIDTH);
         lv_obj_t *lbl = lv_label_create(btn);
         lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_PARAMETRI));
         lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
@@ -117,7 +122,7 @@ static void open_page(pman_handle_t handle, void *state) {
 
     {
         lv_obj_t *btn = lv_btn_create(cont);
-        lv_obj_set_width(btn, 140);
+        lv_obj_set_width(btn, BUTTON_WIDTH);
         lv_obj_t *lbl = lv_label_create(btn);
         lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_PROGRAMMI));
         lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
@@ -127,7 +132,7 @@ static void open_page(pman_handle_t handle, void *state) {
 
     {
         lv_obj_t *btn = lv_btn_create(cont);
-        lv_obj_set_width(btn, 140);
+        lv_obj_set_width(btn, BUTTON_WIDTH);
         lv_obj_t *lbl = lv_label_create(btn);
         lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_ARCHIVIAZIONE));
         lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
@@ -138,7 +143,7 @@ static void open_page(pman_handle_t handle, void *state) {
 
     {
         lv_obj_t *btn = lv_btn_create(cont);
-        lv_obj_set_width(btn, 140);
+        lv_obj_set_width(btn, BUTTON_WIDTH);
         lv_obj_t *lbl = lv_label_create(btn);
         lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_AVANZATE));
         lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
@@ -148,7 +153,7 @@ static void open_page(pman_handle_t handle, void *state) {
 
     {
         lv_obj_t *btn = lv_btn_create(cont);
-        lv_obj_set_width(btn, 140);
+        lv_obj_set_width(btn, BUTTON_WIDTH);
         lv_obj_t *lbl = lv_label_create(btn);
         lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_ORA_DATA));
         lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
@@ -158,22 +163,44 @@ static void open_page(pman_handle_t handle, void *state) {
 
     if (model->prog.parmac.abilitazione_lavaggio_programmato) {
         lv_obj_t *btn = lv_btn_create(cont);
-        lv_obj_set_width(btn, 280);
+        lv_obj_set_width(btn, BUTTON_WIDTH);
         lv_obj_t *lbl = lv_label_create(btn);
-        lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_LAVAGGIO_PROGRAMMATO));
+        lv_obj_set_width(lbl, LV_PCT(100));
+        lv_label_set_long_mode(lbl, LV_LABEL_LONG_SCROLL);
         lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_LAVAGGIO_PROGRAMMATO));
         lv_obj_center(lbl);
         view_register_object_default_callback(btn, BTN_PROGRAMMED_WASH_ID);
     }
 
     {
         lv_obj_t *btn = lv_btn_create(cont);
-        lv_obj_set_width(btn, 140);
+        lv_obj_set_width(btn, BUTTON_WIDTH);
         lv_obj_t *lbl = lv_label_create(btn);
         lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_PASSWORD));
         lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
         lv_obj_center(lbl);
         view_register_object_default_callback(btn, BTN_PASSWORD_ID);
+    }
+
+    {
+        lv_obj_t *btn = lv_btn_create(cont);
+        lv_obj_set_width(btn, BUTTON_WIDTH);
+        lv_obj_t *lbl = lv_label_create(btn);
+        lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_STATISTICHE));
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        lv_obj_center(lbl);
+        view_register_object_default_callback(btn, BTN_STATS_ID);
+    }
+
+    {
+        lv_obj_t *btn = lv_btn_create(cont);
+        lv_obj_set_width(btn, BUTTON_WIDTH);
+        lv_obj_t *lbl = lv_label_create(btn);
+        lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_EVENTI));
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        lv_obj_center(lbl);
+        view_register_object_default_callback(btn, BTN_EVENTS_ID);
     }
 
     lv_obj_t *label_machine_name = lv_label_create(lv_screen_active());
@@ -258,7 +285,14 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             break;
 
                         case BTN_ADVANCED_ID:
-                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_advanced);
+                            if (model->prog.parmac.livello_accesso == CODICE_LVL_COSTRUTTORE) {
+                                msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_advanced);
+                            } else {
+                                pman_stack_msg_t         pw_msg = PMAN_STACK_MSG_SWAP(&page_advanced);
+                                password_page_options_t *opts   = view_common_default_password_page_options(
+                                    pw_msg, (const char *)APP_CONFIG_PASSWORD);
+                                msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE_EXTRA(&page_password, opts);
+                            }
                             break;
 
                         case BTN_DATETIME_ID:
@@ -277,6 +311,14 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE_EXTRA(&page_numpad, &pdata->keyboard_options);
                             break;
                         }
+
+                        case BTN_STATS_ID:
+                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_statistics);
+                            break;
+
+                        case BTN_EVENTS_ID:
+                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_events);
+                            break;
                     }
                     break;
                 }

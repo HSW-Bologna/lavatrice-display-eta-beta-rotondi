@@ -1473,3 +1473,16 @@ void model_modify_speed_setpoint(mut_model_t *model, int16_t modification) {
         model->run.level_setpoint = model->prog.parmac.velocita_massima_lavaggio;
     }
 }
+
+
+size_t model_get_event_chunks(model_t *pmodel) {
+    assert(pmodel != NULL);
+    size_t res = pmodel->run.total_event_log_number / EVENT_LOG_CHUNK;
+    if (res == 0) {
+        return 1;
+    } else if ((pmodel->run.total_event_log_number % EVENT_LOG_CHUNK) == 0) {
+        return res;
+    } else {
+        return res + 1;
+    }
+}

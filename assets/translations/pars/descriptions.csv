@@ -170,3 +170,6 @@ INTERFACCIA_SAPONI, Interf. saponi, Detergent interf., Interfaz de jabón, Inter
 TEMPO_SCARICO, Tempo scarico servizio, Service drain time, Tiempo de drenaje de servicio, Temps de vidange du service, Service-Ablaufzeit
 SMART_WAVE, Smart Wave, Smart Wave, Smart Wave, Smart Wave, Smart Wave
 VISUALIZZAZIONE_ESCLUSIONE_SAPONE, Visualizzazione esclusione sapone, Show detergent exclusion, Show detergent exclusion, Show detergent exclusion, Show detergent exclusion
+CONTROLLO_PAUSA_STOP, Controllo pausa/stop, Pause/stop control, Pause/stop control, Pause/stop control, Pause/stop control
+CONTROLLO_LUCCHETTO, Controllo lucchetto, Lock control, Lock control, Lock control, Lock control
+CONTROLLO_STEP, Controllo step, Step control, Step control, Step control, Step control

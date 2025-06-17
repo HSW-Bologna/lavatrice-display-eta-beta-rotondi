@@ -14,7 +14,7 @@
 #include "model/model.h"
 
 
-#define TENTATIVI_TOTALI 4
+#define TENTATIVI_TOTALI 10
 #define RITARDO_MS       50
 
 
@@ -42,6 +42,8 @@ typedef enum {
     MACHINE_REQUEST_CODE_DETERGENT_EXCLUSION,
     MACHINE_REQUEST_CODE_STATO_PAGAMENTO,
     MACHINE_REQUEST_CODE_ABILITA_GETTONIERA,
+    MACHINE_REQUEST_CODE_READ_EVENTS,
+    MACHINE_REQUEST_CODE_READ_EVENTS_NUM,
 } machine_request_code_t;
 
 
@@ -86,6 +88,9 @@ typedef struct {
         struct {
             uint8_t enable;
         } enable_digital_coin_reader;
+        struct {
+            uint16_t offset;
+        } read_events;
     };
 } machine_request_t;
 
@@ -158,6 +163,23 @@ void machine_enable_digital_coin_reader(uint8_t enable) {
 }
 
 
+void machine_read_events_num(void) {
+    machine_request_t richiesta = {
+        .code = MACHINE_REQUEST_CODE_READ_EVENTS_NUM,
+    };
+    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+}
+
+
+void machine_read_events(uint16_t offset) {
+    machine_request_t richiesta = {
+        .code        = MACHINE_REQUEST_CODE_READ_EVENTS,
+        .read_events = {.offset = offset},
+    };
+    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+}
+
+
 void machine_activate_detergent(uint8_t detergent) {
     machine_request_t richiesta = {
         .code      = MACHINE_REQUEST_CODE_DETERGENT_ACTIVATION,
@@ -205,7 +227,7 @@ void machine_modify_cycle_parameters(uint8_t step, uint16_t duration, uint16_t s
 }
 
 
-void machine_read_stats(model_t *pmodel) {
+void machine_read_stats(void) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_STATS};
     xQueueSend(requestq, &richiesta, portMAX_DELAY);
 }
@@ -560,6 +582,17 @@ static int task_gestisci_richiesta(machine_request_t request) {
                 xQueueSend(responseq, &risposta_task, portMAX_DELAY);
             }
             break;
+
+        case MACHINE_REQUEST_CODE_READ_EVENTS_NUM:
+            res = invia_pacchetto_semplice(COMANDO_LEGGI_NUMERO_EVENTI, &risposta_pacchetto, -1);
+            break;
+
+        case MACHINE_REQUEST_CODE_READ_EVENTS: {
+            uint8_t buffer[2] = {0};
+            serialize_uint16_be(buffer, request.read_events.offset);
+            res = invia_pacchetto(COMANDO_LEGGI_EVENTI, buffer, 2, &risposta_pacchetto, -1);
+            break;
+        }
 
         case MACHINE_REQUEST_CODE_DETERGENT_ACTIVATION: {
             uint8_t num = request.detergent.num;

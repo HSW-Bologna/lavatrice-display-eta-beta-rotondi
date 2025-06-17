@@ -24,6 +24,12 @@ const char *pars_scala_accelerometro[6][5] = {
     {"5-8g no offset", "5-8g no offset", "5-8g sin desviación", "5-8g sans décalage", "5-8g kein Offset", },
 };
 
+const char *pars_controllo_step[3][5] = {
+    {"Avanti e indietro", "Forward and backwards", "Forward and backwards", "Forward and backwards", "Forward and backwards", },
+    {"Solo avanti", "Forward only", "Forward only", "Forward only", "Forward only", },
+    {"Disabilitato", "Deactivated", "Desactivado", "Desactive", "Deaktiviert", },
+};
+
 const char *pars_loghi[6][5] = {
     {"Nessuno", "None", "Nadie", "Personne", "Niemand", },
     {"MS", "MS", "MS", "MS", "MS", },
@@ -36,6 +42,12 @@ const char *pars_loghi[6][5] = {
 const char *pars_diretto_indiretto[2][5] = {
     {"Diretto", "Direct", "Directo", "Direct", "Direkt", },
     {"Indiretto", "Indirect", "Indirecta", "Indirect", "Indirekt", },
+};
+
+const char *pars_controllo_lucchetto[3][5] = {
+    {"Nessuno", "None", "None", "None", "None", },
+    {"Solo apertura", "Open only", "Open only", "Open only", "Open only", },
+    {"Apertura/chiusura", "Open/close", "Open/close", "Open/close", "Open/close", },
 };
 
 const char *pars_abilitazione[2][5] = {
@@ -93,7 +105,7 @@ const char *pars_tipo_inverter[2][5] = {
     {"Marcia/direzione", "Run/direction", "Avance/dirección", "Avant/direction", "Vorwärts/Richtung", },
 };
 
-const char *pars_descriptions[170][5] = {
+const char *pars_descriptions[173][5] = {
     {"Parametro", "Parameter", "Parámetro", "Paramètre", "Parameter", },
     {"Lingua", "Language", "Idioma", "Langue", "SprachE", },
     {"Logo", "Logo", "Logo", "Logo", "Logo", },
@@ -264,6 +276,9 @@ const char *pars_descriptions[170][5] = {
     {"Tempo scarico servizio", "Service drain time", "Tiempo de drenaje de servicio", "Temps de vidange du service", "Service-Ablaufzeit", },
     {"Smart Wave", "Smart Wave", "Smart Wave", "Smart Wave", "Smart Wave", },
     {"Visualizzazione esclusione sapone", "Show detergent exclusion", "Show detergent exclusion", "Show detergent exclusion", "Show detergent exclusion", },
+    {"Controllo pausa/stop", "Pause/stop control", "Pause/stop control", "Pause/stop control", "Pause/stop control", },
+    {"Controllo lucchetto", "Lock control", "Lock control", "Lock control", "Lock control", },
+    {"Controllo step", "Step control", "Step control", "Step control", "Step control", },
 };
 
 const char *pars_rgb[8][5] = {

@@ -31,6 +31,13 @@ typedef enum {
 
 extern const char *pars_scala_accelerometro[6][5];
 typedef enum {
+    PARS_CONTROLLO_STEP_AVANTI_E_INDIETRO = 0,
+    PARS_CONTROLLO_STEP_SOLO_AVANTI,
+    PARS_CONTROLLO_STEP_DISABILITATO,
+} pars_controllo_step_t;
+
+extern const char *pars_controllo_step[3][5];
+typedef enum {
     PARS_LOGHI_NESSUNO = 0,
     PARS_LOGHI_MS,
     PARS_LOGHI_LAVENDA,
@@ -46,6 +53,13 @@ typedef enum {
 } pars_diretto_indiretto_t;
 
 extern const char *pars_diretto_indiretto[2][5];
+typedef enum {
+    PARS_CONTROLLO_LUCCHETTO_NESSUNO = 0,
+    PARS_CONTROLLO_LUCCHETTO_SOLO_APERTURA,
+    PARS_CONTROLLO_LUCCHETTO_APERTURA_E_CHIUSURA,
+} pars_controllo_lucchetto_t;
+
+extern const char *pars_controllo_lucchetto[3][5];
 typedef enum {
     PARS_ABILITAZIONE_DISABILITATO = 0,
     PARS_ABILITAZIONE_ABILITATO,
@@ -280,9 +294,12 @@ typedef enum {
     PARS_DESCRIPTIONS_TEMPO_SCARICO,
     PARS_DESCRIPTIONS_SMART_WAVE,
     PARS_DESCRIPTIONS_VISUALIZZAZIONE_ESCLUSIONE_SAPONE,
+    PARS_DESCRIPTIONS_CONTROLLO_PAUSA_STOP,
+    PARS_DESCRIPTIONS_CONTROLLO_LUCCHETTO,
+    PARS_DESCRIPTIONS_CONTROLLO_STEP,
 } pars_descriptions_t;
 
-extern const char *pars_descriptions[170][5];
+extern const char *pars_descriptions[173][5];
 typedef enum {
     PARS_RGB_SPENTO = 0,
     PARS_RGB_BLU,

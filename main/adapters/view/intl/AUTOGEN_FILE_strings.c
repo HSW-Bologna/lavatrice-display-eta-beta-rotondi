@@ -1,4 +1,4 @@
-const char *strings[157][2] = {
+const char *strings[174][2] = {
     {"Diagnosi", "Test", },
     {"Ingressi", "Inputs", },
     {"Uscite", "Outputs", },
@@ -156,5 +156,22 @@ const char *strings[157][2] = {
     {"Durata", "Duration", },
     {"Password", "Password", },
     {"Sapone", "Detergent", },
+    {"Statistiche", "Statistics", },
+    {"Eventi", "Events", },
+    {"Totali", "Total ", },
+    {"Interrotti", "Interrupted ", },
+    {"Continui", "Looped ", },
+    {"Acceso", "On", },
+    {"Lavoro", "Work", },
+    {"Moto", "Rotation ", },
+    {"Riscaldamento", "Heating", },
+    {"Acqua fredda", "Cold water", },
+    {"Acqua calda", "Warm water", },
+    {"Acqua recupero", "Recovery water", },
+    {"Acqua flussaggio", "Flux water", },
+    {"Chiusure", "Closings", },
+    {"Aperture", "Openings", },
+    {"Cicli", "Cycles", },
+    {"Tempi", "Time", },
 };
 

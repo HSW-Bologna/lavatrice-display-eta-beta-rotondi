@@ -159,3 +159,20 @@ VELOCITA, Velocita', Speed
 DURATA, Durata, Duration
 PASSWORD, Password, Password
 SAPONE, Sapone, Detergent
+STATISTICHE, Statistiche, Statistics
+EVENTI, Eventi, Events
+TOTALI, Totali, Total 
+INTERROTTI, Interrotti, Interrupted 
+CONTINUI, Continui, Looped 
+ACCESO, Acceso, On
+LAVORO, Lavoro, Work
+MOTO, Moto, Rotation 
+RISCALDAMENTO, Riscaldamento, Heating
+ACQUA_FREDDA, Acqua fredda, Cold water
+ACQUA_CALDA, Acqua calda, Warm water
+ACQUA_RECUPERO, Acqua recupero, Recovery water
+ACQUA_FLUSSAGGIO, Acqua flussaggio, Flux water
+CHIUSURE, Chiusure, Closings
+APERTURE, Aperture, Openings
+CICLI, Cicli, Cycles
+TEMPI, Tempi, Time

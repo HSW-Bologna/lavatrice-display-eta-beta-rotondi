@@ -55,7 +55,7 @@ void machine_offset_pressione(void);
 void machine_azzera_litri(void);
 void machine_apri_oblo(int forza);
 void machine_abilita_comunicazione(size_t en);
-void machine_read_stats(model_t *pmodel);
+void machine_read_stats(void);
 void machine_chiudi_oblo(void);
 void machine_send_debug_code(uint8_t debug_code);
 void machine_send_time(void);
@@ -70,5 +70,8 @@ void machine_azzera_credito(void);
 void machine_payment_state(uint8_t payment_state);
 void machine_enable_digital_coin_reader(uint8_t enable);
 void machine_exclude_detergent(uint8_t value);
+void machine_read_events(uint16_t offset);
+void machine_read_events_num(void);
+
 
 #endif

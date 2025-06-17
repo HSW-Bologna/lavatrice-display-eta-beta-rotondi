@@ -41,6 +41,9 @@ void parmac_init(model_t *pmodel, int reset) {
     ps[i++] = PARAMETER(&p->logo, 0, 5, 0, FOPT(PARS_DESCRIPTIONS_LOGO, pars_loghi), BIT_UTENTE);
     ps[i++] = PARAMETER(&p->codice_nodo_macchina, 0, 255, 0, FINT(PARS_DESCRIPTIONS_NODO_MACCHINA), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->livello_accesso, 0, 3, 0, FOPT(PARS_DESCRIPTIONS_LIVELLO_ACCESSO, pars_livello_accesso), BIT_TECNICO);
+    ps[i++] = PARAMETER(&p->controllo_pausa_stop, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_CONTROLLO_PAUSA_STOP, pars_abilitazione), BIT_COSTRUTTORE);
+    ps[i++] = PARAMETER(&p->controllo_lucchetto, 0, 2, 0, FOPT(PARS_DESCRIPTIONS_CONTROLLO_LUCCHETTO, pars_controllo_lucchetto), BIT_DISTRIBUTORE);
+    ps[i++] = PARAMETER(&p->controllo_step, 0, 2, 0, FOPT(PARS_DESCRIPTIONS_CONTROLLO_STEP, pars_controllo_step), BIT_DISTRIBUTORE);
     ps[i++] = PARAMETER(&p->visualizzazione_stop, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_INTERFACCIA_STOP, pars_visualizzazione), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->visualizzazione_start, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_INTERFACCIA_START, pars_visualizzazione), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->numero_massimo_programmi_utente, 1, MAX_PROGRAMMI, 20, FINT(PARS_DESCRIPTIONS_MAX_PROGRAMMI_UTENTE), BIT_UTENTE);

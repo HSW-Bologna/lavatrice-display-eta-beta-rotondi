@@ -55,6 +55,7 @@ void controller_process_message(pman_handle_t handle, void *msg) {
 void controller_manage(mut_model_t *pmodel) {
     static int           initial_level_check         = 0;
     static unsigned long stato_ts                    = 0;
+    static unsigned long statistics_ts               = 0;
     static uint8_t       program_payed               = -1;
     static uint8_t       digital_coin_reader_enabled = -1;
     machine_response_t   machine_response;
@@ -89,6 +90,11 @@ void controller_manage(mut_model_t *pmodel) {
         } else {
             pmodel->system.storage_status = STORAGE_STATUS_DONE;
         }
+    }
+
+    if (timestamp_is_expired(statistics_ts, 10000)) {
+        machine_read_stats();
+        statistics_ts = timestamp_get();
     }
 
     if (timestamp_is_expired(stato_ts, 500)) {
@@ -207,8 +213,10 @@ void controller_manage(mut_model_t *pmodel) {
 
                 if (model_macchina_in_stop(pmodel)) {
                     pmodel->run.detergent_exclusion = 0;
+                    pmodel->run.alarm_occurred      = 0;
+                } else {
+                    pmodel->run.alarm_occurred = pmodel->run.macchina.codice_allarme > 0;
                 }
-                // view_event((view_event_t){.code = VIEW_EVENT_CODE_MODEL_UPDATE});
 
                 if (pending_state_change) {
                     ESP_LOGI(TAG, "Pending state change, ignoring");
@@ -244,7 +252,6 @@ void controller_manage(mut_model_t *pmodel) {
             case MACHINE_RESPONSE_CODE_STATS:
                 pmodel->stats = *machine_response.stats;
                 free(machine_response.stats);
-                // view_event((view_event_t){.code = VIEW_EVENT_CODE_MODEL_UPDATE});
                 break;
         }
     }

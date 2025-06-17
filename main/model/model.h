@@ -420,6 +420,7 @@ typedef struct {
 
         firmware_update_state_t firmware_update_state;
 
+        uint8_t  alarm_occurred;
         int16_t  temperature_setpoint;
         uint16_t level_setpoint;
         uint16_t speed_setpoint;
@@ -529,5 +530,6 @@ void         model_test_output_set(mut_model_t *model, uint16_t output, uint8_t 
 void         model_modify_temperature_setpoint(mut_model_t *model, int16_t modification);
 void         model_modify_level_setpoint(mut_model_t *model, int16_t modification);
 void         model_modify_speed_setpoint(mut_model_t *model, int16_t modification);
+size_t       model_get_event_chunks(model_t *pmodel);
 
 #endif

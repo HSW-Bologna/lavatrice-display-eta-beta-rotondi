@@ -418,6 +418,31 @@ static void update_page(model_t *model, struct page_data *pdata) {
         view_common_set_hidden(pdata->button_right, 0);
         lv_image_set_src(pdata->button_stop, &img_stop_released);
         lv_obj_set_style_image_recolor_opa(pdata->button_stop, LV_OPA_TRANSP, LV_STATE_DEFAULT);
+
+        if (model->prog.parmac.controllo_pausa_stop || model->run.alarm_occurred > 0) {
+            view_common_set_hidden(pdata->button_stop, 0);
+        } else {
+            view_common_set_hidden(pdata->button_stop, 0);
+        }
+
+        switch (model->prog.parmac.controllo_step) {
+            case 0: {
+                view_common_set_hidden(pdata->button_left, 0);
+                view_common_set_hidden(pdata->button_right, 0);
+                break;
+            }
+            case 1: {
+                view_common_set_hidden(pdata->button_right, 1);
+                view_common_set_hidden(pdata->button_left, 0);
+                break;
+            }
+            case 2: {
+                view_common_set_hidden(pdata->button_left, 1);
+                view_common_set_hidden(pdata->button_right, 1);
+                break;
+            }
+        }
+
     } else if (model_macchina_in_frenata(model) || model_macchina_in_scarico_forzato(model)) {
         view_common_set_hidden(pdata->button_stop, 1);
         view_common_set_hidden(pdata->button_start, 1);
@@ -429,7 +454,18 @@ static void update_page(model_t *model, struct page_data *pdata) {
         view_common_set_hidden(pdata->button_left, 1);
         view_common_set_hidden(pdata->button_right, 1);
         lv_obj_set_style_image_recolor_opa(pdata->button_stop, LV_OPA_TRANSP, LV_STATE_DEFAULT);
-        lv_img_set_src(pdata->button_stop, &img_pause_released);
+
+        if (model->prog.parmac.controllo_pausa_stop) {
+            lv_image_set_src(pdata->button_stop, &img_pause_released);
+            view_common_set_hidden(pdata->button_stop, 0);
+        } else {
+            if (model->run.alarm_occurred) {
+                lv_image_set_src(pdata->button_stop, &img_stop_released);
+                view_common_set_hidden(pdata->button_stop, 0);
+            } else {
+                view_common_set_hidden(pdata->button_stop, 1);
+            }
+        }
     }
 
     parametri_step_t *step = model_get_current_step(model);

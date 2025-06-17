@@ -599,7 +599,13 @@ static void update_page(model_t *model, struct page_data *pdata) {
     view_common_set_hidden(pdata->message_popup.blanket, !model->run.done);
 
     const lv_img_dsc_t *language_icons[2] = {&img_marble_italiano, &img_marble_english};
-    lv_img_set_src(pdata->image_language, language_icons[model_get_temporary_language(model)]);
+    lv_image_set_src(pdata->image_language, language_icons[model_get_temporary_language(model)]);
+
+    if (model->prog.parmac.controllo_lucchetto == 0) {
+        view_common_set_hidden(pdata->button_padlock, 1);
+    } else {
+        view_common_set_hidden(pdata->button_padlock, 0);
+    }
 }
 
 

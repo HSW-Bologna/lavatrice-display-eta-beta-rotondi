@@ -52,6 +52,7 @@ static void save_password(pman_handle_t handle);
 static void toggle_exclude_detergent(pman_handle_t handle);
 static void colpo_sapone(pman_handle_t handle, uint16_t sapone);
 static void controllo_sapone(pman_handle_t handle, uint16_t sapone, uint8_t valore);
+static void read_events(pman_handle_t handle, uint16_t offset);
 
 
 view_protocol_t controller_gui_protocol = {
@@ -89,6 +90,7 @@ view_protocol_t controller_gui_protocol = {
     .toggle_exclude_detergent   = toggle_exclude_detergent,
     .controllo_sapone           = controllo_sapone,
     .colpo_sapone               = colpo_sapone,
+    .read_events                = read_events,
 };
 
 
@@ -240,8 +242,10 @@ static void toggle_lock(pman_handle_t handle) {
         ESP_LOGI(TAG, "Apertura oblo'");
         machine_apri_oblo(0);
     } else if (model_oblo_libero(model) && model_oblo_chiuso(model)) {
-        ESP_LOGI(TAG, "Chiusura oblo'");
-        machine_chiudi_oblo();
+        if (model->prog.parmac.controllo_lucchetto == 2) {
+            ESP_LOGI(TAG, "Chiusura oblo'");
+            machine_chiudi_oblo();
+        }
     } else {
         ESP_LOGI(TAG, "Oblo' aperto, non posso fare nulla");
     }
@@ -377,4 +381,11 @@ static void controllo_sapone(pman_handle_t handle, uint16_t sapone, uint8_t valo
 static void colpo_sapone(pman_handle_t handle, uint16_t sapone) {
     (void)handle;
     machine_activate_detergent(sapone);
+}
+
+
+static void read_events(pman_handle_t handle, uint16_t offset) {
+    (void)handle;
+    machine_read_events_num();
+    machine_read_events(offset);
 }

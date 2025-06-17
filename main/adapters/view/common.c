@@ -8,9 +8,6 @@
 #define SQUARE_BUTTON_SIZE 48
 
 
-static const char *get_alarm_description(uint16_t alarm_code, uint16_t language);
-
-
 void view_common_set_hidden(lv_obj_t *obj, uint8_t hidden) {
     if (hidden) {
         lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
@@ -324,7 +321,7 @@ lv_obj_t *view_common_alarm_led_create(lv_obj_t *parent, lv_obj_t **led, const c
 }
 
 
-static const char *get_alarm_description(uint16_t alarm_code, uint16_t language) {
+const char *get_alarm_description(uint16_t alarm_code, uint16_t language) {
     switch (alarm_code) {
         case 1:
             return view_intl_get_string_in_language(language, STRINGS_ERRORE_EEPROM);
