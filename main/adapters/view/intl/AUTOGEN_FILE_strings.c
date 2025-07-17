@@ -1,4 +1,4 @@
-const char *strings[174][2] = {
+const char *strings[181][2] = {
     {"Diagnosi", "Test", },
     {"Ingressi", "Inputs", },
     {"Uscite", "Outputs", },
@@ -173,5 +173,12 @@ const char *strings[174][2] = {
     {"Aperture", "Openings", },
     {"Cicli", "Cycles", },
     {"Tempi", "Time", },
+    {"Azzerare alle impostazioni di fabbrica?", "Reset to factory default?", },
+    {"Macchina", "Machine", },
+    {"Utilita'", "Utility", },
+    {"Menu' utente", "User menu", },
+    {"Esclusione sapone", "Detergent exclusion", },
+    {"Menu' saponi", "Detergent menu", },
+    {"Vis. data/ora", "Show date/time", },
 };
 

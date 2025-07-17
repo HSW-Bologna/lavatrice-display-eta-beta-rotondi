@@ -103,12 +103,15 @@ static int  task_gestisci_richiesta(machine_request_t request);
 static void free_packet(packet_t *packet);
 
 
-static const char       *TAG              = "Machine";
-static QueueHandle_t     requestq         = NULL;
-static QueueHandle_t     responseq        = NULL;
-static SemaphoreHandle_t sem              = NULL;
-static stato_macchina_t  stato            = {0};
-static int               communication_ab = 0;
+static const char       *TAG                              = "Machine";
+static QueueHandle_t     requestq                         = NULL;
+static QueueHandle_t     responseq                        = NULL;
+static SemaphoreHandle_t sem                              = NULL;
+static stato_macchina_t  stato                            = {0};
+static uint16_t          event_log_number                 = 0;
+static uint16_t          total_event_log_number           = 0;
+static event_t           event_log_chunk[EVENT_LOG_CHUNK] = {0};
+static int               communication_ab                 = 0;
 
 
 void machine_init(void) {
@@ -140,6 +143,9 @@ int machine_read_state(model_t *pmodel) {
     xSemaphoreTake(sem, portMAX_DELAY);
     int res = stato.stato != pmodel->run.macchina.stato;
     memcpy(&pmodel->run.macchina, &stato, sizeof(stato_macchina_t));
+    pmodel->run.total_event_log_number = total_event_log_number;
+    pmodel->run.event_log_number       = event_log_number;
+    memcpy(pmodel->run.event_log_chunk, event_log_chunk, sizeof(event_log_chunk));
     xSemaphoreGive(sem);
     return res;
 }
@@ -150,7 +156,7 @@ void machine_payment_state(uint8_t payment_state) {
         .code          = MACHINE_REQUEST_CODE_STATO_PAGAMENTO,
         .payment_state = {.payment_state = payment_state},
     };
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
@@ -159,7 +165,7 @@ void machine_enable_digital_coin_reader(uint8_t enable) {
         .code                       = MACHINE_REQUEST_CODE_ABILITA_GETTONIERA,
         .enable_digital_coin_reader = {.enable = enable},
     };
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
@@ -167,7 +173,7 @@ void machine_read_events_num(void) {
     machine_request_t richiesta = {
         .code = MACHINE_REQUEST_CODE_READ_EVENTS_NUM,
     };
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
@@ -176,7 +182,7 @@ void machine_read_events(uint16_t offset) {
         .code        = MACHINE_REQUEST_CODE_READ_EVENTS,
         .read_events = {.offset = offset},
     };
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
@@ -185,7 +191,7 @@ void machine_activate_detergent(uint8_t detergent) {
         .code      = MACHINE_REQUEST_CODE_DETERGENT_ACTIVATION,
         .detergent = {.num = detergent},
     };
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
@@ -194,7 +200,7 @@ void machine_control_detergent(uint8_t detergent, uint8_t value) {
         .code      = MACHINE_REQUEST_CODE_DETERGENT_CONTROL,
         .detergent = {.num = detergent, .value = value},
     };
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
@@ -203,13 +209,13 @@ void machine_exclude_detergent(uint8_t value) {
         .code      = MACHINE_REQUEST_CODE_DETERGENT_EXCLUSION,
         .detergent = {.value = value},
     };
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
 void machine_send_time(void) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_INVIA_DATA};
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
@@ -223,13 +229,13 @@ void machine_modify_cycle_parameters(uint8_t step, uint16_t duration, uint16_t s
         .temperature = temperature,
         .level       = level,
     };
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
 void machine_read_stats(void) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_STATS};
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
@@ -237,61 +243,61 @@ void machine_invia_parmac(parmac_t *parmac) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_SCRIVI_PARAMETRI_MACCHINA};
     richiesta.parmac            = malloc(sizeof(parmac_t));
     memcpy(richiesta.parmac, parmac, sizeof(parmac_t));
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
 void machine_esegui_step(parametri_step_t *step, uint8_t num) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_ESEGUI_STEP, .step = {.pars = *step, .num = num}};
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
 void machine_send_debug_code(uint8_t debug_code) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_SEND_DEBUG_CODE, .debug_code = debug_code};
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
 void machine_apri_oblo(int forza) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_APRI_OBLO, .force = forza};
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
 void machine_chiudi_oblo(void) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_COMANDO_SEMPLICE, .comando = COMANDO_CHIUDI_OBLO};
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
 void machine_forza_scarico(void) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_COMANDO_SEMPLICE, .comando = COMANDO_FORZA_SCARICO};
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
 void machine_azzera_allarmi(void) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_COMANDO_SEMPLICE, .comando = COMANDO_AZZERA_ALLARMI};
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
 void machine_start(uint8_t num_program) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_START, .num = num_program};
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
 void machine_stop(void) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_STOP};
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
 void machine_pause(void) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_PAUSA};
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
@@ -302,44 +308,44 @@ int machine_ricevi_risposta(machine_response_t *risposta) {
 
 void machine_riavvia_comunicazione(void) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_RIAVVIA_COMUNICAZIONE};
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
 void machine_richiedi_stato(void) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_STATO};
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
 void machine_test(int test) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_COMANDO_SEMPLICE,
                                    .test = test ? ENTRA_IN_TEST : ESCI_DAL_TEST};
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
 void machine_richiedi_dati_test(void) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_TEST_DATA};
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
 void machine_invia_presentazioni(void) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_PRESENTAZIONI};
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
 void machine_imposta_dac(uint8_t dac) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_IMPOSTA_DAC, .dac = {.value = dac}};
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
 void machine_imposta_led(uint8_t led) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_IMPOSTA_LED, .led = {.value = led}};
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
@@ -347,32 +353,32 @@ void machine_imposta_uscita_singola(size_t uscita, int valore) {
     ESP_LOGI(TAG, "Uscita %zu %i", uscita, valore);
     machine_request_t richiesta = {
         .code = MACHINE_REQUEST_CODE_IMPOSTA_USCITA, .uscita = uscita, .singola = 1, .valore = valore};
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
 void machine_imposta_uscita_multipla(size_t uscita, int valore) {
     machine_request_t richiesta = {
         .code = MACHINE_REQUEST_CODE_IMPOSTA_USCITA, .uscita = uscita, .singola = 0, .valore = valore};
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
 void machine_azzera_credito(void) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_COMANDO_SEMPLICE, .comando = COMANDO_AZZERA_CREDITO};
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
 void machine_azzera_litri(void) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_COMANDO_SEMPLICE, .comando = COMANDO_AZZERA_LITRI};
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
 void machine_offset_pressione(void) {
     machine_request_t richiesta = {.code = MACHINE_REQUEST_CODE_COMANDO_SEMPLICE, .comando = OFFSET_PRESSIONE};
-    xQueueSend(requestq, &richiesta, portMAX_DELAY);
+    xQueueSend(requestq, &richiesta, pdMS_TO_TICKS(10));
 }
 
 
@@ -380,7 +386,7 @@ static void communication_task(void *args) {
     (void)args;
     const machine_response_t risposta_errore          = {.code = MACHINE_RESPONSE_CODE_ERRORE_COMUNICAZIONE};
     machine_request_t        ultima_richiesta_fallita = {0};
-    int                      errore_comunicazione     = 0;
+    uint8_t                  errore_comunicazione     = 0;
     vTaskDelay(pdMS_TO_TICKS(4000));
     ESP_LOGI(TAG, "Inizio task di comunicazione");
 
@@ -585,12 +591,36 @@ static int task_gestisci_richiesta(machine_request_t request) {
 
         case MACHINE_REQUEST_CODE_READ_EVENTS_NUM:
             res = invia_pacchetto_semplice(COMANDO_LEGGI_NUMERO_EVENTI, &risposta_pacchetto, -1);
+
+            if (res == 0) {
+                risposta_task.code = MACHINE_RESPONSE_CODE_EVENTI;
+                xSemaphoreTake(sem, portMAX_DELAY);
+                deserialize_uint16_be(&total_event_log_number, &risposta_pacchetto.data[1]);
+                xSemaphoreGive(sem);
+                xQueueSend(responseq, &risposta_task, portMAX_DELAY);
+            }
             break;
 
         case MACHINE_REQUEST_CODE_READ_EVENTS: {
             uint8_t buffer[2] = {0};
             serialize_uint16_be(buffer, request.read_events.offset);
             res = invia_pacchetto(COMANDO_LEGGI_EVENTI, buffer, 2, &risposta_pacchetto, -1);
+
+            if (res == 0) {
+                risposta_task.code = MACHINE_RESPONSE_CODE_EVENTI;
+                xSemaphoreTake(sem, portMAX_DELAY);
+                uint16_t numero_eventi = (risposta_pacchetto.data_length - 1) / EVENT_SERIALIZED_SIZE;
+                size_t   eventi_potati = numero_eventi > EVENT_LOG_CHUNK ? EVENT_LOG_CHUNK : numero_eventi;
+
+                for (size_t i = 0; i < eventi_potati; i++) {
+                    size_t event_index = numero_eventi - i - 1;
+                    event_deserialize(&event_log_chunk[i],
+                                      &risposta_pacchetto.data[1 + event_index * EVENT_SERIALIZED_SIZE]);
+                }
+                event_log_number = eventi_potati;
+                xSemaphoreGive(sem);
+                xQueueSend(responseq, &risposta_task, portMAX_DELAY);
+            }
             break;
         }
 
@@ -723,7 +753,7 @@ static int invia_pacchetto(int comando, uint8_t *dati, uint16_t lunghezza_dati, 
     size_t tentativi = 0;
     int    err       = 0;
 
-    size_t   lunghezza_prevista = lunghezza_dati_prevista < 0 ? PACKET_SIZE(512) : PACKET_SIZE(lunghezza_dati_prevista);
+    size_t   lunghezza_prevista = lunghezza_dati_prevista < 0 ? PACKET_SIZE(1024) : PACKET_SIZE(lunghezza_dati_prevista);
     uint8_t *write_buffer       = malloc(PACKET_SIZE(lunghezza_dati));
     uint8_t *read_buffer        = malloc(lunghezza_prevista);
     int      write_len          = build_packet(write_buffer, comando, dati, lunghezza_dati);
@@ -733,11 +763,11 @@ static int invia_pacchetto(int comando, uint8_t *dati, uint16_t lunghezza_dati, 
         bsp_rs232_flush();
         bsp_rs232_write(write_buffer, write_len);
 
-        int len = bsp_rs232_read(read_buffer, lunghezza_prevista);
+        int len = bsp_rs232_read(read_buffer, lunghezza_prevista, comando == COMANDO_LEGGI_EVENTI ? 250 : 50);
         err     = elaborate_data(read_buffer, len, risposta, NULL);
         if (err) {
             ESP_LOGW(TAG, "Risposta non valida al comando 0x%02X: %i (%i) (%i)", comando, err, len, tentativi);
-            vTaskDelay(pdMS_TO_TICKS(RITARDO_MS));
+            vTaskDelay(pdMS_TO_TICKS(500));
             tentativi++;
         } else {
             if (risposta->data_length > 0 && risposta->data != NULL && risposta->data[0] != comando) {

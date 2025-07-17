@@ -6,7 +6,6 @@
 
 #define UART_PORTNUM   1
 #define ECHO_READ_TOUT (3)     // 3.5T * 8 = 28 ticks, TOUT=3 -> ~24..33 ticks
-#define TIMEOUT_MS     50
 
 
 static const char *TAG = "Machine serial";
@@ -39,8 +38,8 @@ void bsp_rs232_flush(void) {
 }
 
 
-int bsp_rs232_read(uint8_t *buffer, size_t len) {
-    return uart_read_bytes(UART_PORTNUM, buffer, len, pdMS_TO_TICKS(TIMEOUT_MS));
+int bsp_rs232_read(uint8_t *buffer, size_t len, uint32_t timeout_ms) {
+    return uart_read_bytes(UART_PORTNUM, buffer, len, pdMS_TO_TICKS(timeout_ms));
 }
 
 

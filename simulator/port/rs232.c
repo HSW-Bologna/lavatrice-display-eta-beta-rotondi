@@ -40,7 +40,8 @@ void bsp_rs232_flush(void) {
 }
 
 
-int bsp_rs232_read(uint8_t *buffer, size_t required_len) {
+int bsp_rs232_read(uint8_t *buffer, size_t required_len, uint32_t timeout_ms) {
+    (void)timeout_ms;
     int           len;
     unsigned long start = timestamp_get();
     size_t        total = 0;

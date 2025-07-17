@@ -309,10 +309,8 @@ const char *pars_nc_na[2][5] = {
     {"Normalmente aperto", "Normally open", "Normalmente abierto", "Normalement ouvert", "Normalerweise offen", },
 };
 
-const char *pars_livello_accesso[4][5] = {
+const char *pars_livello_accesso[2][5] = {
     {"Utente", "User", "Usuario", "Utilisateur", "Benutzer", },
-    {"Tecnico", "Technician", "Técnico", "Technicien", "Techniker", },
-    {"Distributore", "Distributor", "Distribuidor", "Distributeur", "Vertriebspartner", },
     {"Costruttore", "Constructor", "Fabricante", "Fabricant", "Hersteller", },
 };
 

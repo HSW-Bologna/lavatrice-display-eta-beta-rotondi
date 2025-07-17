@@ -71,6 +71,8 @@ struct page_data {
     lv_obj_t *images[MAX_IMAGES];
     lv_obj_t *labels[MAX_IMAGES];
 
+    lv_obj_t *label_datetime;
+
     lv_obj_t *obj_handle;
     lv_obj_t *obj_drawer;
 
@@ -235,6 +237,9 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_set_style_pad_row(buttons_cont, 12, LV_STATE_DEFAULT);
         lv_obj_set_style_pad_ver(buttons_cont, 0, LV_STATE_DEFAULT);
         lv_obj_set_style_pad_hor(buttons_cont, 4, LV_STATE_DEFAULT);
+        if (model->prog.parmac.visualizzazione_data_ora) {
+            lv_obj_set_style_pad_top(buttons_cont, 18, LV_STATE_DEFAULT);
+        }
         lv_obj_set_size(buttons_cont, LV_HOR_RES, 72);
         lv_obj_set_layout(buttons_cont, LV_LAYOUT_FLEX);
         lv_obj_set_flex_flow(buttons_cont, LV_FLEX_FLOW_ROW);
@@ -290,6 +295,15 @@ static void open_page(pman_handle_t handle, void *state) {
             lv_obj_set_style_text_color(lbl, VIEW_STYLE_COLOR_BLACK, LV_STATE_DEFAULT);
             lv_label_set_text(lbl, LV_SYMBOL_RIGHT);
             lv_obj_center(lbl);
+        }
+
+        {
+            lv_obj_t *label = lv_label_create(buttons_cont);
+            lv_obj_add_flag(label, LV_OBJ_FLAG_IGNORE_LAYOUT);
+            lv_obj_set_style_text_font(label, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(label, lv_color_black(), LV_STATE_DEFAULT);
+            lv_obj_align(label, LV_ALIGN_TOP_MID, 0, -14);
+            pdata->label_datetime = label;
         }
     }
 
@@ -568,6 +582,14 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
 static void update_page(model_t *model, struct page_data *pdata) {
     uint16_t max_images = MAX_IMAGES;
+
+    {
+        time_t    current_time = time(NULL);
+        struct tm current_tm   = *localtime(&current_time);
+        lv_label_set_text_fmt(pdata->label_datetime, "%02i:%02i %02i/%02i/%i", current_tm.tm_hour, current_tm.tm_min,
+                              current_tm.tm_mday, current_tm.tm_mon, current_tm.tm_year + 1900);
+        view_common_set_hidden(pdata->label_datetime, !model->prog.parmac.visualizzazione_data_ora);
+    }
 
     for (size_t i = 0; i < max_images; i++) {
         size_t program_index = pdata->program_window_index * max_images + i;

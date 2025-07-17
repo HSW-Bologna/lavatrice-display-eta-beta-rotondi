@@ -176,3 +176,10 @@ CHIUSURE, Chiusure, Closings
 APERTURE, Aperture, Openings
 CICLI, Cicli, Cycles
 TEMPI, Tempi, Time
+AZZERARE_ALLE_IMPOSTAZIONI_DI_FABBRICA, Azzerare alle impostazioni di fabbrica?, Reset to factory default?
+MACCHINA, Macchina, Machine
+UTILITA, Utilita', Utility
+MENU_UTENTE, Menu' utente, User menu
+ESCLUSIONE_SAPONE, Esclusione sapone, Detergent exclusion
+MENU_SAPONI, Menu' saponi, Detergent menu
+DATA_ORA, Vis. data/ora, Show date/time

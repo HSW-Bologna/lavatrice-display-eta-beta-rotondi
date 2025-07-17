@@ -233,8 +233,11 @@ const char *view_common_step2str(model_t *model, uint16_t step) {
         STRINGS_SCARICO, STRINGS_CENTRIFUGA,  STRINGS_SROTOLAMENTO, STRINGS_ATTESA_OPERATORE,
     };
 
-    assert(step <= NUM_STEPS && step > 0);
-    return view_intl_get_string(model, step2str[step - 1]);
+    if (step <= NUM_STEPS && step > 0) {
+        return view_intl_get_string(model, step2str[step - 1]);
+    } else {
+        return "---";
+    }
 }
 
 
@@ -394,4 +397,21 @@ const char *get_alarm_description(uint16_t alarm_code, uint16_t language) {
             return codice_generico;
         }
     }
+}
+
+
+void view_common_dropdown_set_number(lv_obj_t *roller, int num) {
+    int   cifre  = num / 10 > 3 ? num / 10 : 3;
+    char *string = malloc((cifre + 1) * num);
+    memset(string, 0, (cifre + 1) * num);
+
+    for (int i = 0; i < num; i++) {
+        char tmp[16] = {0};
+        snprintf(tmp, sizeof(tmp), "%02i\n", i);
+        strcat(string, tmp);
+    }
+    string[strlen(string) - 1] = '\0';
+
+    lv_dropdown_set_options(roller, string);
+    free(string);
 }

@@ -12,15 +12,11 @@
 #define LIVELLO_CENTIMETRI 0
 #define LIVELLO_LITRI      1
 
-#define BIT_NESSUNO      0
-#define BIT_UTENTE       0x1
-#define LVL_UTENTE       BIT_UTENTE
-#define BIT_TECNICO      0x2
-#define LVL_TECNICO      (BIT_UTENTE | BIT_TECNICO)
-#define BIT_DISTRIBUTORE 0x4
-#define LVL_DISTRIBUTORE (LVL_TECNICO | BIT_DISTRIBUTORE)
-#define BIT_COSTRUTTORE  0x8
-#define LVL_COSTRUTTORE  (LVL_DISTRIBUTORE | BIT_COSTRUTTORE)
+#define BIT_NESSUNO     0
+#define BIT_UTENTE      0x1
+#define LVL_UTENTE      BIT_UTENTE
+#define BIT_COSTRUTTORE 0x2
+#define LVL_COSTRUTTORE (BIT_UTENTE | BIT_COSTRUTTORE)
 
 #define CODICE_LVL_COSTRUTTORE 3
 
@@ -28,7 +24,7 @@
 #define STATO_MACCHINA_MARCIA          1
 #define STATO_MACCHINA_PAUSA           2
 #define STATO_MACCHINA_SCARICO_FORZATO 3
-#define STATO_MACCHINA_FRENATA         6
+#define STATO_MACCHINA_FRENATA         5
 
 #define LINEE_PAGAMENTO_GETTONIERA 9
 #define LINEE_GETTONIERA_DIGITALE  5
@@ -48,7 +44,7 @@
 
 #define NUM_LINGUE 5
 
-#define RESISTORS_OUTPUT_INDEX 0
+#define RESISTORS_OUTPUT_INDEX 15
 
 #define SCALA_ACCELEROMETRO_2G_OFFSET 0
 #define SCALA_ACCELEROMETRO_4G_OFFSET 1
@@ -416,7 +412,6 @@ typedef struct {
         test_override_t digital_coin_reader_test_override;
         uint8_t         test_mode;
         uint32_t        test_outputs_map;
-        unsigned long   resistors_ts;
 
         firmware_update_state_t firmware_update_state;
 
@@ -511,7 +506,6 @@ void         program_deserialize_preview(model_t *pmodel, programma_preview_t *p
 int          model_gettoniera_digitale_abilitata(model_t *pmodel);
 unsigned int model_get_credito_gettoniera_digitale(model_t *model);
 void         model_test_outputs_clear(mut_model_t *model);
-uint8_t      model_should_clear_test_resistors(mut_model_t *model);
 void         model_test_outputs_clear_resistors(mut_model_t *model);
 void         model_reset_storage_operation(mut_model_t *model);
 uint8_t      model_swap_programs(model_t *model, size_t first, size_t second);

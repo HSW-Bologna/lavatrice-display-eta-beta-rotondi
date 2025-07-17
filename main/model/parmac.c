@@ -7,8 +7,10 @@
 #include "model.h"
 #include "parmac.h"
 #include "descriptions/AUTOGEN_FILE_pars.h"
+#include <esp_log.h>
 
-#define NUM_PARAMETERS 106
+
+#define NUM_PARAMETERS 109
 
 enum {
     LIVELLO_ACCESSO_ESTESI  = 0,
@@ -40,10 +42,10 @@ void parmac_init(model_t *pmodel, int reset) {
     ps[i++] = PARAMETER(&p->lingua, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_LINGUA, pars_lingue), BIT_UTENTE);
     ps[i++] = PARAMETER(&p->logo, 0, 5, 0, FOPT(PARS_DESCRIPTIONS_LOGO, pars_loghi), BIT_UTENTE);
     ps[i++] = PARAMETER(&p->codice_nodo_macchina, 0, 255, 0, FINT(PARS_DESCRIPTIONS_NODO_MACCHINA), BIT_COSTRUTTORE);
-    ps[i++] = PARAMETER(&p->livello_accesso, 0, 3, 0, FOPT(PARS_DESCRIPTIONS_LIVELLO_ACCESSO, pars_livello_accesso), BIT_TECNICO);
+    ps[i++] = PARAMETER(&p->livello_accesso, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_LIVELLO_ACCESSO, pars_livello_accesso), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->controllo_pausa_stop, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_CONTROLLO_PAUSA_STOP, pars_abilitazione), BIT_COSTRUTTORE);
-    ps[i++] = PARAMETER(&p->controllo_lucchetto, 0, 2, 0, FOPT(PARS_DESCRIPTIONS_CONTROLLO_LUCCHETTO, pars_controllo_lucchetto), BIT_DISTRIBUTORE);
-    ps[i++] = PARAMETER(&p->controllo_step, 0, 2, 0, FOPT(PARS_DESCRIPTIONS_CONTROLLO_STEP, pars_controllo_step), BIT_DISTRIBUTORE);
+    ps[i++] = PARAMETER(&p->controllo_lucchetto, 0, 2, 0, FOPT(PARS_DESCRIPTIONS_CONTROLLO_LUCCHETTO, pars_controllo_lucchetto), BIT_COSTRUTTORE);
+    ps[i++] = PARAMETER(&p->controllo_step, 0, 2, 0, FOPT(PARS_DESCRIPTIONS_CONTROLLO_STEP, pars_controllo_step), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->visualizzazione_stop, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_INTERFACCIA_STOP, pars_visualizzazione), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->visualizzazione_start, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_INTERFACCIA_START, pars_visualizzazione), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->numero_massimo_programmi_utente, 1, MAX_PROGRAMMI, 20, FINT(PARS_DESCRIPTIONS_MAX_PROGRAMMI_UTENTE), BIT_UTENTE);
@@ -52,16 +54,16 @@ void parmac_init(model_t *pmodel, int reset) {
     ps[i++] = PARAMETER(&p->abilitazione_lavaggio_programmato, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_LAVAGGIO_PROGRAMMATO, pars_abilitazione), BIT_UTENTE);
     ps[i++] = PARAMETER(&p->tipo_gettoniera, 0, 8, 0, FOPT(PARS_DESCRIPTIONS_TIPO_GETTONIERA, pars_gettoniera), BIT_UTENTE);
     ps[i++] = PARAMETER(&p->valore_impulso, 1, 0xFFFF, 100, FPRICE(PARS_DESCRIPTIONS_VALORE_IMPULSO), BIT_UTENTE);
-    ps[i++] = PARAMETER(&p->valore_prezzo_unico, 1, 0xFFFF, 500, FPRICE(PARS_DESCRIPTIONS_VALORE_PREZZO_UNICO), BIT_TECNICO);
+    ps[i++] = PARAMETER(&p->valore_prezzo_unico, 1, 0xFFFF, 500, FPRICE(PARS_DESCRIPTIONS_VALORE_PREZZO_UNICO), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->prezzo_unico, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_PREZZO_UNICO, pars_abilitazione), BIT_UTENTE);
-    ps[i++] = PARAMETER(&p->cifre_prezzo, 1, 6, 4, FINT(PARS_DESCRIPTIONS_CIFRE_PREZZO), BIT_TECNICO);
-    ps[i++] = PARAMETER_DLIMITS(&p->cifre_decimali_prezzo, NULL, &p->cifre_prezzo, 0, 6, 2, FINT(PARS_DESCRIPTIONS_CIFRE_DECIMALI_PREZZO), BIT_TECNICO);
-    ps[i++] = PARAMETER(&p->modo_vis_prezzo, 0, 4, 0, FOPT(PARS_DESCRIPTIONS_VISUALIZZAZIONE_PREZZO, pars_tipo_pagamento), BIT_TECNICO);
-    ps[i++] = PARAMETER(&p->richiesta_pagamento, 0, 2, 0, FOPT(PARS_DESCRIPTIONS_RICHIESTA_PAGAMENTO, pars_richiesta_pagamento), BIT_TECNICO);
+    ps[i++] = PARAMETER(&p->cifre_prezzo, 1, 6, 4, FINT(PARS_DESCRIPTIONS_CIFRE_PREZZO), BIT_COSTRUTTORE);
+    ps[i++] = PARAMETER_DLIMITS(&p->cifre_decimali_prezzo, NULL, &p->cifre_prezzo, 0, 6, 2, FINT(PARS_DESCRIPTIONS_CIFRE_DECIMALI_PREZZO), BIT_COSTRUTTORE);
+    ps[i++] = PARAMETER(&p->modo_vis_prezzo, 0, 4, 0, FOPT(PARS_DESCRIPTIONS_VISUALIZZAZIONE_PREZZO, pars_tipo_pagamento), BIT_COSTRUTTORE);
+    ps[i++] = PARAMETER(&p->richiesta_pagamento, 0, 2, 0, FOPT(PARS_DESCRIPTIONS_RICHIESTA_PAGAMENTO, pars_richiesta_pagamento), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->abilitazione_sblocco_get, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_SBLOCCO_GETTONIERA, pars_abilitazione), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->secondi_pausa, 0, 10, 1, FFINT(PARS_DESCRIPTIONS_TEMPO_TASTO_PAUSA, fmt_sec), BIT_UTENTE);
     ps[i++] = PARAMETER(&p->secondi_stop, 0, 10, 3, FFINT(PARS_DESCRIPTIONS_TEMPO_TASTO_STOP, fmt_sec), BIT_UTENTE);
-    ps[i++] = PARAMETER(&p->tempo_out_pagine, 3, 60*30, 20, FFINT(PARS_DESCRIPTIONS_TEMPO_OUT_PAGINE, fmt_sec), BIT_TECNICO);
+    ps[i++] = PARAMETER(&p->tempo_out_pagine, 3, 60*30, 20, FFINT(PARS_DESCRIPTIONS_TEMPO_OUT_PAGINE, fmt_sec), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->tempo_allarme_livello, 1, 100, 30, FFINT(PARS_DESCRIPTIONS_TEMPO_ALLARME_LIVELLO, fmt_min), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->tempo_allarme_temperatura, 1, 100, 45, FFINT(PARS_DESCRIPTIONS_TEMPO_ALLARME_TEMPERATURA, fmt_min), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->tempo_allarme_scarico, 1, 100, 45, FFINT(PARS_DESCRIPTIONS_TEMPO_ALLARME_SCARICO, fmt_min), BIT_COSTRUTTORE);
@@ -73,11 +75,11 @@ void parmac_init(model_t *pmodel, int reset) {
     ps[i++] = PARAMETER(&p->tempo_colpo_aperto_scarico, 1, 240, 24, FFINT(PARS_DESCRIPTIONS_TEMPO_COLPO_SCARICO, fmt_sec), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->tempo_minimo_scarico, 1, 240, 10, FTIME(PARS_DESCRIPTIONS_TEMPO_MINIMO_SCARICO), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->tempo_minimo_frenata, 1, 250, 45, FTIME(PARS_DESCRIPTIONS_TEMPO_MINIMO_FRENATA), BIT_COSTRUTTORE);
-    ps[i++] = PARAMETER(&p->diametro_cesto, 0, 10000, 0, FFINT(PARS_DESCRIPTIONS_DIAMETRO_CESTO, fmt_cm), BIT_DISTRIBUTORE);
-    ps[i++] = PARAMETER(&p->profondita_cesto, 0, 10000, 0, FFINT(PARS_DESCRIPTIONS_PROFONDITA_CESTO, fmt_cm), BIT_DISTRIBUTORE);
-    ps[i++] = PARAMETER(&p->altezza_trappola, 0, 1000, 0, FFINT(PARS_DESCRIPTIONS_ALTEZZA_TRAPPOLA, fmt_cm), BIT_DISTRIBUTORE);
+    ps[i++] = PARAMETER(&p->diametro_cesto, 0, 10000, 0, FFINT(PARS_DESCRIPTIONS_DIAMETRO_CESTO, fmt_cm), BIT_COSTRUTTORE);
+    ps[i++] = PARAMETER(&p->profondita_cesto, 0, 10000, 0, FFINT(PARS_DESCRIPTIONS_PROFONDITA_CESTO, fmt_cm), BIT_COSTRUTTORE);
+    ps[i++] = PARAMETER(&p->altezza_trappola, 0, 1000, 0, FFINT(PARS_DESCRIPTIONS_ALTEZZA_TRAPPOLA, fmt_cm), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->abilitazione_espansione_io, 0, 1, 1, FOPT(PARS_DESCRIPTIONS_ESPANSIONE_IO, pars_abilitazione), BIT_COSTRUTTORE);
-    ps[i++] = PARAMETER(&p->numero_saponi_utilizzabili, 3, 10, 6, FINT(PARS_DESCRIPTIONS_NUMERO_SAPONI), BIT_TECNICO);
+    ps[i++] = PARAMETER(&p->numero_saponi_utilizzabili, 3, 10, 6, FINT(PARS_DESCRIPTIONS_NUMERO_SAPONI), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->esclusione_sapone, 0, 10, 0, FINT(PARS_DESCRIPTIONS_ESCLUSIONE_SAPONE), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->f_macchina_libera, 0, 1, 1, FOPT(PARS_DESCRIPTIONS_TIPO_MACCHINA_LIBERA, pars_na_nc), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->tipo_out_aux_1, 0, 1, 1, FOPT(PARS_DESCRIPTIONS_TIPO_IN_AUX_1, &pars_ausiliari[0]), BIT_COSTRUTTORE);
@@ -90,7 +92,7 @@ void parmac_init(model_t *pmodel, int reset) {
     ps[i++] = PARAMETER(&p->autoavvio, 0, 1, 1, FOPT(PARS_DESCRIPTIONS_AUTOAVVIO, pars_abilitazione), BIT_UTENTE);
     ps[i++] = PARAMETER(&p->f_proximity, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_SENSORE_PROSSIMITA, pars_abilitazione), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->numero_raggi, 1, 12, 6, FINT(PARS_DESCRIPTIONS_NUMERO_RAGGI), BIT_COSTRUTTORE);
-    ps[i++] = PARAMETER(&p->correzione_contagiri, 0, 200, 111, FFINT(PARS_DESCRIPTIONS_CORREZIONE_CONTAGIRI, fmt_perc), BIT_DISTRIBUTORE);
+    ps[i++] = PARAMETER(&p->correzione_contagiri, 0, 200, 111, FFINT(PARS_DESCRIPTIONS_CORREZIONE_CONTAGIRI, fmt_perc), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->abilitazione_accelerometro, 0, 3, 2, FOPT(PARS_DESCRIPTIONS_ACCELEROMETRO, pars_accelerometro), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->scala_accelerometro, 0, 5, 3, FOPT(PARS_DESCRIPTIONS_SCALA_ACCELEROMETRO, pars_scala_accelerometro), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->soglia_x_accelerometro, 0, 511, 100, FINT(PARS_DESCRIPTIONS_SOGLIA_X_ACCELEROMETRO), BIT_COSTRUTTORE);
@@ -148,22 +150,21 @@ void parmac_init(model_t *pmodel, int reset) {
     ps[i++] = PARAMETER(&p->funzioni_rgb[CONDIZIONE_MACCHINA_ALLARME], 0, 7, 4, FOPT(PARS_DESCRIPTIONS_MACCHINA_ALLARME, pars_rgb), BIT_UTENTE);
 
     // clang-format on
-
 #if 0
     parameter_data_t tmp[NUMP] = {
         // clang-format off
-        {.t = unsigned_int, .d = {.uint = {0, NUM_LINGUE - 1, 1, &parmac->lingua_max_bandiera}}, .display = {.string_value = (const char ***)lingue}, .lvl = BIT_TECNICO, .runtime = {.userdata = DROPLIST_PARAMETER}},
+        {.t = unsigned_int, .d = {.uint = {0, NUM_LINGUE - 1, 1, &parmac->lingua_max_bandiera}}, .display = {.string_value = (const char ***)lingue}, .lvl = BIT_COSTRUTTORE, .runtime = {.userdata = DROPLIST_PARAMETER}},
         {.t = unsigned_int, .d = {.uint = {0, 255, 0, &parmac->codice_nodo_macchina}}, .lvl = BIT_COSTRUTTORE, .runtime = {.userdata = NUMBER_PARAMETER}},
         {.t = unsigned_int, .d = {.uint = {0, 255, 255, &parmac->modello_macchina}}, .lvl = BIT_COSTRUTTORE, .runtime = {.userdata = NUMBER_PARAMETER}},
         {.t = unsigned_int, .d = {.uint = {0, 255, 255, &parmac->submodello_macchina}}, .lvl = BIT_COSTRUTTORE, .runtime = {.userdata = NUMBER_PARAMETER}},
         {.t = unsigned_int, .d = {.uint = {1, 50, 20, &parmac->numero_massimo_programmi}}, .lvl = BIT_COSTRUTTORE, .runtime = {.userdata = NUMBER_PARAMETER}},
         {.t = unsigned_int, .d = {.uint = {0, 100, 0, &parmac->visualizzazione_kg}}, .display={.format=formato_kg}, .lvl = BIT_COSTRUTTORE, .runtime = {.userdata = NUMBER_PARAMETER}},
         {.t = unsigned_int, .d = {.uint = {0, 0xFFFF, 0, &parmac->visualizzazione_prezzo_macchina}}, .display={.special_format=fmt_price}, .lvl = BIT_UTENTE, .runtime = {.userdata = PRICE_PARAMETER}},
-        {.t = unsigned_int, .d = {.uint = {0, 1, 0, &parmac->visualizzazione_help_1}}, .display={.string_value=(const char ***)stringhe_abilitazione}, .lvl = BIT_DISTRIBUTORE, .runtime = {.userdata = SWITCH_PARAMETER}},
-        {.t = unsigned_int, .d = {.uint = {0, 1, 0, &parmac->visualizzazione_help_2}}, .display={.string_value=(const char ***)stringhe_abilitazione}, .lvl = BIT_DISTRIBUTORE, .runtime = {.userdata = SWITCH_PARAMETER}},
-        {.t = unsigned_int, .d = {.uint = {0, 1, 0, &parmac->visualizzazione_help_3}}, .display={.string_value=(const char ***)stringhe_abilitazione}, .lvl = BIT_DISTRIBUTORE, .runtime = {.userdata = SWITCH_PARAMETER}},
-        {.t = unsigned_int, .d = {.uint = {0, 1, 0, &parmac->visualizzazione_help_4}}, .display={.string_value=(const char ***)stringhe_abilitazione}, .lvl = BIT_DISTRIBUTORE, .runtime = {.userdata = SWITCH_PARAMETER}},
-        {.t = unsigned_int, .d = {.uint = {0, 1, 0, &parmac->visualizzazione_help_5}}, .display={.string_value=(const char ***)stringhe_abilitazione}, .lvl = BIT_DISTRIBUTORE, .runtime = {.userdata = SWITCH_PARAMETER}},
+        {.t = unsigned_int, .d = {.uint = {0, 1, 0, &parmac->visualizzazione_help_1}}, .display={.string_value=(const char ***)stringhe_abilitazione}, .lvl = BIT_COSTRUTTORE, .runtime = {.userdata = SWITCH_PARAMETER}},
+        {.t = unsigned_int, .d = {.uint = {0, 1, 0, &parmac->visualizzazione_help_2}}, .display={.string_value=(const char ***)stringhe_abilitazione}, .lvl = BIT_COSTRUTTORE, .runtime = {.userdata = SWITCH_PARAMETER}},
+        {.t = unsigned_int, .d = {.uint = {0, 1, 0, &parmac->visualizzazione_help_3}}, .display={.string_value=(const char ***)stringhe_abilitazione}, .lvl = BIT_COSTRUTTORE, .runtime = {.userdata = SWITCH_PARAMETER}},
+        {.t = unsigned_int, .d = {.uint = {0, 1, 0, &parmac->visualizzazione_help_4}}, .display={.string_value=(const char ***)stringhe_abilitazione}, .lvl = BIT_COSTRUTTORE, .runtime = {.userdata = SWITCH_PARAMETER}},
+        {.t = unsigned_int, .d = {.uint = {0, 1, 0, &parmac->visualizzazione_help_5}}, .display={.string_value=(const char ***)stringhe_abilitazione}, .lvl = BIT_COSTRUTTORE, .runtime = {.userdata = SWITCH_PARAMETER}},
         {.t = unsigned_int, .d = {.uint = {0, 1, 0, &parmac->visualizzazione_opl}}, .display={.string_value=(const char ***)stringhe_abilitazione}, .lvl = BIT_COSTRUTTORE, .runtime = {.userdata = SWITCH_PARAMETER}},
         {.t = unsigned_int, .d = {.uint = {0, 3, 0, &parmac->visualizzazione_tot_cicli}}, .display = {.string_value = (const char ***)stringhe_totale_cicli}, .lvl = BIT_COSTRUTTORE, .runtime = {.userdata = DROPLIST_PARAMETER}},
         // Parametri non visualizzati nella lista con gli altri

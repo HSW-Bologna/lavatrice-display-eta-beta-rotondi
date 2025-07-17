@@ -9,6 +9,7 @@
 #include <esp_log.h>
 #include "bsp/tft/display.h"
 #include "config/app_config.h"
+#include "services/timestamp.h"
 
 
 #define ALLARME_CHIAVISTELLO 15
@@ -55,6 +56,8 @@ enum {
     BTN_LEFT_ID,
     BTN_RIGHT_ID,
     BTN_MENU_ID,
+    BTN_FORCE_PORTHOLE_ID,
+    BTN_HIDDEN_STOP_ID,
 };
 
 
@@ -71,13 +74,21 @@ struct page_data {
     lv_obj_t *label_status;
     lv_obj_t *label_step;
     lv_obj_t *label_level_speed;
+    lv_obj_t *label_force_porthole;
+    lv_obj_t *label_force_porthole_confirm;
 
     lv_obj_t *image_language;
 
     lv_obj_t *arc;
 
-    uint8_t  scarico_fallito;
-    uint16_t allarme;
+    lv_obj_t *obj_force_porthole;
+
+    uint8_t     scarico_fallito;
+    uint8_t     show_force_porthole;
+    uint16_t    allarme;
+    timestamp_t lockts;
+    timestamp_t forcets;
+    timestamp_t pausets;
 };
 
 
@@ -111,8 +122,9 @@ static void *create_page(pman_handle_t handle, void *extra) {
     struct page_data *pdata = lv_malloc(sizeof(struct page_data));
     assert(pdata != NULL);
 
-    pdata->scarico_fallito = 0;
-    pdata->allarme         = -1;
+    pdata->scarico_fallito     = 0;
+    pdata->allarme             = -1;
+    pdata->show_force_porthole = 0;
 
     return pdata;
 }
@@ -136,12 +148,14 @@ static void open_page(pman_handle_t handle, void *state) {
     {
         lv_obj_t *image = lv_image_create(cont);
         if (preview->tipo < sizeof(icons) / sizeof(icons[0])) {
-            lv_img_set_src(image, icons[preview->tipo]);
+            lv_image_set_src(image, icons[preview->tipo]);
         } else {
-            lv_img_set_src(image, &img_lavaggio);
+            lv_image_set_src(image, &img_lavaggio);
         }
         lv_image_set_scale(image, 280);
         lv_obj_align(image, LV_ALIGN_TOP_LEFT, 4, 8);
+        lv_obj_add_flag(image, LV_OBJ_FLAG_CLICKABLE);
+        view_register_object_default_callback(image, BTN_HIDDEN_STOP_ID);
 
         lv_obj_t *lbl = lv_label_create(cont);
         lv_obj_set_style_text_color(lbl, VIEW_STYLE_COLOR_BLACK, LV_STATE_DEFAULT);
@@ -178,7 +192,7 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_set_style_text_color(lbl, lv_color_darken(VIEW_STYLE_COLOR_BACKGROUND, LV_OPA_60), LV_STATE_DEFAULT);
         lv_obj_set_style_text_font(lbl, STYLE_FONT_BIG, LV_STATE_DEFAULT);
         lv_obj_set_width(lbl, LV_PCT(95));
-        lv_obj_align_to(lbl, arc, LV_ALIGN_CENTER, 0, -8);
+        lv_obj_align_to(lbl, arc, LV_ALIGN_CENTER, 0, -24);
         pdata->label_remaining = lbl;
 
         lv_obj_t *lbl_lavaggio = lv_label_create(cont);
@@ -223,7 +237,7 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_set_style_text_color(lbl, VIEW_STYLE_COLOR_BLACK, LV_STATE_DEFAULT);
         lv_obj_set_width(lbl, LV_PCT(100));
         lv_obj_set_style_text_align(lbl, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);
-        lv_obj_align(lbl, LV_ALIGN_BOTTOM_MID, 0, 0);
+        lv_obj_align(lbl, LV_ALIGN_BOTTOM_MID, 0, -2);
         pdata->label_status = lbl;
     }
 
@@ -268,6 +282,21 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_align(img, LV_ALIGN_BOTTOM_RIGHT, 0, -28);
         view_register_object_default_callback(img, BTN_RIGHT_ID);
         pdata->button_right = img;
+    }
+
+    {
+        lv_obj_t *obj_force_porthole = lv_obj_create(lv_screen_active());
+        lv_obj_t *lbl                = lv_label_create(obj_force_porthole);
+        lv_obj_align(lbl, LV_ALIGN_CENTER, 0, -40);
+        pdata->label_force_porthole = lbl;
+
+        lv_obj_t *btn                       = lv_button_create(obj_force_porthole);
+        lbl                                 = lv_label_create(btn);
+        pdata->label_force_porthole_confirm = lbl;
+        lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -20);
+        view_register_object_default_callback(btn, BTN_FORCE_PORTHOLE_ID);
+
+        pdata->obj_force_porthole = obj_force_porthole;
     }
 
     VIEW_ADD_WATCHED_VARIABLE(&model->run.macchina, 0);
@@ -326,6 +355,29 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
             view_object_data_t *obj_data = lv_obj_get_user_data(target);
 
             switch (lv_event_get_code(event.as.lvgl)) {
+                case LV_EVENT_PRESSED: {
+                    switch (obj_data->id) {
+                        case BTN_START_ID: {
+                            pdata->lockts = timestamp_get();
+                            break;
+                        }
+
+                        case BTN_HIDDEN_STOP_ID: {
+                            pdata->pausets = timestamp_get();
+                            break;
+                        }
+
+                        case BTN_STOP_ID: {
+                            pdata->pausets = timestamp_get();
+                            break;
+                        }
+
+                        default:
+                            break;
+                    }
+                    break;
+                }
+
                 case LV_EVENT_CLICKED: {
                     switch (obj_data->id) {
                         case BTN_START_ID: {
@@ -334,13 +386,6 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                         }
 
                         case BTN_STOP_ID: {
-                            if (model_macchina_in_pausa(model)) {
-                                ESP_LOGI(TAG, "Requesting stop");
-                                view_get_protocol(handle)->stop_program(handle);
-                            } else if (model_macchina_in_marcia(model)) {
-                                ESP_LOGI(TAG, "Requesting pause");
-                                view_get_protocol(handle)->pause_program(handle);
-                            }
                             break;
                         }
 
@@ -379,6 +424,75 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                     break;
                 }
 
+                case LV_EVENT_LONG_PRESSED: {
+                    switch (obj_data->id) {
+                        case BTN_FORCE_PORTHOLE_ID: {
+                            pdata->forcets = timestamp_get();
+                            break;
+                        }
+
+                        default:
+                            break;
+                    }
+                    break;
+                }
+
+                case LV_EVENT_LONG_PRESSED_REPEAT: {
+                    switch (obj_data->id) {
+                        case BTN_HIDDEN_STOP_ID:
+                            if (!model->prog.parmac.controllo_pausa_stop) {
+                                if (timestamp_is_expired(pdata->pausets, 15000UL)) {
+                                    view_get_protocol(handle)->stop_program(handle);
+                                    pdata->pausets = timestamp_get();
+                                }
+                            }
+                            break;
+
+                        case BTN_STOP_ID: {
+                            if (model_macchina_in_pausa(model)) {
+                                if (timestamp_is_expired(pdata->pausets, model->prog.parmac.secondi_stop * 1000UL)) {
+                                    ESP_LOGI(TAG, "Requesting stop");
+                                    view_get_protocol(handle)->stop_program(handle);
+                                    pdata->pausets = timestamp_get();
+                                }
+                            } else if (model_macchina_in_marcia(model)) {
+                                if (timestamp_is_expired(pdata->pausets, model->prog.parmac.secondi_pausa * 1000UL)) {
+                                    ESP_LOGI(TAG, "Requesting pause");
+                                    view_get_protocol(handle)->pause_program(handle);
+                                    pdata->pausets = timestamp_get();
+                                }
+                            }
+
+                            break;
+                        }
+
+                        case BTN_START_ID: {
+                            if (model_macchina_in_pausa(model) && pdata->scarico_fallito) {
+                                if (timestamp_is_expired(pdata->lockts, 10000UL)) {
+                                    pdata->show_force_porthole = 1;
+                                    update_page(model, pdata);
+                                }
+                            }
+                            break;
+                        }
+
+                        case BTN_FORCE_PORTHOLE_ID: {
+                            if (model_macchina_in_pausa(model) && pdata->scarico_fallito) {
+                                if (timestamp_is_expired(pdata->forcets, 5000UL)) {
+                                    pdata->show_force_porthole = 0;
+                                    view_get_protocol(handle)->unlock_porthole(handle, 1);
+                                    update_page(model, pdata);
+                                }
+                            }
+                            break;
+                        }
+
+                        default:
+                            break;
+                    }
+                    break;
+                }
+
                 default:
                     break;
             }
@@ -399,6 +513,7 @@ static void update_page(model_t *model, struct page_data *pdata) {
     lv_label_set_text_fmt(pdata->label_level_speed, "liv %3i, vel %3i, t %3i, a%i p%i ", model->run.macchina.livello,
                           model->run.macchina.velocita_rilevata, model->run.macchina.temperatura,
                           model->run.macchina.codice_allarme, model->run.macchina.descrizione_pedante);
+    view_common_set_hidden(pdata->label_level_speed, 1);
 
     uint16_t remaining_seconds = rimanente;
     uint16_t remaining_minutes = remaining_seconds / 60;
@@ -471,7 +586,6 @@ static void update_page(model_t *model, struct page_data *pdata) {
     parametri_step_t *step = model_get_current_step(model);
 
     const char *string = view_intl_get_string_in_language(model_get_temporary_language(model), STRINGS_IN_MARCIA);
-    ESP_LOGI(TAG, "Alarm %i", model_alarm_code(model));
 
     if (model_alarm_code(model) > 0) {
         string = view_common_alarm_description(model);
@@ -496,11 +610,22 @@ static void update_page(model_t *model, struct page_data *pdata) {
     }
 
     const programma_lavatrice_t *program = model_get_program(model);
-    lv_label_set_text_fmt(pdata->label_step, "%s\n%02i/%02i", view_common_step2str(model, step->tipo),
-                          model_get_current_step_number(model) + 1, (int)program->num_steps);
+    if (model->prog.parmac.visualizzazione_menu) {
+        uint16_t remaining_seconds = model->run.macchina.rimanente;
+        uint16_t remaining_minutes = remaining_seconds / 60;
+
+        lv_label_set_text_fmt(pdata->label_step, "%s\n%02i:%02i\n%02i/%02i", view_common_step2str(model, step->tipo),
+                              remaining_minutes, remaining_seconds % 60, model_get_current_step_number(model) + 1,
+                              (int)program->num_steps);
+    } else {
+        lv_label_set_text_fmt(pdata->label_step, "%s\n%02i/%02i", view_common_step2str(model, step->tipo),
+                              model_get_current_step_number(model) + 1, (int)program->num_steps);
+    }
 
     const lv_img_dsc_t *language_icons[2] = {&img_marble_italiano, &img_marble_english};
     lv_img_set_src(pdata->image_language, language_icons[model_get_temporary_language(model)]);
+
+    view_common_set_hidden(pdata->obj_force_porthole, !pdata->show_force_porthole);
 }
 
 

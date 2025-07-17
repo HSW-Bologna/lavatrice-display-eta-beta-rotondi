@@ -53,6 +53,8 @@ static void toggle_exclude_detergent(pman_handle_t handle);
 static void colpo_sapone(pman_handle_t handle, uint16_t sapone);
 static void controllo_sapone(pman_handle_t handle, uint16_t sapone, uint8_t valore);
 static void read_events(pman_handle_t handle, uint16_t offset);
+static void factory_reset(pman_handle_t handle);
+static void send_debug_code(pman_handle_t handle, uint8_t code);
 
 
 view_protocol_t controller_gui_protocol = {
@@ -91,6 +93,8 @@ view_protocol_t controller_gui_protocol = {
     .controllo_sapone           = controllo_sapone,
     .colpo_sapone               = colpo_sapone,
     .read_events                = read_events,
+    .factory_reset              = factory_reset,
+    .send_debug_code            = send_debug_code,
 };
 
 
@@ -388,4 +392,21 @@ static void read_events(pman_handle_t handle, uint16_t offset) {
     (void)handle;
     machine_read_events_num();
     machine_read_events(offset);
+}
+
+
+static void factory_reset(pman_handle_t handle) {
+    mut_model_t *model = view_get_model(handle);
+    model_reset_configuration_to_default(model);
+
+    configuration_update_index(model->prog.preview_programmi, model->prog.num_programmi);
+    configuration_save_parmac(&model->prog.parmac);
+    //  Invia i parametri macchina
+    machine_invia_parmac(&model->prog.parmac);
+}
+
+
+static void send_debug_code(pman_handle_t handle, uint8_t code) {
+    (void)handle;
+    machine_send_debug_code(code);
 }

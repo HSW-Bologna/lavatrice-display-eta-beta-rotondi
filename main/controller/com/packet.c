@@ -4,7 +4,9 @@
 #include "crc16-ccitt.h"
 #include "packet.h"
 #include <stdio.h>
+#include <esp_log.h>
 
+static const char   *TAG                    = __FILE_NAME__;
 static const uint8_t preamble[PREAMBLE_LEN] = {0xAA};
 
 static int find_preamble(uint8_t *data, int begin, int end) {
@@ -38,8 +40,10 @@ int elaborate_data(uint8_t *data, int len, packet_t *packet, int *forward) {
         int plen = data[start + PREAMBLE_LEN] << 8 | data[start + PREAMBLE_LEN + 1];
 
         // Il pacchetto non e' ancora completo
-        if (start + PREAMBLE_LEN + HEADER_LEN + plen + CRC_SIZE > len)
+        if (start + PREAMBLE_LEN + HEADER_LEN + plen + CRC_SIZE > len) {
+            ESP_LOGI(TAG, "%i %i %i", start, plen, len);
             return 2;
+        }
 
 
         if (plen > 0) {

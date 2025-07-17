@@ -83,5 +83,6 @@ const pman_page_t *view_common_washing_page(model_t *model);
 lv_obj_t          *view_common_icon_button_create(lv_obj_t *parent, const char *icon, int id);
 lv_obj_t          *view_common_alarm_led_create(lv_obj_t *parent, lv_obj_t **led, const char *text);
 const char        *get_alarm_description(uint16_t alarm_code, uint16_t language);
+void               view_common_dropdown_set_number(lv_obj_t *roller, int num);
 
 #endif

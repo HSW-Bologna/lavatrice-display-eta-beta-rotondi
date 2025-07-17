@@ -8,11 +8,13 @@
 #include "../intl/intl.h"
 
 
-#define NUM_OUTPUTS 20
+#define NUM_OUTPUTS    20
 
 
 struct page_data {
     lv_obj_t *led_outputs[NUM_OUTPUTS];
+
+    pman_timer_t *timer;
 };
 
 
@@ -32,6 +34,8 @@ static void *create_page(pman_handle_t handle, void *extra) {
 
     struct page_data *pdata = lv_malloc(sizeof(struct page_data));
     assert(pdata != NULL);
+
+    pdata->timer = PMAN_REGISTER_TIMER_ID(handle, 5000, 0);
 
     return pdata;
 }
@@ -62,7 +66,11 @@ static void open_page(pman_handle_t handle, void *state) {
 
         lv_obj_t *led = lv_led_create(btn);
         lv_obj_add_flag(led, LV_OBJ_FLAG_EVENT_BUBBLE);
-        lv_led_set_color(led, VIEW_STYLE_COLOR_BLUE);
+        if (i == RESISTORS_OUTPUT_INDEX) {
+            lv_led_set_color(led, VIEW_STYLE_COLOR_RED);
+        } else {
+            lv_led_set_color(led, VIEW_STYLE_COLOR_BLUE);
+        }
         lv_obj_set_size(led, 32, 32);
         lv_obj_center(led);
 
@@ -90,6 +98,13 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
         case PMAN_EVENT_TAG_OPEN:
             view_get_protocol(handle)->set_test_mode(handle, 1);
             break;
+
+        case PMAN_EVENT_TAG_TIMER: {
+            pman_timer_pause(pdata->timer);
+            view_get_protocol(handle)->clear_outputs(handle);
+            update_page(model, pdata);
+            break;
+        }
 
         case PMAN_EVENT_TAG_USER: {
             view_event_t *view_event = event.as.user;
@@ -119,13 +134,21 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
                         case BTN_NEXT_ID:
                             view_get_protocol(handle)->clear_outputs(handle);
-                            msg.stack_msg = PMAN_STACK_MSG_SWAP_EXTRA(&page_test_drum, (void *)(uintptr_t)0);
+                            msg.stack_msg = PMAN_STACK_MSG_SWAP_EXTRA(
+                                &page_test_drum, (void *)(uintptr_t)VIEW_COMMON_PAGE_TEST_DRUM_TYPE_FORWARD);
                             break;
 
                         case BTN_OUTPUT_ID:
                             if (model_is_test_output_active(model, obj_data->number)) {
                                 view_get_protocol(handle)->clear_outputs(handle);
+                                pman_timer_pause(pdata->timer);
                             } else {
+                                if (obj_data->number == RESISTORS_OUTPUT_INDEX) {
+                                    pman_timer_reset(pdata->timer);
+                                    pman_timer_resume(pdata->timer);
+                                } else {
+                                    pman_timer_pause(pdata->timer);
+                                }
                                 view_get_protocol(handle)->set_output(handle, obj_data->number, 1);
                             }
                             update_page(model, pdata);
@@ -168,10 +191,25 @@ static void update_page(model_t *model, struct page_data *pdata) {
 }
 
 
+static void destroy_page(void *state, void *extra) {
+    (void)extra;
+    struct page_data *pdata = state;
+    pman_timer_delete(pdata->timer);
+    lv_free(state);
+}
+
+
+static void close_page(void *state) {
+    struct page_data *pdata = state;
+    pman_timer_pause(pdata->timer);
+    lv_obj_clean(lv_screen_active());
+}
+
+
 const pman_page_t page_test_outputs = {
     .create        = create_page,
-    .destroy       = pman_destroy_all,
+    .destroy       = destroy_page,
     .open          = open_page,
-    .close         = pman_close_all,
+    .close         = close_page,
     .process_event = page_event,
 };

@@ -506,10 +506,10 @@ void model_scala_credito(model_t *pmodel) {
 
 
 uint8_t model_get_bit_accesso(uint8_t al) {
-    if (al > 3) {
+    if (al > 1) {
         return 0;
     } else {
-        const uint8_t lvls[] = {LVL_UTENTE, LVL_TECNICO, LVL_DISTRIBUTORE, LVL_COSTRUTTORE};
+        const uint8_t lvls[] = {LVL_UTENTE, LVL_COSTRUTTORE};
         return lvls[al];
     }
 }
@@ -1322,9 +1322,6 @@ void program_deserialize_preview(model_t *pmodel, programma_preview_t *p, uint8_
 
 void model_test_output_set(mut_model_t *model, uint16_t output, uint8_t value) {
     assert(model != NULL);
-    if (output == RESISTORS_OUTPUT_INDEX) {
-        model->run.resistors_ts = timestamp_get();
-    }
     if (value) {
         model->run.test_outputs_map |= 1 << output;
     } else {
@@ -1348,13 +1345,6 @@ uint8_t model_is_test_output_active(model_t *model, uint16_t output) {
 void model_test_outputs_clear_resistors(mut_model_t *model) {
     assert(model != NULL);
     model->run.test_outputs_map &= ~(1 << RESISTORS_OUTPUT_INDEX);
-}
-
-
-uint8_t model_should_clear_test_resistors(mut_model_t *model) {
-    assert(model != NULL);
-    return model->run.test_mode && ((model->run.test_outputs_map & (1 << RESISTORS_OUTPUT_INDEX)) > 0) &&
-           timestamp_is_expired(model->run.resistors_ts, 15000UL);
 }
 
 

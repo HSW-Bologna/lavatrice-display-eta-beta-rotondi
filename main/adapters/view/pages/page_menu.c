@@ -56,15 +56,13 @@ struct page_data {
 
 enum {
     BTN_BACK_ID,
-    BTN_TEST_ID,
+    BTN_DIAGNOSIS_ID,
     BTN_DRIVE_ID,
     BTN_PARMAC_ID,
     BTN_PROGRAMS_ID,
     BTN_ADVANCED_ID,
     BTN_DATETIME_ID,
-    BTN_STATS_ID,
-    BTN_EVENTS_ID,
-    BTN_PROGRAMMED_WASH_ID,
+    BTN_UTILITY_ID,
     BTN_PASSWORD_ID,
 };
 
@@ -107,7 +105,7 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_DIAGNOSI));
         lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
         lv_obj_center(lbl);
-        view_register_object_default_callback(btn, BTN_TEST_ID);
+        view_register_object_default_callback(btn, BTN_DIAGNOSIS_ID);
     }
 
     {
@@ -161,16 +159,14 @@ static void open_page(pman_handle_t handle, void *state) {
         view_register_object_default_callback(btn, BTN_DATETIME_ID);
     }
 
-    if (model->prog.parmac.abilitazione_lavaggio_programmato) {
+    {
         lv_obj_t *btn = lv_btn_create(cont);
         lv_obj_set_width(btn, BUTTON_WIDTH);
         lv_obj_t *lbl = lv_label_create(btn);
-        lv_obj_set_width(lbl, LV_PCT(100));
-        lv_label_set_long_mode(lbl, LV_LABEL_LONG_SCROLL);
+        lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_UTILITA));
         lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
-        lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_LAVAGGIO_PROGRAMMATO));
         lv_obj_center(lbl);
-        view_register_object_default_callback(btn, BTN_PROGRAMMED_WASH_ID);
+        view_register_object_default_callback(btn, BTN_UTILITY_ID);
     }
 
     {
@@ -181,26 +177,6 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
         lv_obj_center(lbl);
         view_register_object_default_callback(btn, BTN_PASSWORD_ID);
-    }
-
-    {
-        lv_obj_t *btn = lv_btn_create(cont);
-        lv_obj_set_width(btn, BUTTON_WIDTH);
-        lv_obj_t *lbl = lv_label_create(btn);
-        lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_STATISTICHE));
-        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
-        lv_obj_center(lbl);
-        view_register_object_default_callback(btn, BTN_STATS_ID);
-    }
-
-    {
-        lv_obj_t *btn = lv_btn_create(cont);
-        lv_obj_set_width(btn, BUTTON_WIDTH);
-        lv_obj_t *lbl = lv_label_create(btn);
-        lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_EVENTI));
-        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
-        lv_obj_center(lbl);
-        view_register_object_default_callback(btn, BTN_EVENTS_ID);
     }
 
     lv_obj_t *label_machine_name = lv_label_create(lv_screen_active());
@@ -268,8 +244,12 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             msg.stack_msg = PMAN_STACK_MSG_BACK();
                             break;
 
-                        case BTN_TEST_ID:
-                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_test_inputs);
+                        case BTN_DIAGNOSIS_ID:
+                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_diagnosis);
+                            break;
+
+                        case BTN_UTILITY_ID:
+                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_utility);
                             break;
 
                         case BTN_DRIVE_ID:
@@ -299,10 +279,6 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE_EXTRA(&page_datetime, (void *)(uintptr_t)0);
                             break;
 
-                        case BTN_PROGRAMMED_WASH_ID:
-                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_pick_program);
-                            break;
-
                         case BTN_PASSWORD_ID: {
                             pdata->keyboard_options.max_length = strlen(APP_CONFIG_BACKDOOR_PASSWORD);
                             pdata->keyboard_options.numeric    = 1;
@@ -311,14 +287,6 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE_EXTRA(&page_numpad, &pdata->keyboard_options);
                             break;
                         }
-
-                        case BTN_STATS_ID:
-                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_statistics);
-                            break;
-
-                        case BTN_EVENTS_ID:
-                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_events);
-                            break;
                     }
                     break;
                 }

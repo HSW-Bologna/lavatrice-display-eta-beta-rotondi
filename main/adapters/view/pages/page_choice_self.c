@@ -209,7 +209,7 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_set_style_text_color(lbl, VIEW_STYLE_COLOR_BLACK, LV_STATE_DEFAULT);
         lv_obj_set_width(lbl, LV_PCT(100));
         lv_obj_set_style_text_align(lbl, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);
-        lv_obj_align(lbl, LV_ALIGN_BOTTOM_MID, 0, 0);
+        lv_obj_align(lbl, LV_ALIGN_BOTTOM_MID, 0, -2);
         pdata->label_status = lbl;
     }
 

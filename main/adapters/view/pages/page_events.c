@@ -113,6 +113,7 @@ static void open_page(pman_handle_t handle, void *state) {
     lv_obj_t *table = lv_table_create(cont);
     lv_table_set_column_count(table, 1);
     lv_table_set_column_width(table, 0, 310);
+    lv_obj_set_style_text_font(table, STYLE_FONT_SMALL, LV_PART_ITEMS);
     pdata->table = table;
 
     VIEW_ADD_WATCHED_ARRAY(&model->run.event_log_chunk, EVENT_LOG_CHUNK, 0);

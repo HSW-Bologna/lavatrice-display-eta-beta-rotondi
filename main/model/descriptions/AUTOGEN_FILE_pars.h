@@ -333,12 +333,10 @@ typedef enum {
 extern const char *pars_nc_na[2][5];
 typedef enum {
     PARS_LIVELLO_ACCESSO_UTENTE = 0,
-    PARS_LIVELLO_ACCESSO_TECNICO,
-    PARS_LIVELLO_ACCESSO_DISTRIBUTORE,
     PARS_LIVELLO_ACCESSO_COSTRUTTORE,
 } pars_livello_accesso_t;
 
-extern const char *pars_livello_accesso[4][5];
+extern const char *pars_livello_accesso[2][5];
 typedef enum {
     PARS_VISUALIZZAZIONE_SELF = 0,
     PARS_VISUALIZZAZIONE_LABORATORIO,

@@ -176,8 +176,15 @@ typedef enum {
     STRINGS_APERTURE,
     STRINGS_CICLI,
     STRINGS_TEMPI,
+    STRINGS_AZZERARE_ALLE_IMPOSTAZIONI_DI_FABBRICA,
+    STRINGS_MACCHINA,
+    STRINGS_UTILITA,
+    STRINGS_MENU_UTENTE,
+    STRINGS_ESCLUSIONE_SAPONE,
+    STRINGS_MENU_SAPONI,
+    STRINGS_DATA_ORA,
 } strings_t;
 
-extern const char *strings[174][2];
+extern const char *strings[181][2];
 
 #endif

@@ -58,7 +58,17 @@ void controller_manage(mut_model_t *pmodel) {
     static unsigned long statistics_ts               = 0;
     static uint8_t       program_payed               = -1;
     static uint8_t       digital_coin_reader_enabled = -1;
+    static uint8_t       old_comunicazione_abilitata = -1;
     machine_response_t   machine_response;
+
+    if (old_comunicazione_abilitata != pmodel->system.comunicazione_abilitata) {
+        machine_abilita_comunicazione(pmodel->system.comunicazione_abilitata);
+        if (pmodel->system.comunicazione_abilitata) {
+            pending_state_change = 0;
+            machine_riavvia_comunicazione();
+        }
+        old_comunicazione_abilitata = pmodel->system.comunicazione_abilitata;
+    }
 
     msc_response_t msc_response;
 
@@ -107,11 +117,6 @@ void controller_manage(mut_model_t *pmodel) {
         }
 
         stato_ts = timestamp_get();
-    }
-
-    if (model_should_clear_test_resistors(pmodel)) {
-        model_test_outputs_clear_resistors(pmodel);
-        machine_imposta_uscita_multipla(RESISTORS_OUTPUT_INDEX, 0);
     }
 
     if (machine_ricevi_risposta(&machine_response)) {
@@ -190,6 +195,13 @@ void controller_manage(mut_model_t *pmodel) {
             case MACHINE_RESPONSE_CODE_TEST:
                 model_update_test_data(pmodel, machine_response.test);
                 break;
+
+            case MACHINE_RESPONSE_CODE_EVENTI: {
+                if (machine_read_state(pmodel)) {
+                    pending_state_change = 0;
+                }
+                break;
+            }
 
             case MACHINE_RESPONSE_CODE_STATO: {
                 ESP_LOGD(TAG, "Lettura stato");

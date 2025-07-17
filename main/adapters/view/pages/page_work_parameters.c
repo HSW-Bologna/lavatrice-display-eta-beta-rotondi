@@ -53,6 +53,7 @@ struct page_data {
     lv_obj_t *led_detergent;
 
     lv_obj_t *labels[WORK_PARAMETERS_NUM];
+    lv_obj_t *label_originals[WORK_PARAMETERS_NUM];
     lv_obj_t *label_parameter;
     lv_obj_t *label_detergent_time;
 
@@ -61,6 +62,7 @@ struct page_data {
     int      selected_parameter;
     uint16_t selected_detergent;
     uint8_t  sapone_on;
+    uint8_t  fixed_detergent;
 
     pman_timer_t *timer;
     pman_timer_t *timer_halfsec;
@@ -68,8 +70,8 @@ struct page_data {
 
 
 static void      update_page(model_t *model, struct page_data *pdata);
-static lv_obj_t *button_parameter_create(lv_obj_t *parent, lv_obj_t **label_value, const char *description, int id,
-                                         uint8_t top);
+static lv_obj_t *button_parameter_create(lv_obj_t *parent, lv_obj_t **label_original, lv_obj_t **label_value,
+                                         const char *description, int id, uint8_t top);
 static void      turn_off_detergent(pman_handle_t handle, struct page_data *pdata);
 
 
@@ -83,9 +85,14 @@ static void *create_page(pman_handle_t handle, void *extra) {
     // pdata->timer              = PMAN_REGISTER_TIMER_ID(handle, model->config.parmac.reset_page_time * 1000UL, 0);
     pdata->timer              = PMAN_REGISTER_TIMER_ID(handle, 30 * 1000UL, TIMER_BACK_ID);
     pdata->timer_halfsec      = PMAN_REGISTER_TIMER_ID(handle, 500UL, TIMER_HALFSECOND_ID);
-    pdata->selected_parameter = -1;
     pdata->selected_detergent = 0;
     pdata->sapone_on          = 0;
+    pdata->fixed_detergent    = (uint8_t)(uintptr_t)extra;
+    if (pdata->fixed_detergent) {
+        pdata->selected_parameter = WORK_PARAMETER_DETERGENT;
+    } else {
+        pdata->selected_parameter = -1;
+    }
 
     for (size_t i = 0; i < 10; i++) {
         stopwatch_init(&pdata->stopwatches[i]);
@@ -128,11 +135,12 @@ static void open_page(pman_handle_t handle, void *state) {
     lv_obj_set_flex_flow(top_cont, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(top_cont, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START);
 
-    pdata->buttons[WORK_PARAMETER_TEMPERATURE] =
-        button_parameter_create(top_cont, &pdata->labels[WORK_PARAMETER_TEMPERATURE],
-                                view_intl_get_string(model, STRINGS_TEMPERATURA), BTN_TEMPERATURE_ID, 1);
+    pdata->buttons[WORK_PARAMETER_TEMPERATURE] = button_parameter_create(
+        top_cont, &pdata->label_originals[WORK_PARAMETER_TEMPERATURE], &pdata->labels[WORK_PARAMETER_TEMPERATURE],
+        view_intl_get_string(model, STRINGS_TEMPERATURA), BTN_TEMPERATURE_ID, 1);
     pdata->buttons[WORK_PARAMETER_LEVEL] = button_parameter_create(
-        top_cont, &pdata->labels[WORK_PARAMETER_LEVEL], view_intl_get_string(model, STRINGS_LIVELLO), BTN_LEVEL_ID, 1);
+        top_cont, &pdata->label_originals[WORK_PARAMETER_LEVEL], &pdata->labels[WORK_PARAMETER_LEVEL],
+        view_intl_get_string(model, STRINGS_LIVELLO), BTN_LEVEL_ID, 1);
 
     lv_obj_t *bottom_cont = lv_obj_create(cont);
     lv_obj_remove_flag(bottom_cont, LV_OBJ_FLAG_SCROLLABLE);
@@ -146,13 +154,13 @@ static void open_page(pman_handle_t handle, void *state) {
     lv_obj_set_flex_flow(bottom_cont, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(bottom_cont, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START);
 
-    pdata->buttons[WORK_PARAMETER_SPEED] =
-        button_parameter_create(bottom_cont, &pdata->labels[WORK_PARAMETER_SPEED],
-                                view_intl_get_string(model, STRINGS_VELOCITA), BTN_SPEED_ID, 0);
+    pdata->buttons[WORK_PARAMETER_SPEED] = button_parameter_create(
+        bottom_cont, &pdata->label_originals[WORK_PARAMETER_SPEED], &pdata->labels[WORK_PARAMETER_SPEED],
+        view_intl_get_string(model, STRINGS_VELOCITA), BTN_SPEED_ID, 0);
 
-    pdata->buttons[WORK_PARAMETER_DURATION] =
-        button_parameter_create(bottom_cont, &pdata->labels[WORK_PARAMETER_DURATION],
-                                view_intl_get_string(model, STRINGS_DURATA), BTN_DURATION_ID, 0);
+    pdata->buttons[WORK_PARAMETER_DURATION] = button_parameter_create(
+        bottom_cont, &pdata->label_originals[WORK_PARAMETER_DURATION], &pdata->labels[WORK_PARAMETER_DURATION],
+        view_intl_get_string(model, STRINGS_DURATA), BTN_DURATION_ID, 0);
 
     lv_obj_t *lbl = lv_label_create(cont);
     lv_obj_set_style_text_font(lbl, STYLE_FONT_MEDIUM, LV_STATE_DEFAULT);
@@ -193,7 +201,7 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_image_set_src(img, &img_door);
         lv_obj_add_style(img, &style_white_icon, LV_STATE_DEFAULT);
         lv_obj_center(img);
-        lv_obj_align(btn, LV_ALIGN_CENTER, 0, 40);
+        lv_obj_align(btn, LV_ALIGN_CENTER, 0, pdata->fixed_detergent ? 120 : 40);
         view_register_object_default_callback(btn, BTN_BACK_ID);
         pdata->button_back = btn;
     }
@@ -285,7 +293,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
             view_event_t *view_event = event.as.user;
             switch (view_event->tag) {
                 case VIEW_EVENT_TAG_PAGE_WATCHER: {
-                    if (model_macchina_in_stop(model)) {
+                    if (model_macchina_in_stop(model) && !pdata->fixed_detergent) {
                         msg.stack_msg = PMAN_STACK_MSG_BACK();
                     } else {
                         update_page(model, pdata);
@@ -429,13 +437,15 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                         }
 
                         case BTN_DETERGENT_ID: {
-                            turn_off_detergent(handle, pdata);
-                            if (pdata->selected_parameter == WORK_PARAMETER_DETERGENT) {
-                                pdata->selected_parameter = -1;
-                            } else {
-                                pdata->selected_parameter = WORK_PARAMETER_DETERGENT;
+                            if (!pdata->fixed_detergent) {
+                                turn_off_detergent(handle, pdata);
+                                if (pdata->selected_parameter == WORK_PARAMETER_DETERGENT) {
+                                    pdata->selected_parameter = -1;
+                                } else {
+                                    pdata->selected_parameter = WORK_PARAMETER_DETERGENT;
+                                }
+                                update_page(model, pdata);
                             }
-                            update_page(model, pdata);
                             break;
                         }
 
@@ -542,10 +552,6 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
 
 static void update_page(model_t *model, struct page_data *pdata) {
-    if (model_macchina_in_stop(model)) {
-        return;
-    }
-
     char *fmt = "%i";
 
     switch (model->prog.parmac.tipo_livello) {
@@ -558,7 +564,9 @@ static void update_page(model_t *model, struct page_data *pdata) {
     }
 
     lv_label_set_text_fmt(pdata->labels[WORK_PARAMETER_TEMPERATURE], "%i °C", model->run.temperature_setpoint);
+    lv_label_set_text_fmt(pdata->label_originals[WORK_PARAMETER_TEMPERATURE], "%i °C", model->run.macchina.temperatura);
     lv_label_set_text_fmt(pdata->labels[WORK_PARAMETER_LEVEL], fmt, model->run.level_setpoint);
+    lv_label_set_text_fmt(pdata->label_originals[WORK_PARAMETER_LEVEL], fmt, model->run.macchina.livello);
 
     if (pdata->selected_parameter == -1) {
         view_common_set_hidden(pdata->label_parameter, 1);
@@ -573,7 +581,7 @@ static void update_page(model_t *model, struct page_data *pdata) {
         view_common_set_hidden(pdata->label_parameter, 0);
         view_common_set_hidden(pdata->button_minus, 0);
         view_common_set_hidden(pdata->button_plus, 0);
-        view_common_set_hidden(pdata->button_back, 1);
+        view_common_set_hidden(pdata->button_back, !pdata->fixed_detergent);
 
         switch (pdata->selected_parameter) {
             case WORK_PARAMETER_TEMPERATURE:
@@ -640,11 +648,19 @@ static void update_page(model_t *model, struct page_data *pdata) {
     }
 
     lv_label_set_text_fmt(pdata->labels[WORK_PARAMETER_SPEED], "%i rpm", model->run.speed_setpoint);
+    lv_label_set_text_fmt(pdata->label_originals[WORK_PARAMETER_SPEED], fmt, model->run.macchina.velocita_rpm);
     lv_label_set_text_fmt(pdata->labels[WORK_PARAMETER_DURATION], "%02i:%02i", model->run.duration / 60,
                           model->run.duration % 60);
+    view_common_set_hidden(pdata->label_originals[WORK_PARAMETER_DURATION], 1);
 
     for (work_parameter_t parameter_index = 0; parameter_index < WORK_PARAMETERS_NUM; parameter_index++) {
-        if (parameter_index == pdata->selected_parameter) {
+        if (pdata->fixed_detergent && parameter_index != WORK_PARAMETER_DETERGENT) {
+            view_common_set_hidden(pdata->buttons[parameter_index], 1);
+        } else {
+            view_common_set_hidden(pdata->buttons[parameter_index], 0);
+        }
+
+        if ((int)parameter_index == pdata->selected_parameter) {
             lv_obj_add_state(pdata->buttons[parameter_index], LV_STATE_CHECKED);
         } else {
             lv_obj_remove_state(pdata->buttons[parameter_index], LV_STATE_CHECKED);
@@ -670,8 +686,8 @@ static void destroy_page(void *state, void *extra) {
 }
 
 
-static lv_obj_t *button_parameter_create(lv_obj_t *parent, lv_obj_t **label_value, const char *description, int id,
-                                         uint8_t top) {
+static lv_obj_t *button_parameter_create(lv_obj_t *parent, lv_obj_t **label_original, lv_obj_t **label_value,
+                                         const char *description, int id, uint8_t top) {
     lv_obj_t *button = lv_button_create(parent);
     lv_obj_set_flex_grow(button, 1);
     lv_obj_set_height(button, LV_PCT(100));
@@ -689,17 +705,27 @@ static lv_obj_t *button_parameter_create(lv_obj_t *parent, lv_obj_t **label_valu
     lv_obj_set_style_text_align(label_description, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);
     lv_label_set_text(label_description, description);
     if (top) {
-        lv_obj_align(label_description, LV_ALIGN_TOP_MID, 0, 8);
+        lv_obj_align(label_description, LV_ALIGN_TOP_MID, 0, 4);
     } else {
-        lv_obj_align(label_description, LV_ALIGN_BOTTOM_MID, 0, -24);
+        lv_obj_align(label_description, LV_ALIGN_BOTTOM_MID, 0, -22);
     }
 
-    lv_obj_t *local_label_value = lv_label_create(button);
-    lv_obj_set_style_text_font(local_label_value, STYLE_FONT_MEDIUM, LV_STATE_DEFAULT);
+    LV_FONT_DECLARE(font_montserrat_bold_20)
+    lv_obj_t *local_label_original = lv_label_create(button);
+    lv_obj_set_style_text_font(local_label_original, STYLE_FONT_MEDIUM, LV_STATE_DEFAULT);
     if (top) {
-        lv_obj_align(local_label_value, LV_ALIGN_BOTTOM_MID, 0, 0);
+        lv_obj_align(local_label_original, LV_ALIGN_BOTTOM_MID, 0, -20);
     } else {
-        lv_obj_align(local_label_value, LV_ALIGN_TOP_MID, 0, -8);
+        lv_obj_align(local_label_original, LV_ALIGN_TOP_MID, 0, 4);
+    }
+    *label_original = local_label_original;
+
+    lv_obj_t *local_label_value = lv_label_create(button);
+    lv_obj_set_style_text_font(local_label_value, &font_montserrat_bold_20, LV_STATE_DEFAULT);
+    if (top) {
+        lv_obj_align(local_label_value, LV_ALIGN_BOTTOM_MID, 0, 2);
+    } else {
+        lv_obj_align(local_label_value, LV_ALIGN_TOP_MID, 0, -20);
     }
     *label_value = local_label_value;
 

@@ -24,7 +24,6 @@ struct page_data {
 
     lv_obj_t *led_heating;
     lv_obj_t *led_porthole;
-    lv_obj_t *led_temperature;
     lv_obj_t *led_warm_water;
     lv_obj_t *led_emergency;
 
@@ -102,6 +101,7 @@ static void open_page(pman_handle_t handle, void *state) {
         pdata->button_heating = btn;
 
         lv_obj_t *led = lv_led_create(btn);
+        lv_obj_remove_flag(led, LV_OBJ_FLAG_CLICKABLE);
         lv_led_set_color(led, VIEW_STYLE_COLOR_RED);
         lv_obj_set_size(led, 28, 28);
         lv_obj_align(led, LV_ALIGN_RIGHT_MID, 0, 0);
@@ -205,7 +205,6 @@ static void open_page(pman_handle_t handle, void *state) {
             lv_obj_center(lbl);
             pdata->led_porthole = led;
         }
-        view_common_alarm_led_create(bottom, &pdata->led_temperature, "TEMP.");
         view_common_alarm_led_create(bottom, &pdata->led_emergency, "EMER.");
         view_common_alarm_led_create(bottom, &pdata->led_warm_water, "ACQ.");
     }
@@ -243,7 +242,8 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                                model_is_test_output_active(model, OUTPUT_WARM_WATER) ||
                                model_is_test_output_active(model, OUTPUT_DRAIN)) {
                         if (!test_acqua_in_sicurezza(model, pdata)) {
-                            view_get_protocol(handle)->clear_outputs(handle);
+                            view_get_protocol(handle)->set_output_overlapping(handle, OUTPUT_COLD_WATER, 0);
+                            view_get_protocol(handle)->set_output_overlapping(handle, OUTPUT_WARM_WATER, 0);
                         }
                     }
                     update_page(model, pdata);
@@ -321,6 +321,13 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                         }
 
                         case BTN_LOCK_ID: {
+                            if (model_oblo_serrato(model)) {
+                                if (model_get_livello_centimetri(model) > model->prog.parmac.tempo_minimo_scarico) {
+                                    break;
+                                }
+                                view_get_protocol(handle)->set_output_overlapping(handle, OUTPUT_COLD_WATER, 0);
+                                view_get_protocol(handle)->set_output_overlapping(handle, OUTPUT_WARM_WATER, 0);
+                            }
                             view_get_protocol(handle)->toggle_lock(handle);
                             break;
                         }
@@ -420,18 +427,23 @@ static void update_page(model_t *model, struct page_data *pdata) {
         lv_led_set_color(pdata->led_porthole, VIEW_STYLE_COLOR_RED);
     }
 
-    lv_led_on(pdata->led_temperature);
-    if (model->run.macchina.temperatura >= model->prog.parmac.temperatura_sicurezza) {
-        lv_led_set_color(pdata->led_temperature, VIEW_STYLE_COLOR_RED);
-    } else {
-        lv_led_set_color(pdata->led_temperature, VIEW_STYLE_COLOR_GREEN);
-    }
-
     lv_led_on(pdata->led_warm_water);
-    if (model_get_livello_centimetri(model) < model->prog.parmac.centimetri_max_livello) {
-        lv_led_set_color(pdata->led_warm_water, VIEW_STYLE_COLOR_GREEN);
+    if (pdata->test_temperature) {
+        if (model_get_livello_centimetri(model) >= model_get_minimo_livello_riscaldo(model)) {
+            lv_led_set_color(pdata->led_warm_water, VIEW_STYLE_COLOR_GREEN);
+            lv_obj_remove_state(pdata->button_heating, LV_STATE_DISABLED);
+        } else {
+            lv_led_set_color(pdata->led_warm_water, VIEW_STYLE_COLOR_RED);
+            lv_obj_add_state(pdata->button_heating, LV_STATE_DISABLED);
+        }
     } else {
-        lv_led_set_color(pdata->led_warm_water, VIEW_STYLE_COLOR_RED);
+        if (model_get_livello_centimetri(model) > model->prog.parmac.centimetri_minimo_scarico) {
+            lv_led_set_color(pdata->led_warm_water, VIEW_STYLE_COLOR_RED);
+        } else if (model_get_livello_centimetri(model) > 0) {
+            lv_led_set_color(pdata->led_warm_water, VIEW_STYLE_COLOR_BLUE);
+        } else {
+            lv_led_set_color(pdata->led_warm_water, VIEW_STYLE_COLOR_GREEN);
+        }
     }
 
     if (model_is_test_output_active(model, RESISTORS_OUTPUT_INDEX)) {

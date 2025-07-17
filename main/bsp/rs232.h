@@ -9,7 +9,7 @@
 void bsp_rs232_init(void);
 void bsp_rs232_flush(void);
 int  bsp_rs232_write(uint8_t *buffer, size_t len);
-int  bsp_rs232_read(uint8_t *buffer, size_t len);
+int  bsp_rs232_read(uint8_t *buffer, size_t len, uint32_t timeout_ms);
 
 
 #endif
