@@ -61,8 +61,8 @@ struct page_data {
 
     int      selected_parameter;
     uint16_t selected_detergent;
-    uint8_t  sapone_on;
     uint8_t  fixed_detergent;
+    uint8_t  sapone_on;
 
     pman_timer_t *timer;
     pman_timer_t *timer_halfsec;
@@ -86,7 +86,6 @@ static void *create_page(pman_handle_t handle, void *extra) {
     pdata->timer              = PMAN_REGISTER_TIMER_ID(handle, 30 * 1000UL, TIMER_BACK_ID);
     pdata->timer_halfsec      = PMAN_REGISTER_TIMER_ID(handle, 500UL, TIMER_HALFSECOND_ID);
     pdata->selected_detergent = 0;
-    pdata->sapone_on          = 0;
     pdata->fixed_detergent    = (uint8_t)(uintptr_t)extra;
     if (pdata->fixed_detergent) {
         pdata->selected_parameter = WORK_PARAMETER_DETERGENT;
@@ -97,6 +96,8 @@ static void *create_page(pman_handle_t handle, void *extra) {
     for (size_t i = 0; i < 10; i++) {
         stopwatch_init(&pdata->stopwatches[i]);
     }
+
+    pdata->sapone_on = 0;
 
     return pdata;
 }
@@ -343,9 +344,13 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                         }
 
                         case BTN_DETERGENT_TOGGLE_ID: {
-                            pdata->sapone_on = !pdata->sapone_on;
-                            view_get_protocol(handle)->controllo_sapone(handle, pdata->selected_detergent,
-                                                                        pdata->sapone_on);
+                            if (model->run.macchina.out_saponi[pdata->selected_detergent] == 0) {
+                                pdata->sapone_on = 1;
+                                view_get_protocol(handle)->colpo_sapone(handle, pdata->selected_detergent);
+                            } else {
+                                pdata->sapone_on = 0;
+                                view_get_protocol(handle)->controllo_sapone(handle, pdata->selected_detergent, 0);
+                            }
                             break;
                         }
 
@@ -380,7 +385,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                                     } else if (pdata->selected_detergent > 0) {
                                         pdata->selected_detergent--;
                                     } else {
-                                        pdata->selected_detergent = model->prog.parmac.numero_saponi_utilizzabili;
+                                        pdata->selected_detergent = model->prog.parmac.numero_saponi_utilizzabili - 1;
                                     }
                                     update_page(model, pdata);
                                     break;
@@ -631,7 +636,7 @@ static void update_page(model_t *model, struct page_data *pdata) {
                     lv_led_off(pdata->led_detergent);
                 }
 
-                if (pdata->sapone_on) {
+                if (model->run.macchina.out_saponi[pdata->selected_detergent] && pdata->sapone_on) {
                     lv_obj_add_state(pdata->button_detergent, LV_STATE_CHECKED);
                 } else {
                     lv_obj_remove_state(pdata->button_detergent, LV_STATE_CHECKED);
@@ -735,8 +740,8 @@ static lv_obj_t *button_parameter_create(lv_obj_t *parent, lv_obj_t **label_orig
 
 static void turn_off_detergent(pman_handle_t handle, struct page_data *pdata) {
     if (pdata->selected_parameter == WORK_PARAMETER_DETERGENT) {
-        pdata->sapone_on = 0;
         view_get_protocol(handle)->controllo_sapone(handle, pdata->selected_detergent, 0);
+        pdata->sapone_on = 0;
     }
 }
 

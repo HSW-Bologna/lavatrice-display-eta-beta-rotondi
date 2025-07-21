@@ -454,8 +454,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                         case BTN_NEXT_ID:
                             switch (pdata->page_type) {
                                 case VIEW_COMMON_PAGE_TEST_DRUM_TYPE_FORWARD:
-                                    msg.stack_msg = PMAN_STACK_MSG_SWAP_EXTRA(
-                                        &page_test_drum, (void *)(uintptr_t)VIEW_COMMON_PAGE_TEST_DRUM_TYPE_FORWARD);
+                                    msg.stack_msg = PMAN_STACK_MSG_SWAP(&page_test_outputs);
                                     break;
                                 case VIEW_COMMON_PAGE_TEST_DRUM_TYPE_BACKWARD:
                                     msg.stack_msg = PMAN_STACK_MSG_SWAP_EXTRA(

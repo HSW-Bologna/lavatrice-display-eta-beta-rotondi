@@ -8,7 +8,7 @@
 #include "../intl/intl.h"
 
 
-#define NUM_OUTPUTS    20
+#define NUM_OUTPUTS 20
 
 
 struct page_data {
@@ -160,6 +160,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                 case LV_EVENT_LONG_PRESSED: {
                     switch (obj_data->id) {
                         case BTN_NEXT_ID:
+                            view_get_protocol(handle)->clear_outputs(handle);
                             msg.stack_msg = PMAN_STACK_MSG_SWAP(&page_test_inputs);
                             break;
                     }
