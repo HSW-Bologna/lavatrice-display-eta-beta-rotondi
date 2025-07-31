@@ -50,6 +50,8 @@
 struct page_data {
     keyboard_page_options_t keyboard_options;
 
+    lv_obj_t *led_tech_view;
+
     lv_obj_t *btn_drive;
 };
 
@@ -64,6 +66,7 @@ enum {
     BTN_DATETIME_ID,
     BTN_UTILITY_ID,
     BTN_PASSWORD_ID,
+    BTN_TECH_VIEW_ID,
 };
 
 
@@ -179,6 +182,24 @@ static void open_page(pman_handle_t handle, void *state) {
         view_register_object_default_callback(btn, BTN_PASSWORD_ID);
     }
 
+    {
+        lv_obj_t *btn = lv_btn_create(cont);
+        lv_obj_set_width(btn, 140);
+        lv_obj_t *lbl = lv_label_create(btn);
+        lv_label_set_text(lbl, "Techview");
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        lv_obj_align(lbl, LV_ALIGN_LEFT_MID, 0, 0);
+
+        lv_obj_t *led = lv_led_create(btn);
+        lv_obj_add_flag(led, LV_OBJ_FLAG_EVENT_BUBBLE);
+        lv_obj_set_size(led, 20, 20);
+        lv_led_set_color(led, VIEW_STYLE_COLOR_RED);
+        lv_obj_align(lbl, LV_ALIGN_RIGHT_MID, 0, 0);
+        pdata->led_tech_view = led;
+
+        view_register_object_default_callback(btn, BTN_TECH_VIEW_ID);
+    }
+
     lv_obj_t *label_machine_name = lv_label_create(lv_screen_active());
     lv_obj_set_style_text_font(label_machine_name, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
     lv_obj_align(label_machine_name, LV_ALIGN_TOP_MID, 0, 64);
@@ -264,6 +285,12 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_programs);
                             break;
 
+                        case BTN_TECH_VIEW_ID: {
+                            model->run.tech_view = !model->run.tech_view;
+                            update_page(model, pdata);
+                            break;
+                        }
+
                         case BTN_ADVANCED_ID:
                             if (model->prog.parmac.livello_accesso == CODICE_LVL_COSTRUTTORE) {
                                 msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_advanced);
@@ -310,6 +337,12 @@ static void update_page(model_t *model, struct page_data *pdata) {
         lv_obj_add_state(pdata->btn_drive, LV_STATE_DISABLED);
     } else {
         lv_obj_remove_state(pdata->btn_drive, LV_STATE_DISABLED);
+    }
+
+    if (model->run.tech_view) {
+        lv_led_on(pdata->led_tech_view);
+    } else {
+        lv_led_off(pdata->led_tech_view);
     }
 }
 

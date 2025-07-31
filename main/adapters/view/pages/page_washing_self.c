@@ -547,8 +547,8 @@ static void update_page(model_t *model, struct page_data *pdata) {
                 break;
             }
             case 1: {
-                view_common_set_hidden(pdata->button_right, 1);
-                view_common_set_hidden(pdata->button_left, 0);
+                view_common_set_hidden(pdata->button_right, 0);
+                view_common_set_hidden(pdata->button_left, 1);
                 break;
             }
             case 2: {

@@ -525,7 +525,7 @@ static int task_gestisci_richiesta(machine_request_t request) {
         }
 
         case MACHINE_REQUEST_CODE_STATO:
-            res = invia_pacchetto_semplice(COMANDO_LEGGI_STATO, &risposta_pacchetto, 159);
+            res = invia_pacchetto_semplice(COMANDO_LEGGI_STATO, &risposta_pacchetto, 164);
             if (res) {
                 break;
             }

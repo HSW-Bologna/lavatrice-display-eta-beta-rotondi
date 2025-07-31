@@ -274,7 +274,7 @@ const char *pars_descriptions[173][5] = {
     {"Ripetizione ciclo", "Cycle repetition", "Repetición de ciclo", "Répétition du cycle", "Zykluswiederholung", },
     {"Interf. saponi", "Detergent interf.", "Interfaz de jabón", "Interface savon", "Seifenschnittstelle", },
     {"Tempo scarico servizio", "Service drain time", "Tiempo de drenaje de servicio", "Temps de vidange du service", "Service-Ablaufzeit", },
-    {"Smart Wave", "Smart Wave", "Smart Wave", "Smart Wave", "Smart Wave", },
+    {"Aquaplus", "Aquaplus", "Aquaplus", "Aquaplus", "Aquaplus", },
     {"Visualizzazione esclusione sapone", "Show detergent exclusion", "Show detergent exclusion", "Show detergent exclusion", "Show detergent exclusion", },
     {"Controllo pausa/stop", "Pause/stop control", "Pause/stop control", "Pause/stop control", "Pause/stop control", },
     {"Controllo lucchetto", "Lock control", "Lock control", "Lock control", "Lock control", },

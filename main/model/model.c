@@ -227,7 +227,12 @@ void model_avanza_step(model_t *model) {
             model->run.level_setpoint       = 0;
         }
     }
-    model->run.num_step_successivo = (model->run.num_step_successivo + 1) % p->num_steps;
+
+    if (model->prog.parmac.controllo_step != 1) {
+        model->run.num_step_successivo = (model->run.num_step_successivo + 1) % p->num_steps;
+    } else if (model->run.num_step_successivo < p->num_steps - 1) {
+        model->run.num_step_successivo++;
+    }
 }
 
 
@@ -1001,6 +1006,10 @@ void model_unpack_stato_macchina(stato_macchina_t *stato, uint8_t *buffer) {
     i += 2;
 
     i += UNPACK_UINT8(stato->descrizione_pedante, &buffer[i]);
+
+    i += UNPACK_UINT16_BE(stato->aquaplus.erogation_seconds, &buffer[i]);
+    i += UNPACK_UINT16_BE(stato->aquaplus.milliliters_per_second, &buffer[i]);
+    i += UNPACK_UINT8(stato->aquaplus.percentage, &buffer[i]);
 }
 
 

@@ -50,7 +50,7 @@ static void open_page(pman_handle_t handle, void *state) {
 
     model_t *model = view_get_model(handle);
 
-    view_common_create_title(lv_scr_act(), view_intl_get_string(model, STRINGS_DIAGNOSI), BTN_BACK_ID, -1);
+    view_common_create_title(lv_scr_act(), view_intl_get_string(model, STRINGS_UTILITA), BTN_BACK_ID, -1);
 
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
     lv_obj_set_style_pad_column(cont, 3, LV_STATE_DEFAULT);
@@ -188,7 +188,8 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             break;
 
                         case BTN_DETERGENT_EXCLUSION_ID:
-                            model->prog.parmac.esclusione_sapone = !model->prog.parmac.esclusione_sapone;
+                            model->prog.parmac.visualizzazione_esclusione_sapone =
+                                !model->prog.parmac.visualizzazione_esclusione_sapone;
                             update_page(model, pdata);
                             break;
 
@@ -231,7 +232,7 @@ static void update_page(model_t *model, struct page_data *pdata) {
         lv_led_off(pdata->led_user_menu);
     }
 
-    if (model->prog.parmac.esclusione_sapone) {
+    if (model->prog.parmac.visualizzazione_esclusione_sapone) {
         lv_led_on(pdata->led_exclude_detergent);
     } else {
         lv_led_off(pdata->led_exclude_detergent);

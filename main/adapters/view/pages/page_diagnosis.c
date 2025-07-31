@@ -12,7 +12,7 @@
 
 
 struct page_data {
-    lv_obj_t *dropdown;
+    uint8_t placeholder;
 };
 
 
@@ -21,7 +21,6 @@ enum {
     BTN_TEST_ID,
     BTN_STATS_ID,
     BTN_EVENTS_ID,
-    BTN_DEBUG_ID,
 };
 
 
@@ -86,30 +85,6 @@ static void open_page(pman_handle_t handle, void *state) {
         view_register_object_default_callback(btn, BTN_EVENTS_ID);
     }
 
-    {
-        lv_obj_t *cont_debug = lv_obj_create(cont);
-        lv_obj_add_style(cont_debug, &style_transparent_cont, LV_STATE_DEFAULT);
-        lv_obj_set_size(cont_debug, BUTTON_WIDTH * 2, 56);
-
-        lv_obj_t *btn = lv_button_create(cont_debug);
-        lv_obj_set_width(btn, BUTTON_WIDTH);
-        lv_obj_align(btn, LV_ALIGN_LEFT_MID, 0, 0);
-        view_register_object_default_callback(btn, BTN_DEBUG_ID);
-
-        lv_obj_t *dropdown = lv_dropdown_create(cont_debug);
-        lv_obj_set_style_text_font(lv_dropdown_get_list(dropdown), STYLE_FONT_SMALL, LV_STATE_DEFAULT);
-        lv_obj_set_style_text_font(dropdown, STYLE_FONT_SMALL, LV_PART_MAIN);
-        lv_obj_set_width(dropdown, BUTTON_WIDTH * 2 / 3);
-        view_common_dropdown_set_number(dropdown, 100);
-        lv_obj_align(dropdown, LV_ALIGN_RIGHT_MID, 0, 0);
-        pdata->dropdown = dropdown;
-
-        lv_obj_t *lbl = lv_label_create(btn);
-        lv_label_set_text(lbl, "Debug");
-        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
-        lv_obj_center(lbl);
-    }
-
     update_page(model, pdata);
 }
 
@@ -161,11 +136,6 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
                         case BTN_EVENTS_ID:
                             msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_events);
-                            break;
-
-                        case BTN_DEBUG_ID:
-                            view_get_protocol(handle)->send_debug_code(handle,
-                                                                       lv_dropdown_get_selected(pdata->dropdown));
                             break;
                     }
                     break;

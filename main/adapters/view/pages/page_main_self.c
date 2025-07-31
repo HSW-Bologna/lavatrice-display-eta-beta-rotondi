@@ -403,10 +403,14 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
         case PMAN_EVENT_TAG_TIMER: {
             switch ((int)(uintptr_t)event.as.timer->user_data) {
                 case TIMER_CHANGE_PAGE_ID: {
-                    pman_stack_msg_t         pw_msg = PMAN_STACK_MSG_SWAP(&page_menu);
-                    password_page_options_t *opts =
-                        view_common_default_password_page_options(pw_msg, (const char *)model->prog.password);
-                    msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE_EXTRA(&page_password, opts);
+                    if (strlen(model->prog.password) == 0) {
+                        msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_menu);
+                    } else {
+                        pman_stack_msg_t         pw_msg = PMAN_STACK_MSG_SWAP(&page_menu);
+                        password_page_options_t *opts =
+                            view_common_default_password_page_options(pw_msg, (const char *)model->prog.password);
+                        msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE_EXTRA(&page_password, opts);
+                    }
                     break;
                 }
 

@@ -28,6 +28,7 @@ void app_main(void *arg) {
     ESP_LOGI(TAG, "Begin main loop");
     for (;;) {
         controller_manage(&model);
+        model.run.macchina.temperatura = 40;
 
         vTaskDelay(pdMS_TO_TICKS(5));
     }

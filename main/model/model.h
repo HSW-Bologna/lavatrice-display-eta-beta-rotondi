@@ -3,6 +3,7 @@
 
 #include <time.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include "programs.h"
 #include "event.h"
 
@@ -317,6 +318,12 @@ typedef struct {
 
     uint16_t descrizione_pedante;
     uint8_t  richiesto_aggiornamento_tempo;
+
+    struct {
+        uint16_t erogation_seconds;
+        uint16_t milliliters_per_second;
+        uint8_t  percentage;
+    } aquaplus;
 } stato_macchina_t;
 
 
@@ -421,6 +428,7 @@ typedef struct {
         uint16_t speed_setpoint;
         uint16_t duration;
         uint8_t  detergent_exclusion;
+        bool     tech_view;
     } run;     // Informazioni relative all'esecuzione attuale (sia della scheda quadro che dell'applicazione)
 
     struct {
