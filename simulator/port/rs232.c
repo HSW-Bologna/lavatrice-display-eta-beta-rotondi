@@ -41,7 +41,6 @@ void bsp_rs232_flush(void) {
 
 
 int bsp_rs232_read(uint8_t *buffer, size_t required_len, uint32_t timeout_ms) {
-    (void)timeout_ms;
     int           len;
     unsigned long start = timestamp_get();
     size_t        total = 0;
@@ -53,7 +52,7 @@ int bsp_rs232_read(uint8_t *buffer, size_t required_len, uint32_t timeout_ms) {
             total += len;
         } else {
         }
-    } while (!timestamp_is_expired(start, 50));
+    } while (!timestamp_is_expired(start, timeout_ms));
 
     return total;
 }

@@ -91,7 +91,7 @@ void fup_manage(void) {
         case FUP_INTERNAL_STATE_READY:
             break;
         case FUP_INTERNAL_STATE_STARTED: {
-            // Wait a bit to allow the UI to updat<Plug>(coc-definition)e
+            // Wait a bit to allow the UI to update
             if (!timestamp_is_expired(state.ts, 100)) {
                 break;
             }

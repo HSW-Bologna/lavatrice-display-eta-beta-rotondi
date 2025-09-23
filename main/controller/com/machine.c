@@ -753,10 +753,10 @@ static int invia_pacchetto(int comando, uint8_t *dati, uint16_t lunghezza_dati, 
     size_t tentativi = 0;
     int    err       = 0;
 
-    size_t   lunghezza_prevista = lunghezza_dati_prevista < 0 ? PACKET_SIZE(1024) : PACKET_SIZE(lunghezza_dati_prevista);
-    uint8_t *write_buffer       = malloc(PACKET_SIZE(lunghezza_dati));
-    uint8_t *read_buffer        = malloc(lunghezza_prevista);
-    int      write_len          = build_packet(write_buffer, comando, dati, lunghezza_dati);
+    size_t lunghezza_prevista = lunghezza_dati_prevista < 0 ? PACKET_SIZE(1024) : PACKET_SIZE(lunghezza_dati_prevista);
+    uint8_t *write_buffer     = malloc(PACKET_SIZE(lunghezza_dati));
+    uint8_t *read_buffer      = malloc(lunghezza_prevista);
+    int      write_len        = build_packet(write_buffer, comando, dati, lunghezza_dati);
     assert(write_len == PACKET_SIZE(lunghezza_dati));
 
     do {
@@ -768,13 +768,11 @@ static int invia_pacchetto(int comando, uint8_t *dati, uint16_t lunghezza_dati, 
         if (err) {
             ESP_LOGW(TAG, "Risposta non valida al comando 0x%02X: %i (%i) (%i)", comando, err, len, tentativi);
             vTaskDelay(pdMS_TO_TICKS(500));
-            tentativi++;
         } else {
             if (risposta->data_length > 0 && risposta->data != NULL && risposta->data[0] != comando) {
                 ESP_LOGW(TAG, "Risposta a comando diverso: mi aspettavo %i, ho ricevuto %i", comando,
                          risposta->data[0]);
                 vTaskDelay(pdMS_TO_TICKS(RITARDO_MS));
-                tentativi++;
                 err = 1;
             }
             if (lunghezza_dati_prevista == -1) {
