@@ -183,8 +183,11 @@ typedef enum {
     STRINGS_ESCLUSIONE_SAPONE,
     STRINGS_MENU_SAPONI,
     STRINGS_DATA_ORA,
+    STRINGS_RETE,
+    STRINGS_NON_CONNESSO,
+    STRINGS_CONNESSIONE_IN_CORSO,
 } strings_t;
 
-extern const char *strings[181][2];
+extern const char *strings[184][2];
 
 #endif

@@ -20,10 +20,12 @@
 
 static const char *TAG = "Main";
 
-static mut_model_t model = {0};
 
 
 void app_main(void) {
+    mut_model_t *model = malloc(sizeof(mut_model_t));
+    assert(model);
+
     vTaskDelay(pdMS_TO_TICKS(500));
     ESP_LOGI(TAG, "Main");
 
@@ -36,16 +38,16 @@ void app_main(void) {
     bsp_tft_touch_init();
     bsp_rs232_init();
 
-    model_init(&model);
-    view_init(&model, controller_process_message, bsp_tft_display_lvgl_flush_cb, bsp_tft_touch_read,
+    model_init(model);
+    view_init(model, controller_process_message, bsp_tft_display_lvgl_flush_cb, bsp_tft_touch_read,
               controller_gui_protocol);
-    controller_init(&model);
+    controller_init(model);
 
     ESP_LOGI(TAG, "Begin main loop");
     buzzer_beep(2, 200, 500, 4);
 
     for (;;) {
-        controller_manage(&model);
+        controller_manage(model);
 
         vTaskDelay(pdMS_TO_TICKS(1));
     }

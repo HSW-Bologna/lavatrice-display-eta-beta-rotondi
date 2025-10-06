@@ -671,6 +671,10 @@ static void update_page(model_t *model, struct page_data *pdata) {
             lv_obj_remove_state(pdata->buttons[parameter_index], LV_STATE_CHECKED);
         }
     }
+
+    if (!model->prog.parmac.visualizzazione_menu_saponi) {
+        view_common_set_hidden(pdata->buttons[WORK_PARAMETER_DETERGENT], true);
+    }
 }
 
 

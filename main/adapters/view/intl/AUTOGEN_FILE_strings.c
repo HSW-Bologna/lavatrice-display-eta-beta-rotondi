@@ -1,4 +1,4 @@
-const char *strings[181][2] = {
+const char *strings[184][2] = {
     {"Diagnosi", "Test", },
     {"Ingressi", "Inputs", },
     {"Uscite", "Outputs", },
@@ -180,5 +180,8 @@ const char *strings[181][2] = {
     {"Esclusione sapone", "Detergent exclusion", },
     {"Menu' saponi", "Detergent menu", },
     {"Vis. data/ora", "Show date/time", },
+    {"Rete", "Network", },
+    {"Non connesso", "Not connected", },
+    {"Connessione in corso...", "Connecting...", },
 };
 

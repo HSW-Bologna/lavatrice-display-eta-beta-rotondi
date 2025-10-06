@@ -5,6 +5,7 @@
 #include "model/model.h"
 #include "adapters/view/view.h"
 #include "adapters/view/common.h"
+#include "adapters/network/wifi.h"
 #include "gui.h"
 #include "com/machine.h"
 #include "services/serializer.h"
@@ -22,6 +23,7 @@ static uint8_t     pending_state_change = 0;
 
 
 void controller_init(mut_model_t *model) {
+    //wifi_init();
 
     if (rx8010_is_stopped(bsp_rtc_driver)) {
         ESP_LOGI(TAG, "RTC was stopped, initializing...");
@@ -281,6 +283,7 @@ void controller_manage(mut_model_t *pmodel) {
     }
 
     controller_gui_manage(pmodel);
+    //wifi_update(pmodel);
     fup_manage();
 
     pmodel->run.firmware_update_state = fup_get_state();

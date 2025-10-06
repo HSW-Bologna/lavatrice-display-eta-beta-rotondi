@@ -538,12 +538,13 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
                             if (pdata->program_window_index > 0) {
                                 pdata->program_window_index--;
                             } else {
-                                if (model->prog.num_programmi <= max_images) {
+                                if (model_get_num_user_programs(model) <= max_images) {
                                     pdata->program_window_index = 0;
                                 } else {
-                                    int16_t extra_index = (model->prog.num_programmi % max_images) != 0 ? 1 : 0;
+                                    int16_t extra_index =
+                                        (model_get_num_user_programs(model) % max_images) != 0 ? 1 : 0;
                                     pdata->program_window_index =
-                                        (model->prog.num_programmi / max_images) + extra_index - 1;
+                                        (model_get_num_user_programs(model) / max_images) + extra_index - 1;
                                 }
                             }
                             update_page(model, pdata);
@@ -552,7 +553,7 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
                         case BTN_RIGHT_ID: {
                             pdata->program_window_index++;
-                            if (pdata->program_window_index * MAX_IMAGES > model->prog.num_programmi) {
+                            if (pdata->program_window_index * MAX_IMAGES > model_get_num_user_programs(model)) {
                                 pdata->program_window_index = 0;
                             }
                             update_page(model, pdata);
@@ -598,7 +599,7 @@ static void update_page(model_t *model, struct page_data *pdata) {
     for (size_t i = 0; i < max_images; i++) {
         size_t program_index = pdata->program_window_index * max_images + i;
 
-        if (program_index < model->prog.num_programmi) {
+        if (program_index < model_get_num_user_programs(model)) {
             const programma_preview_t *preview = model_get_preview(model, program_index);
 
             if (preview->tipo < sizeof(icons) / sizeof(icons[0])) {

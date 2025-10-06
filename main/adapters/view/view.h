@@ -6,7 +6,7 @@
 #include "page_manager.h"
 
 
-#define VIEW_LVGL_BUFFER_SIZE                    (BUILD_CONFIG_DISPLAY_HORIZONTAL_RESOLUTION * 40)
+#define VIEW_LVGL_BUFFER_SIZE                    (BUILD_CONFIG_DISPLAY_HORIZONTAL_RESOLUTION * 30)
 #define VIEW_ADD_WATCHED_VARIABLE(ptr, code)     view_add_watched_variable((void *)ptr, sizeof(*ptr), code)
 #define VIEW_ADD_WATCHED_ARRAY(ptr, items, code) view_add_watched_variable((void *)ptr, sizeof(*ptr) * (items), code)
 
@@ -82,6 +82,8 @@ typedef struct {
     void (*read_events)(pman_handle_t handle, uint16_t offset);
     void (*factory_reset)(pman_handle_t handle);
     void (*send_debug_code)(pman_handle_t handle, uint8_t code);
+    void (*scan_wifi)(pman_handle_t handle);
+    void (*connect_to_wifi)(pman_handle_t handle, const char *ssid, const char *password);
 } view_protocol_t;
 
 
@@ -104,7 +106,7 @@ extern const pman_page_t page_main, page_password, page_menu, page_test_inputs, 
     page_test_lock, page_drive, page_import_configuration, page_choice, page_parmac, page_programs, page_program,
     page_program_info, page_main_self, page_washing_self, page_choice_self, page_advanced, page_keyboard, page_price,
     page_step, page_datetime, page_pick_program, page_work_parameters, page_numpad, page_statistics, page_events,
-    page_diagnosis, page_utility;
+    page_diagnosis, page_utility, page_network;
 
 
 #endif

@@ -105,6 +105,10 @@ static void open_page(pman_handle_t handle, void *state) {
         lv_obj_align(lbl, LV_ALIGN_CENTER, 0, 0);
 
         view_register_object_default_callback(btn, BTN_DETERGENT_MENU_ID);
+
+        if (!model->prog.parmac.visualizzazione_menu_saponi) {
+            view_common_set_hidden(btn, true);
+        }
     }
 
     {

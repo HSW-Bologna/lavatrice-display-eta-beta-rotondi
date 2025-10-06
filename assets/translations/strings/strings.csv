@@ -183,3 +183,6 @@ MENU_UTENTE, Menu' utente, User menu
 ESCLUSIONE_SAPONE, Esclusione sapone, Detergent exclusion
 MENU_SAPONI, Menu' saponi, Detergent menu
 DATA_ORA, Vis. data/ora, Show date/time
+RETE, Rete, Network
+NON_CONNESSO, Non connesso, Not connected
+CONNESSIONE_IN_CORSO, Connessione in corso..., Connecting...

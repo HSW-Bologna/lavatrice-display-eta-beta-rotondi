@@ -54,12 +54,12 @@ void parmac_init(model_t *pmodel, int reset) {
     ps[i++] = PARAMETER(&p->abilitazione_lavaggio_programmato, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_LAVAGGIO_PROGRAMMATO, pars_abilitazione), BIT_UTENTE);
     ps[i++] = PARAMETER(&p->tipo_gettoniera, 0, 8, 0, FOPT(PARS_DESCRIPTIONS_TIPO_GETTONIERA, pars_gettoniera), BIT_UTENTE);
     ps[i++] = PARAMETER(&p->valore_impulso, 1, 0xFFFF, 100, FPRICE(PARS_DESCRIPTIONS_VALORE_IMPULSO), BIT_UTENTE);
-    ps[i++] = PARAMETER(&p->valore_prezzo_unico, 1, 0xFFFF, 500, FPRICE(PARS_DESCRIPTIONS_VALORE_PREZZO_UNICO), BIT_COSTRUTTORE);
+    ps[i++] = PARAMETER(&p->valore_prezzo_unico, 1, 0xFFFF, 500, FPRICE(PARS_DESCRIPTIONS_VALORE_PREZZO_UNICO), BIT_UTENTE);
     ps[i++] = PARAMETER(&p->prezzo_unico, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_PREZZO_UNICO, pars_abilitazione), BIT_UTENTE);
     ps[i++] = PARAMETER(&p->cifre_prezzo, 1, 6, 4, FINT(PARS_DESCRIPTIONS_CIFRE_PREZZO), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER_DLIMITS(&p->cifre_decimali_prezzo, NULL, &p->cifre_prezzo, 0, 6, 2, FINT(PARS_DESCRIPTIONS_CIFRE_DECIMALI_PREZZO), BIT_COSTRUTTORE);
-    ps[i++] = PARAMETER(&p->modo_vis_prezzo, 0, 4, 0, FOPT(PARS_DESCRIPTIONS_VISUALIZZAZIONE_PREZZO, pars_tipo_pagamento), BIT_COSTRUTTORE);
-    ps[i++] = PARAMETER(&p->richiesta_pagamento, 0, 2, 0, FOPT(PARS_DESCRIPTIONS_RICHIESTA_PAGAMENTO, pars_richiesta_pagamento), BIT_COSTRUTTORE);
+    ps[i++] = PARAMETER(&p->modo_vis_prezzo, 0, 2, 0, FOPT(PARS_DESCRIPTIONS_VISUALIZZAZIONE_PREZZO, pars_tipo_pagamento), BIT_UTENTE);
+    ps[i++] = PARAMETER(&p->richiesta_pagamento, 0, 2, 0, FOPT(PARS_DESCRIPTIONS_RICHIESTA_PAGAMENTO, pars_richiesta_pagamento), BIT_UTENTE);
     ps[i++] = PARAMETER(&p->abilitazione_sblocco_get, 0, 1, 0, FOPT(PARS_DESCRIPTIONS_SBLOCCO_GETTONIERA, pars_abilitazione), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->secondi_pausa, 0, 10, 1, FFINT(PARS_DESCRIPTIONS_TEMPO_TASTO_PAUSA, fmt_sec), BIT_UTENTE);
     ps[i++] = PARAMETER(&p->secondi_stop, 0, 10, 3, FFINT(PARS_DESCRIPTIONS_TEMPO_TASTO_STOP, fmt_sec), BIT_UTENTE);
@@ -81,7 +81,7 @@ void parmac_init(model_t *pmodel, int reset) {
     ps[i++] = PARAMETER(&p->abilitazione_espansione_io, 0, 1, 1, FOPT(PARS_DESCRIPTIONS_ESPANSIONE_IO, pars_abilitazione), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->numero_saponi_utilizzabili, 3, 10, 6, FINT(PARS_DESCRIPTIONS_NUMERO_SAPONI), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->esclusione_sapone, 0, 10, 0, FINT(PARS_DESCRIPTIONS_ESCLUSIONE_SAPONE), BIT_COSTRUTTORE);
-    ps[i++] = PARAMETER(&p->f_macchina_libera, 0, 1, 1, FOPT(PARS_DESCRIPTIONS_TIPO_MACCHINA_LIBERA, pars_na_nc), BIT_COSTRUTTORE);
+    ps[i++] = PARAMETER(&p->f_macchina_libera, 0, 1, 1, FOPT(PARS_DESCRIPTIONS_TIPO_MACCHINA_LIBERA, pars_na_nc), BIT_UTENTE);
     ps[i++] = PARAMETER(&p->tipo_out_aux_1, 0, 1, 1, FOPT(PARS_DESCRIPTIONS_TIPO_IN_AUX_1, &pars_ausiliari[0]), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->tipo_out_aux_2, 0, 1, 1, FOPT(PARS_DESCRIPTIONS_TIPO_OUT_AUX_2, &pars_ausiliari[2]), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->tipo_out_aux_3, 0, 1, 1, FOPT(PARS_DESCRIPTIONS_TIPO_OUT_AUX_3, &pars_ausiliari[4]), BIT_COSTRUTTORE);
@@ -104,7 +104,7 @@ void parmac_init(model_t *pmodel, int reset) {
     ps[i++] = PARAMETER(&p->giri_accelerometro, 0, 1000, 200, FINT(PARS_DESCRIPTIONS_GIRI_ACCELEROMETRO), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->giri_accelerometro_2, 0, 1000, 300, FINT(PARS_DESCRIPTIONS_GIRI_ACCELEROMETRO_2), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->delta_val_accelerometro, 0, 1000, 200, FFINT(PARS_DESCRIPTIONS_DELTA_ACCELEROMETRO, fmt_perc), BIT_COSTRUTTORE);
-    ps[i++] = PARAMETER(&p->tempo_attesa_accelerometro, 0, 60, 20, FFINT(PARS_DESCRIPTIONS_TEMPO_ATTESA_ACCELEROMETRO, fmt_sec), BIT_COSTRUTTORE);
+    ps[i++] = PARAMETER(&p->tempo_attesa_accelerometro, 0, 60, 20, FFINT(PARS_DESCRIPTIONS_TEMPO_ATTESA_ACCELEROMETRO, fmt_decisec), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->tempo_scarico_accelerometro, 0, 1000, 20, FTIME(PARS_DESCRIPTIONS_TEMPO_SCARICO_ACCELEROMETRO), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->temperatura_massima, 0, 100, 90, FFINT(PARS_DESCRIPTIONS_TEMPERATURA_MASSIMA, fmt_C), BIT_COSTRUTTORE);
     ps[i++] = PARAMETER(&p->isteresi_temperatura, 0, 60, 2, FFINT(PARS_DESCRIPTIONS_ISTERESI_TEMPERATURA, fmt_C), BIT_COSTRUTTORE);
@@ -206,6 +206,7 @@ size_t parmac_get_tot_parameters(uint8_t al) {
 
 
 static parameter_handle_t *get_actual_parameter(model_t *pmodel, size_t parameter, uint8_t al) {
+    (void)pmodel;
     parameter_handle_t *par = parameter_get_handle(parameters, NUM_PARAMETERS, parameter, model_get_bit_accesso(al));
     assert(par != NULL);
     return par;
@@ -220,5 +221,6 @@ const char *parmac_commissioning_language_get_description(model_t *pmodel) {
 
 
 void parmac_commissioning_operation(model_t *pmodel, parmac_commissioning_t parameter, int op) {
+    (void)pmodel;
     parameter_operator(&parameters[parameter], op);
 }

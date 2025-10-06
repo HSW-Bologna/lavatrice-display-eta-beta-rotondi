@@ -130,7 +130,7 @@ def main():
     sources += [File(filename) for filename in Path('main/model').rglob('*.c')]
     sources += [File(filename)
                 for filename in Path('main/config').rglob('*.c')]
-    sources += [File(filename) for filename in Path('main/adapters').rglob('*.c')]
+    sources += [File(filename) for filename in Path('main/adapters/view').rglob('*.c')]
     sources += [File(filename)
                 for filename in Path('main/controller').rglob('*.c')]
     sources += [File(filename)

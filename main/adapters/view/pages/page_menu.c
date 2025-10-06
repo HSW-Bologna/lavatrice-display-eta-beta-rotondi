@@ -66,6 +66,7 @@ enum {
     BTN_DATETIME_ID,
     BTN_UTILITY_ID,
     BTN_PASSWORD_ID,
+    BTN_NETWORK_ID,
     BTN_TECH_VIEW_ID,
 };
 
@@ -200,6 +201,17 @@ static void open_page(pman_handle_t handle, void *state) {
         view_register_object_default_callback(btn, BTN_TECH_VIEW_ID);
     }
 
+    {
+        lv_obj_t *btn = lv_btn_create(cont);
+        lv_obj_set_width(btn, BUTTON_WIDTH);
+        lv_obj_t *lbl = lv_label_create(btn);
+        lv_label_set_text(lbl, view_intl_get_string(model, STRINGS_RETE));
+        lv_obj_set_style_text_font(lbl, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
+        lv_obj_center(lbl);
+        view_register_object_default_callback(btn, BTN_NETWORK_ID);
+        view_common_set_hidden(btn, true);
+    }
+
     lv_obj_t *label_machine_name = lv_label_create(lv_screen_active());
     lv_obj_set_style_text_font(label_machine_name, STYLE_FONT_SMALL, LV_STATE_DEFAULT);
     lv_obj_align(label_machine_name, LV_ALIGN_TOP_MID, 0, 64);
@@ -304,6 +316,10 @@ static pman_msg_t page_event(pman_handle_t handle, void *state, pman_event_t eve
 
                         case BTN_DATETIME_ID:
                             msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE_EXTRA(&page_datetime, (void *)(uintptr_t)0);
+                            break;
+
+                        case BTN_NETWORK_ID:
+                            msg.stack_msg = PMAN_STACK_MSG_PUSH_PAGE(&page_network);
                             break;
 
                         case BTN_PASSWORD_ID: {

@@ -218,13 +218,13 @@ static void open_page(pman_handle_t handle, void *state) {
     lv_obj_t *lbl = lv_label_create(cont);
     lv_obj_set_style_text_color(lbl, VIEW_STYLE_COLOR_BLACK, LV_STATE_DEFAULT);
     lv_obj_align(lbl, LV_ALIGN_CENTER, 96, 8);
-    pdata->label_price = lbl;
+    pdata->label_credit = lbl;
 
     lbl = lv_label_create(cont);
     lv_obj_set_style_text_color(lbl, VIEW_STYLE_COLOR_BLACK, LV_STATE_DEFAULT);
     lv_obj_set_style_text_align(lbl, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);
     lv_obj_align(lbl, LV_ALIGN_CENTER, -96, 8);
-    pdata->label_credit = lbl;
+    pdata->label_price = lbl;
 
     {
         lv_obj_t *img = lv_image_create(cont);
@@ -406,7 +406,11 @@ static void update_page(model_t *model, struct page_data *pdata) {
     lv_label_set_text(pdata->label_credit, string);
 
     const programma_preview_t *preview = model_get_preview(model, pdata->number);
-    model_formatta_prezzo(string, model, preview->prezzo);
+    if (model->prog.parmac.prezzo_unico) {
+        model_formatta_prezzo(string, model, model->prog.parmac.valore_prezzo_unico);
+    } else {
+        model_formatta_prezzo(string, model, preview->prezzo);
+    }
     lv_label_set_text(pdata->label_price, string);
 
     const lv_img_dsc_t *language_icons[2] = {&img_marble_italiano, &img_marble_english};

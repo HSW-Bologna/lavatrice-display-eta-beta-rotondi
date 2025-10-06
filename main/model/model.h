@@ -54,9 +54,19 @@
 #define SCALA_ACCELEROMETRO_4G        4
 #define SCALA_ACCELEROMETRO_8G        5
 
+#define MAX_AP_SCAN_LIST_SIZE 8
+
+
 #if NUM_LINGUE > MAX_LINGUE
 #error "Too many languages!"
 #endif
+
+
+typedef enum {
+    WIFI_STATE_DISCONNECTED,
+    WIFI_STATE_CONNECTING,
+    WIFI_STATE_CONNECTED,
+} wifi_state_t;
 
 
 typedef enum {
@@ -429,6 +439,12 @@ typedef struct {
         uint16_t duration;
         uint8_t  detergent_exclusion;
         bool     tech_view;
+
+        wifi_state_t wifi_state;
+        uint32_t     ip_addr;
+        char         connected_ssid[33];
+        size_t       ssid_num;
+        char         ssids[MAX_AP_SCAN_LIST_SIZE][33];
     } run;     // Informazioni relative all'esecuzione attuale (sia della scheda quadro che dell'applicazione)
 
     struct {

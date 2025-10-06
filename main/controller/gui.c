@@ -1,6 +1,7 @@
 #include "bsp/i2c_devices.h"
 #include "i2c_devices/rtc/RX8010/rx8010.h"
 #include "model/model.h"
+#include "adapters/network/wifi.h"
 #include "adapters/view/view.h"
 #include "controller.h"
 #include "esp_log.h"
@@ -55,6 +56,8 @@ static void controllo_sapone(pman_handle_t handle, uint16_t sapone, uint8_t valo
 static void read_events(pman_handle_t handle, uint16_t offset);
 static void factory_reset(pman_handle_t handle);
 static void send_debug_code(pman_handle_t handle, uint8_t code);
+static void scan_wifi_networks(pman_handle_t handle);
+static void connect_to_wifi(pman_handle_t handle, const char *ssid, const char *password);
 
 
 view_protocol_t controller_gui_protocol = {
@@ -95,6 +98,8 @@ view_protocol_t controller_gui_protocol = {
     .read_events                = read_events,
     .factory_reset              = factory_reset,
     .send_debug_code            = send_debug_code,
+    .scan_wifi                  = scan_wifi_networks,
+    .connect_to_wifi            = connect_to_wifi,
 };
 
 
@@ -409,4 +414,16 @@ static void factory_reset(pman_handle_t handle) {
 static void send_debug_code(pman_handle_t handle, uint8_t code) {
     (void)handle;
     machine_send_debug_code(code);
+}
+
+
+static void scan_wifi_networks(pman_handle_t handle) {
+    (void)handle;
+    wifi_scan();
+}
+
+
+static void connect_to_wifi(pman_handle_t handle, const char *ssid, const char *password) {
+    (void)handle;
+    wifi_connect(ssid, password);
 }
